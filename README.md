@@ -8,7 +8,7 @@ The plugin is compatible with most optimization, caching and minification plugin
 
 ## Critical CSS management
 
-The plugin contains a tool to configure Critical Path CSS to be placed inline in the `<head>` of the HTML document. Read more about Critical CSS in the [documentation by Google](https://developers.google.com/speed/docs/insights/PrioritizeVisibleContent). 
+The plugin contains a tool to manage Critical Path CSS for inline placement in the `<head>` of the HTML document. Read more about Critical CSS in the [documentation by Google](https://developers.google.com/speed/docs/insights/PrioritizeVisibleContent). 
 
 [This article](https://github.com/addyosmani/critical-path-css-tools) by a Google engineer provides information about the available methods for creating critical path CSS. 
 
