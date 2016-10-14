@@ -26,7 +26,7 @@ The plugin offers advanced options such as a render delay in milliseconds, the p
 
 The plugin contains a tool to optimize web fonts. The plugin automaticly parses web font `@import` links in minified CSS files and `<link>` links in the HTML and loads them via [Google Web Font Loader](https://github.com/typekit/webfontloader).
 
-### External Resource Proxy
+## External Resource Proxy
 
 The plugin contains a tool to localize external javascript and CSS resources such as Google Analytics and Facebook SDK to pass the "[Leverage browser caching](https://developers.google.com/speed/docs/insights/LeverageBrowserCaching)" rule from Google PageSpeed Insights. The proxy is able to capture "script-injected" async scripts to solve the problem without further configuration.
 
