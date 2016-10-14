@@ -4,17 +4,17 @@ The [Above The Fold Optimization](https://wordpress.org/plugins/above-the-fold-o
 
 https://wordpress.org/plugins/above-the-fold-optimization/
 
-The plugin is compatible with most optimization, caching and minification plugins such as Autoptimize and W3 Total Cache. The plugin offers modular compatibility and can easily be extended to support more optimization plugins. ([more info](https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/))
+The plugin is compatible with most optimization, caching and minification plugins such as Autoptimize and W3 Total Cache. The plugin offers modular compatibility and can be extended to support any optimization plugin. ([more info](https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/))
 
 ## Critical CSS management
 
-The plugin allows to configure Critical Path CSS to be placed inline in the `<head>` of the HTML document. Read more about Critical CSS in the [documentation by Google](https://developers.google.com/speed/docs/insights/PrioritizeVisibleContent). 
+The plugin contains a tool to configure Critical Path CSS to be placed inline in the `<head>` of the HTML document. Read more about Critical CSS in the [documentation by Google](https://developers.google.com/speed/docs/insights/PrioritizeVisibleContent). 
 
 [This article](https://github.com/addyosmani/critical-path-css-tools) by a Google engineer provides information about the available methods for creating critical path CSS. 
 
 ## Conditional Critical CSS
 
-The plugin allows to configure Critical Path CSS for individual posts, pages, page types and other conditions.
+The plugin contains a tool to configure Critical Path CSS for individual posts, pages, page types and other conditions.
 
 ## CSS Delivery Optimization
 
