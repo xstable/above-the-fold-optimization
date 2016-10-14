@@ -5,9 +5,9 @@ The [Above The Fold Optimization](https://wordpress.org/plugins/above-the-fold-o
 
 ## Creating a custom module
 
-To add support for an unsupported module, you can copy the source of an existing module and place it as a custom module in `/wp-content/themes/YOUR_THEME_NAME/abovethefold/plugins/module-name.inc.php` and add a text file named `module-name.active.txt` that contains the WordPress plugin reference name (usually `plugin-name/plugin-name.php`) which is used for fast checking the active state of the plugin.
+To add support for an unsupported splugin, you can copy the source of an existing plugin module and place it as a custom module in `/wp-content/themes/YOUR_THEME_NAME/abovethefold/plugins/module-name.inc.php` and accompany it with a text file named `module-name.active.txt` that contains the WordPress plugin reference name (usually `plugin-name/plugin-name.php`) which is used for fast checking the active state of the plugin.
 
-Please submit new modules or suggestions to support new optimization plugins to info@pagespeed.pro.
+Please submit new plugin modules or requests for default support of a plugin to info@pagespeed.pro.
 
 ## Maintainers
 
