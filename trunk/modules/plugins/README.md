@@ -1,4 +1,4 @@
-# WordPress Optimization Plugin Modules
+# Optimization Plugin Modules
 
 The [Above The Fold Optimization](https://wordpress.org/plugins/above-the-fold-optimization/) plugin can be made compatible with any optimization, minification or full page cache plugin by creating a module extension. The plugin contains several modules by default for some of the most used plugins.
 
