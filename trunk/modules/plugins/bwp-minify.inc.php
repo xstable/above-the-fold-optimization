@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Better WordPress Minify full page cache module
+ * Better WordPress Minify module
  *
  * @link       https://wordpress.org/plugins/bwp-minify/
  *
