@@ -1,0 +1,27 @@
+=== FEATURES ===
+
+picture addon: auto add picture and picture>br rules
+
+combine picture and srcset addons, <picture><source/><noscript><img/></noscript></picture>
+srcset: exclude error image from set and try to load next one
+
+redefine $.fn.show, $.fn.css (or $.cssHooks.display?) to run checkLazyElements after changes
+
+set edgeY equal to half of screen height ???
+
+DONE in infinite list prevent loop on Opera Mini because of autoforce
+
+simplify video tag like suave.js does
+
+modpagespeed removes image from DOM and put it back to fix issue with src assignment
+modpagespeed: Don't lazily load images with a position:relative style attribute (in sprites usually)
+              since getBoundingClientRect() seems to calculate them incorrectly. (nikhilmadan)
+
+=== TEST ===
+
+test spinner and fade-in in IE
+
+check translate css property
+
+DONE test in BlackBerry 5 emulator (limited javascript support)
+test plugins in IE6,7,8

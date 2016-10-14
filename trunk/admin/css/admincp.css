@@ -1,0 +1,176 @@
+
+.g100 {
+    display: inline-block;
+    font: 1em sans-serif;
+    color: #fff;
+    background-color: #079c2d;
+    padding: 2px 4px;
+}
+
+.authorbox .inside {
+    width:45%;
+}
+
+.criticalcss-buttons {
+    float:left;
+}
+.criticalcss-editorswitch {
+    float:left;
+    margin-left:1.5em;
+    padding-top:2px;
+}
+.criticalcss-editorswitch label {
+    font-size:12px;
+}
+
+
+.abtfexample thead td {
+    font-size:22px;
+    line-height:24px;
+    font-weight:bold;
+    text-align:center;
+}
+.abtfexample thead td.err {
+    background-color:red;
+    color:white;
+    padding:5px;
+}
+.abtfexample thead td.ok {
+    background-color:#079c2d;
+    color:white;
+    padding:5px;
+}
+.testcontent p {
+    font-size:14px;
+    line-height:16px;
+}
+
+.CodeMirror {
+    border: 1px solid #eee;
+    font-size:10px!important;
+    width:100%;
+    height: 150px!important;
+    margin-bottom:5px;
+}
+.CodeMirror.large {
+    border: 1px solid #eee;
+    font-size:14px!important;
+    width:100%;
+    height: 500px!important;
+}
+
+.ccss_editor .abtfcss {
+    width: 100%;
+    height:150px;
+    font-size:11px;
+    margin-bottom:5px;
+}
+
+/**
+ * Critical CSS editor
+ */
+.form-table td.criticalcsstable {
+    padding:0px;
+}
+
+
+.abtf-inner-table {
+    border:solid 1px #e5e5e5;
+}
+.abtf-inner-table .form-table th {
+    padding: 7px 10px 20px 0;
+}
+.abtf-inner-table .form-table td {
+    padding: 7px 10px;
+}
+.abtf-inner-table .inside {
+    background-color:white;
+}
+
+.abtf-inner-table h3.h {
+    border-bottom:solid 1px #e5e5e5;
+    background-color:#efefef;
+    font-size: 14px!important;
+    padding: 8px 12px!important;
+    margin: 0!important;
+    line-height: 1.4!important;
+}
+
+.criticalcsstable .item-edit {
+    position: absolute;
+    right: -20px;
+    top: 0;
+    display: block;
+    width: 30px;
+    height: 40px;
+    margin-right: 0!important;
+    text-indent: 100%;
+    outline: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.criticalcsstable .item-edit {
+    position: absolute;
+    right: -20px;
+    top: 0;
+    display: block;
+    width: 30px;
+    height: 40px;
+    margin-right: 0!important;
+    text-indent: 100%;
+    outline: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.wp-core-ui .button-yellow{
+    background:#f1b70a;
+    border-color:#DDA809 #CD9C09 #CD9C09;
+    -webkit-box-shadow:0 1px 0 #CD9C09;
+    box-shadow:0 1px 0 #CD9C09;
+    color:#000;
+    text-decoration:none;
+    text-shadow:none;
+}
+
+.wp-core-ui .button-yellow:focus,
+.wp-core-ui .button-yellow:hover{
+    background:#F9BD0B;
+    border-color:#CD9C09;
+    color:#000;
+}
+
+
+.wp-core-ui .button-del {
+    color:#FF0000;
+}
+
+.wp-core-ui .button-del:focus,
+.wp-core-ui .button-del:hover{
+    background:#FF0000;
+    border-color:#AB0000;
+    color:#fff;
+}
+
+#reviewanim {
+    position:absolute;
+    top:25px;
+    z-index:999;
+    left:150px;
+}
+
+.glittering {
+     animation: glitter 0.9s linear 0s normal forwards;
+    -webkit-animation: glitter 0.9s linear 0s normal forwards;
+    -moz-animation: glitter 0.9s linear 0s normal forwards;
+    -ms-animation: glitter 0.9s linear 0s normal forwards;
+    -o-animation: glitter 0.9s linear 0s normal forwards;
+}
+
+@-webkit-keyframes glitter {
+    0% { -webkit-transform: scale(1.0); opacity: 1; }
+    100% { -webkit-transform: scale(0.5); opacity: 0; }
+}
+@-moz-keyframes glitter {
+    0% { -moz-transform: scale(1.0); opacity: 1; }
+    100% { -moz-transform: scale(0.5); opacity: 0; }
+}
