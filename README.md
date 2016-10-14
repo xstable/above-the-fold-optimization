@@ -28,7 +28,7 @@ The plugin contains a tool to optimize web fonts. The plugin automaticly parses 
 
 ## External Resource Proxy
 
-The plugin contains a tool to localize external javascript and CSS resources such as Google Analytics and Facebook SDK to pass the `Leverage browser caching` rule from Google PageSpeed Insights. The proxy is able to capture "script-injected" async scripts to solve the problem without further configuration.
+The plugin contains a tool to localize (proxy) external javascript and CSS resources such as Google Analytics and Facebook SDK to pass the `Leverage browser caching` rule from Google PageSpeed Insights. The proxy is able to capture "script-injected" async scripts to solve the problem without further configuration.
 
 ## Lazy Loading Scripts
 
