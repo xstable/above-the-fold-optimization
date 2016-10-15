@@ -14,17 +14,39 @@ Above the fold optimization toolkit that enables to achieve a Google PageSpeed 1
 
 This plugin is a toolkit for Above The Fold Optimization that enables to achieve a [Google PageSpeed](https://developers.google.com/speed/docs/insights/about) 100 Score.
 
-This plugin is made to work together with other optimization plugins such as full page cache or minification plugins. The plugin is or can be made compatible with most optimization, caching and minification plugins. [Click here](https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/) for a list with natively supported plugins. Contact the author to request support for an unsupported optimization plugin.
+This plugin is compatible with most optimization, minification and full page cache plugins and can be made compatible with any plugin by creating a module extension.
+
+Some of the supported plugins include:
+[Autoptimize](https://wordpress.org/plugins/autoptimize/)
+* [W3 Total Cache](https://wordpress.org/plugins/w3-total-cache/)
+* [WP Super Cache](https://wordpress.org/plugins/wp-super-cache/)
+* [WP Fastest Cache](https://wordpress.org/plugins/wp-fastest-cache/)
+* [Cache Enabler (KeyCDN.com)](https://wordpress.org/plugins/cache-enabler/)
+* [Better WordPress Minify](https://wordpress.org/plugins/bwp-minify/)
+* [WP Super Minify](https://wordpress.org/plugins/wp-super-minify/)
+* [Click here](https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/) for a list with supported plugins. 
 
 **Warning:** *This plugin is not a simple 'on/off' plugin. It is a tool for optimization professionals and advanced WordPress users to achieve a Google PageSpeed 100 Score.*
 
 ### Critical CSS Management
 
-The plugin provides tools to create and install Critical Path CSS. The plugin enables to configure tailored Critical Path CSS for individual posts, post types, categories, pages or page types based on conditions.
+The plugin contains a tool to manage Critical Path CSS for inline placement in the `<head>` of the HTML document. Read more about Critical CSS in the [documentation by Google](https://developers.google.com/speed/docs/insights/PrioritizeVisibleContent). 
+
+[This article](https://github.com/addyosmani/critical-path-css-tools) by a Google engineer provides information about the available methods for creating critical path CSS. 
+
+### Conditional Critical CSS
+
+The plugin contains a tool to configure tailored Critical Path CSS for individual posts, pages, page types and other conditions.
+
+### CSS Delivery Optimization
+
+The plugin contains several tools to optimize the delivery of CSS in the browser. The plugin offers async loading of CSS via [loadCSS](https://github.com/filamentgroup/loadCSS) and it offers an enhanced version of loadCSS that uses the `requestAnimationFrame` API following the [recommendations by Google](https://developers.google.com/speed/docs/insights/OptimizeCSSDelivery).
+
+The plugin offers advanced options such as a render delay in milliseconds, the position to start CSS rendering (header or footer) and the removal of CSS files from the HTML. The plugin enables to capture and proxy external stylesheets for loading the files locally with optimized cache headers (see `External Resource Proxy`).
 
 ### Above The Fold Quality Tester
 
-The plugin enables to compare the above the fold view with the original full CSS view to test for a flash of unstyled content ([FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content)).
+The plugin contains a tool to test the quality of the above the fold (critical path CSS) rendering and to detect a flash of unstyled content ([FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content)).
 
 ### Full CSS Extraction
 
@@ -32,19 +54,16 @@ The plugin enables the extraction of full CSS for use in Critical Path CSS gener
 
 ### External Resource Proxy
 
-The plugin enables the localization of external javascript and CSS resources such as Google Analytics and Facebook SDK to pass the "[Leverage browser caching](https://developers.google.com/speed/docs/insights/LeverageBrowserCaching)" rule from Google PageSpeed Insights. The proxy is able to capture "script-injected" async scripts to solve the problem without further configuration.
+The plugin contains a tool to localize (proxy) external javascript and CSS resources such as Google Analytics and Facebook SDK to load the files locally with optimized cache headers to pass the "[Leverage browser caching](https://developers.google.com/speed/docs/insights/LeverageBrowserCaching)" rule from Google PageSpeed Insights. The proxy is able to capture "script-injected" async scripts and stylesheets to solve the problem without further configuration.
 
 ### Lazy Loading Javascript
 
-The plugin enables lazy loading of javascript widgets.
+The plugin contains a tool based on [jQuery Lazy Load XT](https://github.com/ressio/lazy-load-xt#widgets) to lazy load scripts such as Facebook en Twitter social widgets.
 
-### Google Web Font Optimization
+### Web Font Optimization
 
-The plugin enables to optimize the loading of Google Web Fonts and is able to extract Google Web Fonts from the output of CSS minification plugins for optimized delivery via [Google Web Font Loader](https://github.com/typekit/webfontloader#google).
+The plugin contains a tool to optimize web fonts. The plugin automatically parses web font `@import` links in minified CSS files and `<link>` links in the HTML and loads the fonts via [Google Web Font Loader](https://github.com/typekit/webfontloader).
 
-### CSS Delivery Optimization
-
-When the option ``Optimize CSS Delivery`` is enabled all CSS links are loaded asynchronously via an optimized version of [LoadCSS](https://github.com/filamentgroup/loadCSS) and rendered via ``requestAnimationFrame API`` following the [recommendations by Google](https://developers.google.com/speed/docs/insights/OptimizeCSSDelivery).
 
 
 == Installation ==
