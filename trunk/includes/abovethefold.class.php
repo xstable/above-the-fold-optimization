@@ -84,6 +84,11 @@ class Abovethefold {
 	public $curl;
 
 	/**
+	 * Template redirect hook called
+	 */
+	public $template_redirect_called = false;
+
+	/**
 	 * Construct and initiated Abovethefold class.
 	 *
 	 * @since    1.0
@@ -163,6 +168,9 @@ class Abovethefold {
 		 */
 		$this->options = get_option( 'abovethefold' );
 
+		// load webfont optimization controller
+		$this->gwfo = new Abovethefold_WebFonts($this);
+
 		/**
 		 * External resource proxy
 		 */
@@ -190,6 +198,11 @@ class Abovethefold {
 
 		// load lazy script loading module
 		$this->lazy = new Abovethefold_LazyScripts($this);
+
+		/**
+		 * Use Above The Fold Optimization standard output buffer
+		 */
+		$this->loader->add_action('template_redirect', $this, 'template_redirect',-10);
 	}
 
 	/**
@@ -251,7 +264,7 @@ class Abovethefold {
         /**
          * Check if we're displaying feed
          */
-        if (is_feed()) {
+        if ($this->template_redirect_called && is_feed()) {
             return false;
         }
 
@@ -263,6 +276,21 @@ class Abovethefold {
         }
 
         return true;
+	}
+
+	/**
+	 * Template redirect hook (required for is_feed() enabled check)
+	 */
+	public function template_redirect() {
+
+		$this->template_redirect_called = true;
+
+		/**
+		 * Disable plugin
+		 */
+		if (!$this->is_enabled()) {
+			$this->disabled = true;
+		}
 	}
 
 	/**
@@ -286,6 +314,11 @@ class Abovethefold {
 		require_once WPABTF_PATH . 'includes/i18n.class.php';
 
 		/**
+		 * The class responsible for defining all actions related to Web Font optimization.
+		 */
+		require_once WPABTF_PATH . 'includes/webfonts.class.php';
+
+		/**
 		 * External resource proxy
 		 */
 		require_once WPABTF_PATH . 'includes/proxy.class.php';
@@ -299,11 +332,6 @@ class Abovethefold {
 		 * The class responsible for defining all actions related to optimization.
 		 */
 		require_once WPABTF_PATH . 'includes/optimization.class.php';
-
-		/**
-		 * The class responsible for defining all actions related to Web Font optimization.
-		 */
-		require_once WPABTF_PATH . 'includes/webfonts.class.php';
 
 		/**
 		 * The class responsible for defining all actions related to lazy script loading.
@@ -369,7 +397,13 @@ class Abovethefold {
 	 * @since    1.0
 	 */
 	public function run() {
+
 		$this->loader->run();
+
+		// output data
+		if ($this->view === 'abtf-proxy') {
+			$this->proxy->handle_request();
+		}
 	}
 
 	/**

@@ -4,11 +4,11 @@
 	 * Get version of local loadCSS
 	 */
 	$loadcss_version = '';
-	$loadcss_package = WPABTF_PATH . 'bower_components/loadcss/package.json';
+	$loadcss_package = WPABTF_PATH . 'public/js/src/loadcss_package.json';
 	if (!file_exists($loadcss_package)) {
 ?>
 	<tr valign="top">
-		<th scope="row" colspan="2"><h1 style="color:red;">WARNING: PLUGIN INSTALLATION NOT COMPLETE, MISSING bower_components/loadcss/</h1></th>
+		<th scope="row" colspan="2"><h1 style="color:red;">WARNING: PLUGIN INSTALLATION NOT COMPLETE, MISSING public/js/src/loadcss_package.json</h1></th>
 	</tr>
 <?php
 	} else {
@@ -17,7 +17,7 @@
 		if (!is_array($package)) {
 ?>
 	<tr valign="top">
-		<th scope="row" colspan="2"><h1 style="color:red;">failed to parse bower_components/loadcss/package.json</h1></th>
+		<th scope="row" colspan="2"><h1 style="color:red;">failed to parse public/js/src/loadcss_package.json</h1></th>
 	</tr>
 <?php
 		} else { 

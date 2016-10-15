@@ -126,7 +126,7 @@ window['Abtf'] = (function(window) {
                 console.log(
                     "\n%c100", 
                     "font: 1em sans-serif; color: white; background-color: #079c2d;padding:2px;",
-                    "Google PageSpeed Score optimized using a tool by www.PageSpeed.pro\n\nTest your website: https://pagespeed.pro/tests\n\n"
+                    "Google PageSpeed Score optimized using https://goo.gl/C1gw96\n\nTest your website: https://pagespeed.pro/tests\n\n"
                 );
             }
         },

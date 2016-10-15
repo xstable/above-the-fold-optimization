@@ -21,12 +21,17 @@ abstract class Abovethefold_OPP {
 	public $CTRL;
 
 	/**
+	 * Name of the plugin
+	 */
+	public $name;
+
+	/**
 	 * Initialize the class and set its properties.
 	 */
 	public function __construct( &$CTRL ) {
 
 		$this->classname = str_replace('Abovethefold_OPP_','',get_called_class());
-		if (!$this->name) {
+		if (!isset($this->name)) {
 			$this->name = $this->classname;
 		}
 

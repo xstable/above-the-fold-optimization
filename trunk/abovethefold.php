@@ -23,7 +23,6 @@ define('WPABTF_VERSION','2.5.0');
 define('WPABTF_URI', plugin_dir_url( __FILE__ ));
 define('WPABTF_PATH', plugin_dir_path( __FILE__ ));
 define('WPABTF_SELF', __FILE__);
-
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }

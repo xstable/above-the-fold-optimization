@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Cache Enabler (KeyCDN.com) full page cache module
+ * WP Super Minify module
  *
- * @link       https://wordpress.org/plugins/cache-enabler/
+ * @link       https://wordpress.org/plugins/wp-super-minify/
  *
- * Tested with @version 1.1.0
+ * Tested with @version 1.4
  *
  * @since      2.5.0
  * @package    abovethefold
@@ -13,12 +13,12 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-class Abovethefold_OPP_CacheEnabler extends Abovethefold_OPP {
+class Abovethefold_OPP_WpSuperMinify extends Abovethefold_OPP {
 
 	/**
 	 * Plugin file reference
 	 */
-	public $plugin_file = 'cache-enabler/cache-enabler.php';
+	public $plugin_file = 'wp-super-minify/wp-super-minify.php';
 
 	/**
 	 * Initialize the class and set its properties.
@@ -33,12 +33,6 @@ class Abovethefold_OPP_CacheEnabler extends Abovethefold_OPP {
 			return;
 		}
 
-		/**
-		 * Move output buffer behind Above The Folt Optimization
-		 *
-		 * Cache Enabler uses position 0, this action should fire directly after
-		 */
-		$this->CTRL->loader->add_action('template_redirect', $this, 'move_output_buffer',1);
 	}
 
 	/**
@@ -67,20 +61,4 @@ class Abovethefold_OPP_CacheEnabler extends Abovethefold_OPP {
 		}
 	}
 
-
-	/**
-	 * Move output buffer after Above The Fold optimization output buffer
-	 */
-	public function move_output_buffer() {
-
-		// get callbacks
-		$ob_callbacks = ob_list_handlers();
-		if (!empty($ob_callbacks) && in_array('wpsmy_minify_html',$ob_callbacks)) {
-
-			// move
-			$this->CTRL->optimization->move_ob_to_front();
-		}
-
-	}
-	
 }

@@ -5,6 +5,8 @@
  *
  * @link       https://wordpress.org/plugins/w3-total-cache/
  *
+ * Tested with @version 0.9.5.1
+ *
  * @since      2.5.0
  * @package    abovethefold
  * @subpackage abovethefold/modules/plugins
@@ -58,13 +60,26 @@ class Abovethefold_OPP_W3TotalCache extends Abovethefold_OPP {
 	 */
 	public function get_config() {
 		if (!$this->config) {
+
 			if (class_exists('\\W3TC\\Dispatcher')) {
+
 				$classname = '\\W3TC\\Dispatcher';
 				$this->config = $classname::config();
+
+				if ($this->config) {
+
+					// override minify settings to process content for optimization
+					$minify_options = $this->config->get_array( 'minify.options' );
+					$minify_options['postprocessor'] = array($this,'process_minified_content');
+
+					$this->config->set('minify.options', $minify_options);
+				}
+
 				return $this->config;
 			}
 			return false;
 		}
+
 		return $this->config;
 	}
 
@@ -146,18 +161,57 @@ class Abovethefold_OPP_W3TotalCache extends Abovethefold_OPP {
 	}
 
 	/**
+	 * Process minified content
+	 */
+	public function process_minified_content($content, $type) {
+
+		if (class_exists('Minify0_Minify')) {
+			
+			/**
+			 * Process minified CSS
+			 */
+			if ($type === Minify0_Minify::TYPE_CSS) {
+				return $this->process_minified_css($content);
+			}
+
+			/**
+			 * Process minified javascript
+			 */
+			if ($type === Minify0_Minify::TYPE_JS) {
+				return $this->process_minified_js($content);
+			}
+
+			/**
+			 * Process minified HTML
+			 */
+			if ($type === Minify0_Minify::TYPE_HTML) {
+				return $this->process_minified_html($content);
+			}
+		}
+
+		return $content;
+	}
+
+	/**
 	* Process minified CSS 
-	* /
+	*/
 	public function process_minified_css($css) {
 		return apply_filters('abtf_css', $css);
 	}
 
 	/**
+	* Process minified javascript
+	*/
+	public function process_minified_js($js) {
+		return apply_filters('abtf_js', $js);
+	}
+
+	/**
 	 * Process HTML
-	 * /
+	 */
 	public function process_minified_html($html) {
 		return apply_filters('abtf_html', $html);
-	}*/
+	}
 
 	/**
 	 * Disable CSS minification

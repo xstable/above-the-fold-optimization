@@ -116,14 +116,14 @@ class Abovethefold_LazyScripts {
 		 */
 		if (!$lazyxt_loaded) {
 
-			wp_enqueue_script( 'jquery-lazyloadxt', WPABTF_URI . 'node_modules/lazyloadxt/dist/jquery.lazyloadxt.min.js', array( 'jquery' ), '1.1.0', $in_footer );
+			wp_enqueue_script( 'jquery-lazyloadxt', WPABTF_URI . 'public/js/jquery.lazyloadxt.min.js', array( 'jquery' ), '1.1.0', $in_footer );
 			$lazyxt_script_dependencies[] = 'jquery-lazyloadxt';
 		}
 
 		/**
 		 * Load Lazy Load XT widget module 
 		 */
-		wp_enqueue_script( 'jquery-lazyloadxt-widget', WPABTF_URI . 'node_modules/lazyloadxt/dist/jquery.lazyloadxt.widget.min.js', $lazyxt_script_dependencies, $this->package_version(), $in_footer );
+		wp_enqueue_script( 'jquery-lazyloadxt-widget', WPABTF_URI . 'public/js/jquery.lazyloadxt.widget.min.js', $lazyxt_script_dependencies, $this->package_version(), $in_footer );
 	}
 
 	/**
@@ -139,15 +139,15 @@ class Abovethefold_LazyScripts {
 		}
 
 		// check existence of package file
-		$package_json = WPABTF_PATH . 'node_modules/lazyloadxt/package.json';
+		$package_json = WPABTF_PATH . 'public/js/src/lazyloadxt_package.json';
 		if (!file_exists($package_json)) {
-			$this->CTRL->admin->set_notice('PLUGIN INSTALLATION NOT COMPLETE, MISSING node_modules/lazyloadxt/', 'ERROR');
+			$this->CTRL->admin->set_notice('PLUGIN INSTALLATION NOT COMPLETE, MISSING public/js/src/lazyloadxt_package.json', 'ERROR');
 			return false;
 		} else {
 
 			$package = @json_decode(file_get_contents($package_json),true);
 			if (!is_array($package)) {
-				$this->CTRL->admin->set_notice('failed to parse node_modules/lazyloadxt/package.json', 'ERROR');
+				$this->CTRL->admin->set_notice('failed to parse public/js/src/lazyloadxt_package.json', 'ERROR');
 				return false;
 			} else {
 

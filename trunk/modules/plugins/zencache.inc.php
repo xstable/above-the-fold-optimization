@@ -5,6 +5,8 @@
  *
  * @link       https://wordpress.org/plugins/zencache
  *
+ * Tested with @version 160316
+ *
  * @since      2.5.0
  * @package    abovethefold
  * @subpackage abovethefold/modules/plugins
@@ -43,7 +45,7 @@ class Abovethefold_OPP_Zencache extends Abovethefold_OPP {
 
 		// setup special hook for zencache setup
 		// @see https://wordpress.org/support/topic/clearing-cache-from-autoptimize-base_dir-option/
-		$this->loader->add_action( 'after_theme_setup', $this, 'theme_setup' );
+		$this->CTRL->loader->add_action( 'after_theme_setup', $this, 'theme_setup' );
 	}
 
 	/**
@@ -94,6 +96,10 @@ class Abovethefold_OPP_Zencache extends Abovethefold_OPP {
 	 * Perform cache clear action
 	 */
 	public function do_clear_pagecache() {
+
+		if (!class_exists('zencache')) {
+			return;
+		}
 
 		// clear zencache
 		try {zencache::clear();}

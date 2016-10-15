@@ -92,6 +92,7 @@ When the option ``Optimize CSS Delivery`` is enabled all CSS links are loaded as
 ..* [WP Fastest Cache](https://wordpress.org/plugins/wp-fastest-cache/)
 ..* [Cache Enabler (KeyCDN.com)](https://wordpress.org/plugins/cache-enabler/)
 ..* [Better WordPress Minify](https://wordpress.org/plugins/bwp-minify/)
+..* [WP Super Minify](https://wordpress.org/plugins/wp-super-minify/)
 ... [Click here](https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/) for a list with supported plugins.
 
 = 2.4.4 =

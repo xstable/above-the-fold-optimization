@@ -95,8 +95,9 @@ class Abovethefold_Optimization {
 
 				/**
 				 * Move output buffer to front of other buffers
-				 */
+				 * /
 				$this->CTRL->loader->add_action('template_redirect', $this, 'move_ob_to_front',99999);
+				*/
 			}
 
 		}
@@ -141,12 +142,31 @@ class Abovethefold_Optimization {
 			&& in_array('Abovethefold_Optimization::process_output_buffer',$ob_callbacks)
 		 	&& $ob_callbacks[(count($ob_callbacks) - 1)] !== 'Abovethefold_Optimization::process_output_buffer'
 		 ) {
-		 	
+
 			$callbacks_to_move = array();
 
 			$n = count($ob_callbacks) - 1;
 			while ($ob_callbacks[$n] && $ob_callbacks[$n] !== 'Abovethefold_Optimization::process_output_buffer') {
-				$callbacks_to_move[] = ($ob_callbacks[$n] === 'default output handler') ? false : $ob_callbacks[$n];
+
+				if ($ob_callbacks[$n] === 'default output handler') {
+					$callbacks_to_move[] = false;
+				} else {
+					if (strpos($ob_callbacks[$n],'::') !== false) {
+						$callback = explode('::',$ob_callbacks[$n]);
+
+						// check if singleton
+						if (is_callable($callback[0].'::getInstance')) {
+							$callbacks_to_move[] = array( call_user_func( array( $callback[0], 'getInstance' ) ), $callback[1]);
+						} else if (is_callable($callback[0].'::singleton')) {
+							$callbacks_to_move[] = array( call_user_func( array( $callback[0], 'singleton' ) ), $callback[1]);
+						} else {
+							$callbacks_to_move[] = $ob_callbacks[$n];
+						}
+					} else {
+						$callbacks_to_move[] = $ob_callbacks[$n];
+					}
+				}
+				
 				$n--;
 			}
 
@@ -162,7 +182,7 @@ class Abovethefold_Optimization {
 			$callbacks_to_restore = array_reverse($callbacks_to_move);
 			foreach ($callbacks_to_restore as $callback) {
 				if ($callback) {
-					ob_start($callback);
+					@ob_start($callback);
 				} else {
 					// ignore output buffers without callback
 					// @todo
@@ -171,6 +191,8 @@ class Abovethefold_Optimization {
 
 			// restore Above The Fold Optimization output buffer in front
 			ob_start(array($this, 'process_output_buffer'));
+
+			$ob_callbacks = ob_list_handlers();
 		}
 	}
 
@@ -604,7 +626,7 @@ class Abovethefold_Optimization {
 		/**
 		 * Google Web Font Loader Inline
 		 */
-		if ($this->CTRL->options['gwfo']) {
+		if (isset($this->CTRL->options['gwfo']) && $this->CTRL->options['gwfo']) {
 
 			/**
 			 * Load webfont.js inline
@@ -652,7 +674,7 @@ class Abovethefold_Optimization {
 		$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold'.$jsdebug.'.min.js';
 
 		// Proxy external files
-		if ($this->CTRL->options['js_proxy'] || $this->CTRL->options['css_proxy']) {
+		if ((isset($this->CTRL->options['js_proxy']) && $this->CTRL->options['js_proxy']) || (isset($this->CTRL->options['css_proxy']) && $this->CTRL->options['css_proxy'])) {
 
 			/**
 			 * Proxy settings
@@ -661,14 +683,14 @@ class Abovethefold_Optimization {
 
 			$jssettings['proxy'] = array(
 				'url' => $proxy_url,
-				'js' => ($this->CTRL->options['js_proxy']) ? true : false,
-				'css' => ($this->CTRL->options['css_proxy']) ? true : false
+				'js' => (isset($this->CTRL->options['js_proxy']) && $this->CTRL->options['js_proxy']) ? true : false,
+				'css' => (isset($this->CTRL->options['css_proxy']) && $this->CTRL->options['css_proxy']) ? true : false
 			);
 
 			/**
 			 * Javascript include list
 			 */
-			if ($this->CTRL->options['js_proxy'] && trim($this->CTRL->options['js_proxy_include']) !== '') {
+			if ($this->CTRL->options['js_proxy'] && isset($this->CTRL->options['js_proxy_include']) && trim($this->CTRL->options['js_proxy_include']) !== '') {
 				$include = explode("\n",$this->CTRL->options['js_proxy_include']);
 				$jssettings['proxy']['js_include'] = array();
 				foreach ($include as $str) {
@@ -764,7 +786,7 @@ class Abovethefold_Optimization {
 		}
 
 		// Hide PageSpeed.pro reference in browser console
-		if (defined('ABTF_NOREF')) {
+		if (defined('ABTF_NOREF') || current_user_can('manage_options')) {
 			$jssettings['noref'] = true;
 		}
 

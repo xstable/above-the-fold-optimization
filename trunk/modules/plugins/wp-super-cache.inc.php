@@ -5,6 +5,8 @@
  *
  * @link       https://wordpress.org/plugins/wp-super-cache/
  *
+ * Tested with @version 1.4.8
+ *
  * @since      2.5.0
  * @package    abovethefold
  * @subpackage abovethefold/modules/plugins

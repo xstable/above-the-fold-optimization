@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Cache Enabler (KeyCDN.com) full page cache module
+ * Comet Cache full page cache module
  *
- * @link       https://wordpress.org/plugins/cache-enabler/
+ * @link       https://wordpress.org/plugins/comet-cache/
  *
- * Tested with @version 1.1.0
+ * Tested with @version 160917
  *
  * @since      2.5.0
  * @package    abovethefold
@@ -13,12 +13,22 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-class Abovethefold_OPP_CacheEnabler extends Abovethefold_OPP {
+class Abovethefold_OPP_CometCache extends Abovethefold_OPP {
+
+	/**
+	 * Clear page cache flag
+	 */
+	public $clear_cache = false;
+
+	/**
+	 * Theme setup completed flag
+	 */
+	public $theme_setup_completed = false;
 
 	/**
 	 * Plugin file reference
 	 */
-	public $plugin_file = 'cache-enabler/cache-enabler.php';
+	public $plugin_file = 'comet-cache/comet-cache.php';
 
 	/**
 	 * Initialize the class and set its properties.
@@ -31,7 +41,7 @@ class Abovethefold_OPP_CacheEnabler extends Abovethefold_OPP {
 		// Is the plugin enabled?
 		if ( !$this->active() ) {
 			return;
-		}
+		} 
 
 		/**
 		 * Move output buffer behind Above The Folt Optimization
@@ -62,11 +72,13 @@ class Abovethefold_OPP_CacheEnabler extends Abovethefold_OPP {
 	 */
 	public function clear_pagecache() {
 
-		if (class_exists('Cache_Enabler')) {
-			Cache_Enabler::clear_total_cache(true);
+		if (!isset($GLOBALS['comet_cache'])) {
+			return;
 		}
-	}
 
+		$GLOBALS['comet_cache']->clearCache();
+	}
+	
 
 	/**
 	 * Move output buffer after Above The Fold optimization output buffer
@@ -75,12 +87,11 @@ class Abovethefold_OPP_CacheEnabler extends Abovethefold_OPP {
 
 		// get callbacks
 		$ob_callbacks = ob_list_handlers();
-		if (!empty($ob_callbacks) && in_array('wpsmy_minify_html',$ob_callbacks)) {
+		if (!empty($ob_callbacks) && in_array('WebSharks\\CometCache\\Classes\\AdvancedCache::outputBufferCallbackHandler',$ob_callbacks)) {
 
 			// move
 			$this->CTRL->optimization->move_ob_to_front();
 		}
 
 	}
-	
 }

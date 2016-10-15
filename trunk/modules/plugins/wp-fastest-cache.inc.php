@@ -5,6 +5,8 @@
  *
  * @link       https://wordpress.org/plugins/wp-fastest-cache/
  *
+ * Tested with @version 0.8.6.1
+ *
  * @since      2.5.0
  * @package    abovethefold
  * @subpackage abovethefold/modules/plugins

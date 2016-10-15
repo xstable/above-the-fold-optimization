@@ -43,16 +43,26 @@ class Abovethefold_WebFonts {
 
 		$this->CTRL =& $CTRL;
 
+		if (!isset($this->CTRL->options['gwfo_googlefonts'])) {
+			$this->CTRL->options['gwfo_googlefonts'] = '';
+		}
 		$this->googlefonts = explode("\n",$this->CTRL->options['gwfo_googlefonts']);
 
 		if ($this->CTRL->disabled) {
 			return; // above the fold optimization disabled for area / page
 		}
 
+		if (!isset($this->CTRL->options['gwfo_loadmethod'])) {
+			$this->CTRL->options['gwfo_loadmethod'] = 'inline';
+		}
+		if (!isset($this->CTRL->options['gwfo_loadposition'])) {
+			$this->CTRL->options['gwfo_loadposition'] = 'header';
+		}
+
 		/**
 		 * Google Web Font Optimizer enabled
 		 */
-		if ($this->CTRL->options['gwfo']) {
+		if (isset($this->CTRL->options['gwfo']) && $this->CTRL->options['gwfo']) {
 
 			// add filter for CSS minificaiton output
 			$this->CTRL->loader->add_filter( 'abtf_css', $this, 'process_css' );
@@ -66,7 +76,7 @@ class Abovethefold_WebFonts {
 			// add filter for HTML output
 			$this->CTRL->loader->add_filter( 'abtf_html_replace', $this, 'replace_html' );
 
-			if ($this->CTRL->options['gwfo_loadmethod'] === 'wordpress') {
+			if (isset($this->CTRL->options['gwfo_loadmethod']) && $this->CTRL->options['gwfo_loadmethod'] === 'wordpress') {
 
 				/**
 				 * load webfont.js via WordPress include
@@ -107,7 +117,7 @@ class Abovethefold_WebFonts {
 					// font contains Google Fonts
 					if ($fonts && !empty($fonts['google'])) {
 						foreach ($fonts['google'] as $googlefont) {
-							if (!in_array($this->googlefonts,trim($googlefont))) {
+							if (!in_array(trim($googlefont),$this->googlefonts)) {
 								$googlefonts[] = trim($googlefont);
 							}
 						}
@@ -138,6 +148,11 @@ class Abovethefold_WebFonts {
 	 * Parse CSS file in CSS file loop
 	 */
 	public function process_cssfile($cssfile) {
+		
+		// ignore
+		if (!$cssfile || in_array($cssfile,array('delete','ignore'))) {
+			return $cssfile;
+		}
 
 		// Google font?
 		if (strpos($cssfile,'fonts.googleapis.com/css') !== false) {
@@ -147,7 +162,7 @@ class Abovethefold_WebFonts {
 			$fonts = $this->fonts_from_url($cssfile);
 			if ($fonts && !empty($fonts['google'])) {
 				foreach ($fonts['google'] as $googlefont) {
-					if (!in_array($this->googlefonts,trim($googlefont))) {
+					if (!in_array(trim($googlefont),$this->googlefonts)) {
 						$googlefonts[] = trim($googlefont);
 					}
 				}
@@ -244,22 +259,6 @@ class Abovethefold_WebFonts {
 		}
 
 		return $HTML;
-		
-		/**
-		 * Old localizejs enabled setting conversion
-		 *
-		 * @since 2.3.5
-		 */
-		if (!isset($this->CTRL->options['localizejs_enabled']) && isset($this->CTRL->options['localizejs']) && intval($this->CTRL->options['localizejs']['enabled']) === 1) {
-			$this->CTRL->options['localizejs_enabled'] = 1;
-		}
-
-		/**
-		 * Localize Javascript
-		 */
-		if ($this->CTRL->options['localizejs_enabled']) {
-			$html = $this->CTRL->localizejs->parse_html($html);
-		}
 	}
 
 	/**
@@ -273,7 +272,7 @@ class Abovethefold_WebFonts {
 		/**
 		 * Inline Web Font Loading
 		 */
-		if ($this->CTRL->options['gwfo_loadmethod'] !== 'inline') {
+		if (isset($this->CTRL->options['gwfo_loadmethod']) && $this->CTRL->options['gwfo_loadmethod'] !== 'inline') {
 
 			/**
 			 * Update Web FOnt configuration
@@ -388,7 +387,7 @@ class Abovethefold_WebFonts {
 
 		$WebFontConfig = '';
 
-		if ($this->CTRL->options['gwfo_config']) {
+		if (isset($this->CTRL->options['gwfo_config']) && $this->CTRL->options['gwfo_config']) {
 
 			if (!preg_match('|^WebFontConfig\s*=\s*|Ui',$this->CTRL->options['gwfo_config'])) {
 				// not valid
@@ -470,7 +469,7 @@ REGEX;
 		/**
 		 * Google Web Font Loader WordPress inlcude
 		 */
-		$in_footer = ($this->CTRL->options['gwfo_loadposition'] === 'footer') ? true : false;
+		$in_footer = (isset($this->CTRL->options['gwfo_loadposition']) && $this->CTRL->options['gwfo_loadposition'] === 'footer') ? true : false;
 		wp_enqueue_script( 'abtf_webfontjs', WPABTF_URI . 'public/js/webfont.js', array(), $this->CTRL->gwfo->package_version(), $in_footer );
 	}
 
@@ -487,15 +486,15 @@ REGEX;
 		}
 
 		// check existence of package file
-		$webfont_package = WPABTF_PATH . 'node_modules/webfontloader/package.json';
+		$webfont_package = WPABTF_PATH . 'public/js/src/webfontjs_package.json';
 		if (!file_exists($webfont_package)) {
-			$this->CTRL->admin->set_notice('PLUGIN INSTALLATION NOT COMPLETE, MISSING node_modules/webfontloader/', 'ERROR');
+			$this->CTRL->admin->set_notice('PLUGIN INSTALLATION NOT COMPLETE, MISSING public/js/src/webfontjs_package.json', 'ERROR');
 			return false;
 		} else {
 
 			$package = @json_decode(file_get_contents($webfont_package),true);
 			if (!is_array($package)) {
-				$this->CTRL->admin->set_notice('failed to parse node_modules/webfontloader/package.json', 'ERROR');
+				$this->CTRL->admin->set_notice('failed to parse public/js/src/webfontjs_package.json', 'ERROR');
 				return false;
 			} else {
 

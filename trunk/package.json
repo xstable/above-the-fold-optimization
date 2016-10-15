@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "grunt": "latest",
+    "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-cssmin": "latest",
     "grunt-contrib-uglify": "latest",
     "matchdep": "latest"

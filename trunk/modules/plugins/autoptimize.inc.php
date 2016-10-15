@@ -5,6 +5,8 @@
  *
  * @link       https://wordpress.org/plugins/autoptimize/
  *
+ * Tested with @version 2.1.0
+ *
  * @since      2.5.0
  * @package    abovethefold
  * @subpackage abovethefold/modules/plugins
@@ -106,6 +108,13 @@ class Abovethefold_OPP_Autoptimize extends Abovethefold_OPP {
 	*/
 	public function process_minified_css($css) {
 		return apply_filters('abtf_css', $css);
+	}
+
+	/**
+	* Process minified javascript
+	*/
+	public function process_minified_js($js) {
+		return apply_filters('abtf_js', $js);
 	}
 
 	/**

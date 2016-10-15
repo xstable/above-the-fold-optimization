@@ -5,6 +5,8 @@
  *
  * @link       https://wordpress.org/plugins/bwp-minify/
  *
+ * Tested with @version 1.3.3
+ *
  * @since      2.5.0
  * @package    abovethefold
  * @subpackage abovethefold/modules/plugins
@@ -30,6 +32,56 @@ class Abovethefold_OPP_BwpMinify extends Abovethefold_OPP {
 		if ( !$this->active() ) {
 			return;
 		}
+
+	   /**
+		* Apply resource proxy to minification tag to apply CSS and Javascript optimization to minified code
+		*/
+		$this->CTRL->loader->add_filter( 'bwp_minify_get_tag', $this, 'get_minify_tag', 10, 4 );
+
+	}
+
+	/**
+	 * Process minification tag
+	 */
+	public function get_minify_tag( $return, $string, $type, $group ) {
+		global $bwp_minify;
+
+		if ($type === 'script') {
+			$proxy_type = 'js';
+		} else if ($type === 'style') {
+			$proxy_type = 'css';
+		} else {
+			return $return; // not supported
+		}
+
+		/**
+		 * Verify if group-string array matches string
+		 */
+		if (empty($group['string']) || strpos($string,implode(',',$group['string'])) === false) {
+
+			// failed to match minified resource string, abort
+			// @todo debug
+			return $return;
+		}
+
+		$original_string = implode(',',$group['string']);
+
+		/**
+		 * Proxy resources to apply optimization filters
+		 */
+		foreach ($group['string'] as $n => $url) {
+			
+			$proxy_file = $this->CTRL->proxy->proxy_resource($group['string'][$n], $proxy_type);
+			if ($proxy_file) {
+				$group['string'][$n] = str_replace(trailingslashit(ABSPATH),'',$proxy_file[1]);
+			}
+		}
+
+		// string replaced with proxy cache file locations
+		$proxied_string = str_replace($original_string,implode(',',$group['string']),$string);
+
+		// return proxied tag
+		return preg_replace('|'.preg_quote($string,'|').'|is',$proxied_string,$return);
 	}
 
 	/**

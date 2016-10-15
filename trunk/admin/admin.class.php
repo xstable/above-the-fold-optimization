@@ -1093,36 +1093,87 @@ class Abovethefold_Admin {
 	 */
 	public function upgrade() {
 
-		if (!defined('WPABTF_VERSION') || WPABTF_VERSION !== get_option( 'wpabtf_version' )) {
+		$current_version = get_option( 'wpabtf_version' );
+		$options = get_option( 'abovethefold' );
+		$update_options = false;
+
+		if (!defined('WPABTF_VERSION') || WPABTF_VERSION !== $current_version) {
 
 			update_option( 'wpabtf_version', WPABTF_VERSION );
 
 			/**
-			 * Move global critical CSS to new location
-			 *
+			 * Pre 2.5.0 update functions
+			 * 
 			 * @since  2.5.0
 			 */
-			$global_cssfile = $this->CTRL->cache_path() . 'criticalcss_global.css';
+			if (version_compare($current_version, '2.5.0', '<')) {
 
-			if (!file_exists($global_cssfile)) {
-				
-				// Check old location
-				$old_cssfile = $this->CTRL->cache_path() . 'inline.min.css';
-				if (file_exists($old_cssfile)) {
+				/**
+				 * Move global critical CSS to new location
+				 */
 
-					/**
-					 * Move file to new location
-					 */
-					$old_css = file_get_contents( $old_cssfile );
+				$global_cssfile = $this->CTRL->cache_path() . 'criticalcss_global.css';
+
+				if (!file_exists($global_cssfile)) {
 					
-					// store contents of old css to new location
-					file_put_contents( $global_cssfile, $old_css );
-					if (!file_exists($global_cssfile) || file_get_contents( $global_cssfile ) !== $old_css) {
-						wp_die('Failed to move critical CSS file to new location (v2.5+). Please check the write permissions for file:<br /><br /><strong>' . $global_cssfile . '</strong><br /><br />Old critical css file location:<br /><br />'.$old_cssfile.' ');
-					}
+					// Check old location
+					$old_cssfile = $this->CTRL->cache_path() . 'inline.min.css';
+					if (file_exists($old_cssfile)) {
 
-					@unlink( $old_cssfile );
+						/**
+						 * Move file to new location
+						 */
+						$old_css = file_get_contents( $old_cssfile );
+						
+						// store contents of old css to new location
+						file_put_contents( $global_cssfile, $old_css );
+						if (!file_exists($global_cssfile) || file_get_contents( $global_cssfile ) !== $old_css) {
+							wp_die('Failed to move critical CSS file to new location (v2.5+). Please check the write permissions for file:<br /><br /><strong>' . $global_cssfile . '</strong><br /><br />Old critical css file location:<br /><br />'.$old_cssfile.' ');
+						}
+
+						@unlink( $old_cssfile );
+					}
 				}
+
+				/**
+				 * Disable Google Web Font Optimizer plugin if ABTF Webfont Optimization is enabled
+				 */
+				if ($options['gwfo']) {
+					@deactivate_plugins( 'google-webfont-optimizer/google-webfont-optimizer.php' );
+
+					$options['gwfo_loadmethod'] = 'inline';
+					$options['gwfo_loadposition'] = 'header';
+					$update_options = true;
+				}
+
+				/**
+				 * Enable external resource proxy if Localize Javascript is enabled
+				 */
+				if ($options['localizejs_enabled']) {
+
+					unset($options['localizejs_enabled']);
+					unset($options['localizejs']);
+
+					$options['js_proxy'] = true;
+					$options['css_proxy'] = true;
+					$update_options = true;
+				}
+
+				// remove old options
+				$old_options = array(
+					'dimensions',
+					'phantomjs_path',
+					'cleancss_path',
+					'remove_datauri',
+					'urls'
+				);
+				foreach ($old_options as $opt) {
+					unset($option[$opt]);
+				}
+			}
+
+			if ($update_options) {
+				update_option('abovethefold',$options);
 			}
 
 			/**

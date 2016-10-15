@@ -32,6 +32,9 @@ class Abovethefold_Plugins {
 	 */
 	public $active_modules = array();
 
+	// return false reference
+	public $falseReference = false;
+
 	/**
 	 * Initialize the class and set its properties.
 	 */
@@ -167,7 +170,7 @@ class Abovethefold_Plugins {
 	public function &load_module( $module_file ) {
 
 		if ( !file_exists($module_file) ) {
-			return false;
+			return $this->falseReference;
 		}
 
 		/**
@@ -180,7 +183,7 @@ class Abovethefold_Plugins {
 
 			$plugin_name = file_get_contents($active_txtfile);
 			if (!$this->active( $plugin_name )) {
-				return false;
+				return $this->falseReference;
 			}
 		}
 
@@ -203,7 +206,7 @@ class Abovethefold_Plugins {
 
 		$classnameName = 'Abovethefold_OPP_' . $classname;
 		if (!class_exists($classnameName)) {
-			return false;
+			return $this->falseReference;
 		}
 
 		$this->modules[$classname] = new $classnameName( $this->CTRL );

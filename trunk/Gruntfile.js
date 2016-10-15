@@ -60,6 +60,16 @@ module.exports = function(grunt) {
 						'public/js/src/extractfull.js'
 					],
 
+					// jQuery LazyLoad XT core
+					'public/js/jquery.lazyloadxt.min.js' : [
+						'node_modules/lazyloadxt/dist/jquery.lazyloadxt.min.js'
+					],
+
+					// jQuery LazyLoad XT widget module
+					'public/js/jquery.lazyloadxt.widget.min.js' : [
+						'node_modules/lazyloadxt/dist/jquery.lazyloadxt.widget.min.js'
+					],
+
 					// Original loadCSS
 					'admin/js/admincp.min.js' : [
 						'admin/js/jquery.debounce.js',
@@ -155,12 +165,30 @@ module.exports = function(grunt) {
 				}
 			}
 		},
+
+		/**
+		 * Copy files
+		 */
+		copy: {
+		  webfont_package: {
+	      	src: 'node_modules/webfontloader/package.json',
+	      	dest: 'public/js/src/webfontjs_package.json'
+		  },
+		  jquery_lazyxt_package: {
+	      	src: 'node_modules/lazyloadxt/package.json',
+	      	dest: 'public/js/src/lazyloadxt_package.json'
+		  },
+		  loadcss_package: {
+		  	src: 'bower_components/loadcss/package.json',
+	      	dest: 'public/js/src/loadcss_package.json'
+		  }
+		}
 	});
 
 	// Load Dependencies
 	require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
-	grunt.registerTask( 'build', [ 'uglify', 'cssmin' ] );
+	grunt.registerTask( 'build', [ 'uglify', 'cssmin', 'copy' ] );
 
 	grunt.registerTask( 'default', [ 'uglify', 'cssmin' ] );
 };
