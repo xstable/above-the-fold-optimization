@@ -241,7 +241,7 @@ class Abovethefold_OPP_W3TotalCache extends Abovethefold_OPP {
 	public function disable_js_minify() {
 
 	   /**
-		* Add Autoptimize filter to disable CSS optimization
+		* Add filter to disable Javascript optimization
 		*/
 		$this->CTRL->loader->add_filter( 'w3tc_minify_js_enable', $this, 'noptimize' );
 	}
