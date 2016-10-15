@@ -8,15 +8,15 @@ Stable tag: 4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-This plugin is a toolkit for Above The Fold Optimization that enables to achieve a [Google PageSpeed](https://developers.google.com/speed/docs/insights/about) `100` Score.
+Above the fold optimization toolkit that enables to achieve a Google PageSpeed 100 Score. Supports most optimization, minification and full page cache plugins.
 
 == Description ==
 
-This plugin is a toolkit for Above The Fold Optimization that enables to achieve a [Google PageSpeed](https://developers.google.com/speed/docs/insights/about) `100` Score.
+This plugin is a toolkit for Above The Fold Optimization that enables to achieve a [Google PageSpeed](https://developers.google.com/speed/docs/insights/about) 100 Score.
 
 This plugin is made to work together with other optimization plugins such as full page cache or minification plugins. The plugin is or can be made compatible with most optimization, caching and minification plugins. [Click here](https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/) for a list with natively supported plugins. Contact the author to request support for an unsupported optimization plugin.
 
-**Warning:** *This plugin is not a simple 'on/off' plugin. It is a tool for optimization professionals and advanced WordPress users to achieve a Google PageSpeed `100` Score.*
+**Warning:** *This plugin is not a simple 'on/off' plugin. It is a tool for optimization professionals and advanced WordPress users to achieve a Google PageSpeed 100 Score.*
 
 ### Critical CSS Management
 
@@ -68,7 +68,7 @@ When the option ``Optimize CSS Delivery`` is enabled all CSS links are loaded as
 == Changelog ==
 
 = 2.5.0 =
-* Bugfix: full CSS extraction for pages with query-string.
+* Bugfix: full CSS extraction for pages with query string.
 * Bugfix: admin PageSpeed menu not disabled.
 * Improved Above the fold client javascript.
 * Improved full CSS extraction.

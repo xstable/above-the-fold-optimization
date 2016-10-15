@@ -219,7 +219,7 @@ class Abovethefold_OPP_W3TotalCache extends Abovethefold_OPP {
 	public function disable_css_minify() {
 
 	   /**
-		* Add Autoptimize filter to disable CSS optimization
+		* Add filter to disable CSS optimization
 		*/
 		$this->CTRL->loader->add_filter( 'w3tc_minify_css_enable', $this, 'noptimize' );
 	}
@@ -230,7 +230,7 @@ class Abovethefold_OPP_W3TotalCache extends Abovethefold_OPP {
 	public function disable_html_minify() {
 
 	   /**
-		* Add Autoptimize filter to disable CSS optimization
+		* Add filter to disable CSS optimization
 		*/
 		$this->CTRL->loader->add_filter( 'w3tc_minify_html_enable', $this, 'noptimize' );
 	}

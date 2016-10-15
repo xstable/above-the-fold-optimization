@@ -793,7 +793,7 @@ class Abovethefold_Optimization {
 		$inlineJS .= 'Abtf.h(' . json_encode($jssettings) . ');';
 		print '<script rel="abtf">' . $inlineJS . '</script>';
 
-		print '<style type="text/css" rel="abtf">';
+		print '<style type="text/css" rel="abtf" id="AbtfCSS">';
 
 		/**
 		 * Include inline CSS
@@ -849,7 +849,7 @@ class Abovethefold_Optimization {
 		 * Start async loading of CSS
 		 */
 		if ($this->optimize_css_delivery && $headCSS) {
-			print '<script rel="abtf" id="Abtf">Abtf.css();</script>';
+			print '<script rel="abtf">Abtf.css();</script>';
 		}
 
 	}

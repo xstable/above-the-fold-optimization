@@ -32,6 +32,9 @@
             return;
         }
 
+        // target for inserting CSS
+        var target = (document.getElementById('AbtfCSS')) ? document.getElementById('AbtfCSS').nextSibling : false;
+
         for (i in files) {
             if (typeof files[i] !== 'object') {
                 if (ABTFDEBUG) {
@@ -40,7 +43,7 @@
                 continue;
             }
             m = files[i][0].join(',');
-            this.loadCSS(files[i][1],document.getElementById('Abtf'),m);
+            this.loadCSS(files[i][1],target,m);
         }
     };
 
