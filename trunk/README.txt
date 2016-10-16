@@ -65,7 +65,6 @@ The plugin contains a tool based on [jQuery Lazy Load XT](https://github.com/res
 The plugin contains a tool to optimize web fonts. The plugin automatically parses web font `@import` links in minified CSS files and `<link>` links in the HTML and loads the fonts via [Google Web Font Loader](https://github.com/typekit/webfontloader).
 
 
-
 == Installation ==
 
 ### WordPress plugin installation
