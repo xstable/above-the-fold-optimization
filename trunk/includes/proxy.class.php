@@ -257,6 +257,10 @@ class Abovethefold_Proxy {
 		$url = (isset($_REQUEST['url'])) ? trim($_REQUEST['url']) : '';
 		$type = (isset($_REQUEST['type'])) ? trim($_REQUEST['type']) : '';
 
+		if ($url === '') {
+			$this->forbidden();
+		}
+
 		if (!in_array($type,array('js','css'))) {
 			$this->forbidden();
 		}
