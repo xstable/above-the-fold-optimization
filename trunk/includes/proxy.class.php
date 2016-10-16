@@ -61,7 +61,7 @@ class Abovethefold_Proxy {
 	 *
 	 * @since  2.5.0 temporary until further improvement
 	 */
-	public function url($url = '{PROXY:URL}', $type = '{PROXY:TYPE}', $tryCache = false) {
+	public function url($url = '{PROXY:URL}', $type = '{PROXY:TYPE}', $tryCache = false, $htmlUrl = false) {
 
 		if ($url !== '{PROXY:URL}') {
 
@@ -75,12 +75,16 @@ class Abovethefold_Proxy {
 					return $cache_url;
 				}
 			}
+
+			$url = urlencode($url);
 		}
 
+		$amp = ($htmlUrl) ? '&amp;' : '&';
+
 		$site_url = site_url();
-		$proxy_url = $site_url . ((strpos($site_url,'?') !== false) ? '&' : '?') . 'url='.$url.'&type='.$type.'&abtf-proxy=' . md5(SECURE_AUTH_KEY . AUTH_KEY);
-		//$proxy_url = WPABTF_URI . 'proxy.php?url={PROXY:URL}&type={PROXY:TYPE}';
-		return $proxy_url;
+		$proxy_url = $site_url . ((strpos($site_url,'?') !== false) ? $amp : '?') . 'url=' . $url . $amp . 'type=' . $type . $amp . 'abtf-proxy=' . md5(SECURE_AUTH_KEY . AUTH_KEY);
+
+		return $proxy_url; 
 
 	}
 
@@ -102,7 +106,7 @@ class Abovethefold_Proxy {
 		}
 
 		// External, proxify url
-		return $this->url($cssfile,'css',true);
+		return $this->url($cssfile,'css',true,true);
 	}
 
 	/**
@@ -123,7 +127,7 @@ class Abovethefold_Proxy {
 		}
 
 		// External, proxify url
-		return $this->url($jsfile,'js',true);
+		return $this->url($jsfile,'js',true,true);
 	}
 
 	/**

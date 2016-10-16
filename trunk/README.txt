@@ -1,7 +1,7 @@
 === Above The Fold Optimization ===
 Contributors: optimalisatie
 Donate link: https://pagespeed.pro/
-Tags: optimization, above the fold, critical css, css, localization, javascript, minification, minify, minify css, minify stylesheet, optimize, speed, stylesheet, pagespeed, google, web font, webfont
+Tags: optimization, above the fold, critical css, css, performance, localization, javascript, minification, minify, minify css, minify stylesheet, optimize, speed, stylesheet, pagespeed, google, web font, webfont
 Requires at least: 3.0.1
 Tested up to: 4.6.1
 Stable tag: 4.4
@@ -85,6 +85,9 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 6. Full CSS Extraction
 
 == Changelog ==
+
+= 2.5.1 =
+* Bugfix: bug in external resource proxy for external resources with query string in HTML.
 
 = 2.5.0 =
 * Bugfix: full CSS extraction for pages with query string.
