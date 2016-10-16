@@ -62,6 +62,11 @@ class Abovethefold_Optimization {
 		 */
 		$this->optimize_css_delivery = (isset($this->CTRL->options['cssdelivery']) && intval($this->CTRL->options['cssdelivery']) === 1) ? true : false;
 
+		// Disable CSS delivery optimization for Full CSS verification view
+		if ($this->CTRL->view === 'abtf-critical-verify') {
+			$this->optimize_css_delivery = false;
+		}
+
 		/**
 		 * Extract Full CSS view
 		 */
@@ -793,35 +798,46 @@ class Abovethefold_Optimization {
 		$inlineJS .= 'Abtf.h(' . json_encode($jssettings) . ');';
 		print '<script rel="abtf">' . $inlineJS . '</script>';
 
-		print '<style type="text/css" rel="abtf" id="AbtfCSS">';
+		if ($this->CTRL->view === 'abtf-critical-verify') {
 
-		/**
-		 * Include inline CSS
-		 */
-		if ($inlineCSS !== '') {
+			// hide Critical CSS in verifification display
+			print '<style type="text/css" rel="abtf" id="AbtfCSS">
+/*!
+ * Above The Fold Optimization ' . $this->CTRL->get_version() . '
+ * Critical CSS hidden for Full CSS verification view
+ */
+</style>';
+		} else {
+
+			print '<style type="text/css" rel="abtf" id="AbtfCSS">';
 
 			/**
-			 * Debug header
+			 * Include inline CSS
 			 */
-			if ($debug) {
-				print '
+			if ($inlineCSS !== '') {
+
+				/**
+				 * Debug header
+				 */
+				if ($debug) {
+					print '
 /*!
  * Above The Fold Optimization ' . $this->CTRL->get_version() . '
  * Debug enabled (admin only)
  * Critical CSS: ' . htmlentities($criticalcss_name, ENT_COMPAT, 'utf-8') . (($criticalcss_conditional) ? ' (conditional)': '') . '
  */
-';
-			}
+	';
+				}
 
-			print $inlineCSS;
+				print $inlineCSS;
 
-		} else {
+			} else {
 
-			/**
-			 * Print warning for admin users that critical CSS is empty
-			 */
-			if (current_user_can( 'manage_options' )) {
-				print '
+				/**
+				 * Print warning for admin users that critical CSS is empty
+				 */
+				if (current_user_can( 'manage_options' )) {
+					print '
 /*!
  * Above The Fold Optimization ' . $this->CTRL->get_version() . '
  * 
@@ -832,18 +848,20 @@ class Abovethefold_Optimization {
  * This message is displayed for admins only.
  *
  */
-';
-			} else {
-				print '
+	';
+				} else {
+					print '
 /*!
  * Above The Fold Optimization ' . $this->CTRL->get_version() . ' // EMPTY
  */
-';
+	';
+				}
+
 			}
 
-		}
+			print '</style>';
 
-		print '</style>';
+		}
 
 		/**
 		 * Start async loading of CSS

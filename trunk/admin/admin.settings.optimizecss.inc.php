@@ -55,7 +55,7 @@
 						<th scope="row">Proxy External Styles</th>
 						<td>
                             <label><input type="checkbox" name="abovethefold[css_proxy]" onchange="if (jQuery(this).is(':checked')) { jQuery('.proxycssoptions').show(); jQuery('.proxycssoptionshide').hide(); } else { jQuery('.proxycssoptions').hide(); jQuery('.proxycssoptionshide').show(); }" value="1"<?php if ($cssProxy) { print ' checked'; } ?>> Enabled</label>
-                            <p class="description">Capture external stylesheets and load the files through a caching proxy. This feature enables to pass the <code>Eliminate render-blocking JavaScript and CSS in above-the-fold content</code> rule from Google PageSpeed Insights.</p>
+                            <p class="description">Capture external stylesheets and load the files through a caching proxy. This feature enables to pass the <a href="https://developers.google.com/speed/docs/insights/LeverageBrowserCaching?hl=<?php print $lgcode;?>" target="_blank">Leverage browser caching</a> rule from Google PageSpeed Insights.</p>
 						</td>
 					</tr>
 					<tr valign="top" class="proxycssoptions" style="<?php print $cssProxyOptions; ?>">

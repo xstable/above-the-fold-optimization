@@ -75,6 +75,15 @@
 	SITE_URL.href = document.location.href;
 
 	/**
+	 * Parse URL (e.g. protocol relative URL)
+	 */
+	var PARSE_URL = function(url) {
+		var parser = document.createElement('a');
+		parser.href = url;
+		return parser;
+	};
+
+	/**
 	 * Detect if node is external script or stylesheet
 	 */
 	var IS_EXTERNAL_RESOURCE = function(node) {
@@ -87,8 +96,7 @@
 				}
 
 				if (node.src) {
-					var parser = document.createElement('a');
-					parser.href = node.src;
+					var parser = PARSE_URL(node.src);
 
 					// local url
 					if (parser.host === SITE_URL.host) {
@@ -136,8 +144,7 @@
 				}
 
 				if (node.href) {
-					var parser = document.createElement('a');
-					parser.href = node.href;
+					var parser = PARSE_URL(node.href);
 
 					// local url
 					if (parser.host === SITE_URL.host) {
@@ -185,8 +192,7 @@
 	}
 
 	/**
-	 * [PROXY description]
-	 * @param {[type]} node [description]
+	 * Proxy injected script or stylesheet URL
 	 */
 	var PROXY = function(node) {
 
@@ -199,16 +205,26 @@
             console.log('Abtf.proxy()', 'capture', (type === 'css') ? node.href : node.src);
         }
 
+    	/**
+    	 * Translate relative url
+    	 * 
+    	 * @since  2.5.3
+    	 */
+    	var url = PARSE_URL((type === 'css') ? node.href : node.src).href;
+
         if (type === 'css') {
+
         	node.href = PROXY_URL
-				.replace('{PROXY:URL}',escape(node.href))
+				.replace('{PROXY:URL}',escape(url))
 				.replace('{PROXY:TYPE}',escape(type));
+
         } else if (type === 'js') {
+
         	node.src = PROXY_URL
-				.replace('{PROXY:URL}',escape(node.src))
+				.replace('{PROXY:URL}',escape(url))
 				.replace('{PROXY:TYPE}',escape(type));
         }
-		
+
 	}
 
 	/**

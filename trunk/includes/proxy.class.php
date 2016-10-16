@@ -22,6 +22,26 @@ class Abovethefold_Proxy {
 	public $CTRL;
 
 	/**
+	 * Valid javascript mimetypes
+	 */
+	public $js_mimetypes = array(
+		'application/javascript',
+		'application/x-javascript',
+		'application/ecmascript',
+		'text/javascript',
+		'text/ecmascript',
+		'text/plain'
+	);
+
+	/**
+	 * Valid CSS mimetypes
+	 */
+	public $css_mimetypes = array(
+		'text/css',
+		'text/plain'
+	);
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0
@@ -79,6 +99,7 @@ class Abovethefold_Proxy {
 			$url = urlencode($url);
 		}
 
+		// html valid ampersand
 		$amp = ($htmlUrl) ? '&amp;' : '&';
 
 		$site_url = site_url();
@@ -240,6 +261,17 @@ class Abovethefold_Proxy {
 			$this->forbidden();
 		}
 
+		/**
+		 * Translate protocol relative url
+		 * 
+		 * @since  2.5.3
+		 */
+		if (preg_match('|^//|Ui',$url)) {
+
+			// prefix url with protocol
+			$url = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https:' : 'http:') . $url;
+		}
+
 		// invalid protocol
 		if (!preg_match('|^http(s)?://|Ui',$url) && preg_match('|^[a-z0-9_-]*://|Ui',$url)) {
 			$this->forbidden();
@@ -248,11 +280,15 @@ class Abovethefold_Proxy {
 		// proxy resource
 		list($filehash, $cache_file) = $this->proxy_resource($url, $type);
 
+		// Proxy failed for url (potentially insecure, not a valid javascript or CSS resource, url not recognized etc)
 		if (!$cache_file) {
-			wp_die('Proxy is disabled for file');
+			
+			// forward request to original location
+			header("Location: " . $url);
+			exit;
 		}
 
-
+		// get last modified time
 		$last_modified = filemtime($cache_file);
 
 		/**
@@ -313,28 +349,40 @@ class Abovethefold_Proxy {
 		}
 
 		/**
+		 * Translate protocol relative url
+		 * 
+		 * @since  2.5.3
+		 */
+		if (preg_match('|^//|Ui',$url)) {
+
+			// prefix url with protocol
+			$url = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https:' : 'http:') . $url;
+		}
+
+		/**
 		 * Handle local file
 		 */
 		$local_file = false;
+
+		// http(s):// based file, match host with server host
 		if (preg_match('|^http(s)?://|Ui',$url)) {
 
 			$parsed_url = parse_url($url);
 			if ($parsed_url['host'] === $_SERVER['HTTP_HOST']) {
 
-				// not external
-				$url = str_replace($parsed_url['host'],'',$url);
+				// local file
+				$url = preg_replace('|^http(s)?://'.preg_quote($parsed_url['host'],'|').'|Ui','',$url);
 			}
 		}
 
+		// local file
 		if (!preg_match('|^http(s)?://|Ui',$url)) {
 
-			// invalid protocol
+			/**
+			 * Invalid protocol
+			 * @security
+			 */
 			if (preg_match('|^[a-z0-9_-]*://|Ui',$url)) {
-				return false;
-			}
-
-			// resource not recognized 
-			if (!preg_match('#\.(css|js)$#Ui',$url,$out)) {
 				return false;
 			}
 
@@ -346,18 +394,46 @@ class Abovethefold_Proxy {
 			}
 			$resource_path = realpath($path . $url);
 
-			// make sure resource is in WordPress root
+			/**
+			 * Make sure resource is in WordPress root
+			 * @security
+			 */
 			if (strpos($resource_path, $path) === false || !file_exists($resource_path)) {
 				return false;
 			}
 
+			/**
+			 * Detect mime type of file
+			 */
+			$mime = mime_content_type($resource_path);
+
+			/**
+			 * Make sure file has valid mime type
+			 */
+			if ($type === 'js') {
+
+				// valid javascript mime type?
+				if (!in_array($mime,$this->js_mimetypes)) {
+					return false;
+				}
+
+			} else if ($type === 'css') {
+
+				// valid CSS mime type?
+				if (!in_array($mime,$this->css_mimetypes)) {
+					return false;
+				}
+			}
+
+			// define path to local file
 			$local_file = $resource_path;
 
+			// create file hash based on file contents (force browser cache update on file changes)
 			$filehash = md5_file($local_file);
 
 		} else {
 
-			// file hash
+			// file hash based on url
 			$filehash = md5($url);
 		}
 

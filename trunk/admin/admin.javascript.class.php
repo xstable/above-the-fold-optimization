@@ -84,7 +84,7 @@
 								<th scope="row">Proxy External Scripts</th>
 								<td>
                                     <label><input type="checkbox" name="abovethefold[js_proxy]" onchange="if (jQuery(this).is(':checked')) { jQuery('.proxyjsoptions').show(); } else { jQuery('.proxyjsoptions').hide(); }" value="1"<?php if (isset($options['js_proxy']) && intval($options['js_proxy']) === 1) { print ' checked'; } ?>> Enabled</label>
-                                    <p class="description">Capture external scripts and load the scripts through a caching proxy. This feature enables to pass the <code>Eliminate render-blocking JavaScript and CSS in above-the-fold content</code> rule from Google PageSpeed Insights.</p>
+                                    <p class="description">Capture external scripts and load the scripts through a caching proxy. This feature enables to pass the <a href="https://developers.google.com/speed/docs/insights/LeverageBrowserCaching?hl=<?php print $lgcode;?>" target="_blank">Leverage browser caching</a> rule from Google PageSpeed Insights.</p>
 								</td>
 							</tr>
 							<tr valign="top" class="proxyjsoptions" style="<?php if (!isset($options['js_proxy']) || intval($options['js_proxy']) !== 1) { print 'display:none;'; } ?>">

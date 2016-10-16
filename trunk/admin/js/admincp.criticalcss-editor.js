@@ -154,8 +154,22 @@ jQuery(function() {
             return;
         }
 
+        var selected = jQuery('.conditions select',jQuery('#ccss_editor_' + editor_id))[0].selectize.getValue();
+
+        // update selected conditions parameter
+        jQuery('.conditions select',jQuery('#ccss_editor_' + editor_id)).data('conditions', JSON.stringify(selected));
+
         jQuery('.conditions select',jQuery('#ccss_editor_' + editor_id))[0].selectize.destroy();
         jQuery('.conditions select',jQuery('#ccss_editor_' + editor_id)).empty();
+
+        // set selected options
+        var option;
+        for (var i = 0; i < selected.length; i++) {
+            option = jQuery('<option />');
+            option.val(selected[i]);
+            option.attr('selected', true);
+            jQuery('.conditions select',jQuery('#ccss_editor_' + editor_id)).append(option);
+        }
     }
 
     if (jQuery('.criticalcss-edit-header').length > 0) {

@@ -177,7 +177,18 @@ if ($conditionalcss_enabled) {
 		<div id="ccss_editor_<?php print htmlentities($condition_hash,ENT_COMPAT,'utf-8'); ?>" class="ccss_editor" style="display:none;">
 			<textarea class="abtfcss" name="abovethefold[conditional_css][<?php print htmlentities($condition_hash,ENT_COMPAT,'utf-8'); ?>][css]"><?php echo htmlentities($inlinecss,ENT_COMPAT,'utf-8'); ?></textarea>
 			<div class="conditions edit-conditional-critical-css">
-				<select name="abovethefold[conditional_css][<?php print htmlentities($condition_hash,ENT_COMPAT,'utf-8'); ?>][conditions][]" multiple="multiple" data-conditions="<?php print htmlentities(json_encode($cCSS['conditions'],true),ENT_COMPAT,'utf-8'); ?>"></select>
+				<select name="abovethefold[conditional_css][<?php print htmlentities($condition_hash,ENT_COMPAT,'utf-8'); ?>][conditions][]" multiple="multiple" data-conditions="<?php print htmlentities(json_encode($cCSS['conditions'],true),ENT_COMPAT,'utf-8'); ?>">
+<?php
+
+	/**
+	 * Print default conditions
+	 */
+	foreach ($cCSS['conditions'] as $condition) {
+		print '<option value="'.$condition.'" selected>'.$condition.'</option>';
+	}
+?>
+</select>
+
 			</div>
 			<div style="height:10px;clear:both;overflow:hidden;font-size:1px;">&nbsp;</div>
 		</div>

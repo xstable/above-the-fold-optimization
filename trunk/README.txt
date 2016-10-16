@@ -85,6 +85,13 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 
 == Changelog ==
 
+= 2.5.3 =
+* Improved: external resource proxy support for protocol relative urls.
+
+= 2.5.2 =
+* Improved: external resource proxy support for local files, mime type check for security and forward of unproxied requests.
+* Added: write permission check for critical CSS storage file.
+
 = 2.5.1 =
 * Bugfix: bug in external resource proxy for external resources with query string in HTML.
 

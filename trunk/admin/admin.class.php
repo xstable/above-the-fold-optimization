@@ -528,7 +528,6 @@ class Abovethefold_Admin {
 
 
 		$options['localizejs_enabled'] = (isset($input['localizejs_enabled']) && intval($input['localizejs_enabled']) === 1) ? true : false;
-		
 
 		/**
 		 * Debug / admin options
@@ -537,30 +536,61 @@ class Abovethefold_Admin {
 		$options['clear_pagecache'] = (isset($input['clear_pagecache']) && intval($input['clear_pagecache']) === 1) ? true : false;
 		$options['adminbar'] = (isset($input['adminbar']) && intval($input['adminbar']) === 1) ? true : false;
 	
-		/**
-		 * Store global critical CSS
-		 */
-		$css = trim($input['css']);
-		$cssfile = $this->CTRL->cache_path() . 'criticalcss_global.css';
-		file_put_contents( $cssfile, $css );
+		if (!is_writable($this->CTRL->cache_path())) {
+			$this->set_notice('<p style="font-size:18px;">Critical CSS storage directory is not writable. Please check the write permissions for the following directory:</p><p style="font-size:22px;color:red;"><strong>'.str_replace(trailingslashit(ABSPATH),'/',$this->CTRL->cache_path()).'</strong></p>', 'ERROR');
+		} else {
 
-		/**
-		 * Store conditional critical CSS
-		 */
-		if (!empty($input['conditional_css'])) {
-			foreach ($input['conditional_css'] as $hashkey => $data) {
-				if (!isset($options['conditional_css'][$hashkey])) {
-					$error = true;
-					$this->set_notice('Conditional Critical CSS not configured.', 'ERROR');
-				} else if (empty($data['conditions'])) {
-					$error = true;
-					$this->set_notice('You did not select conditions for <strong>'.htmlentities($options['conditional_css'][$hashkey]['name'],ENT_COMPAT,'utf-8').'</strong>.', 'ERROR');
-				} else {
-					$options['conditional_css'][$hashkey]['conditions'] = $data['conditions'];
+			/**
+			 * Store global critical CSS
+			 */
+			$css = trim($input['css']);
+			$cssfile = $this->CTRL->cache_path() . 'criticalcss_global.css';
+			if (file_exists($cssfile) && !is_writable($cssfile)) {
+				$this->set_notice('<p style="font-size:18px;">Failed to write to Critical CSS storage file. Please check the write permissions for the following file:</p><p style="font-size:22px;color:red;"><strong>'.str_replace(trailingslashit(ABSPATH),'/',$cssfile).'</strong></p>', 'ERROR');
+			} else {
 
-					$css = trim(stripslashes($data['css']));
-					$cssfile = $this->CTRL->cache_path() . 'criticalcss_'.$hashkey.'.css';
-					file_put_contents( $cssfile, $css );
+				// write Critical CSS
+				@file_put_contents( $cssfile, $css );
+
+				// failed to store Critical CSS
+				if (!is_writable($cssfile)) {
+					$this->set_notice('<p style="font-size:18px;">Failed to write to Critical CSS storage file. Please check the write permissions for the following file:</p><p style="font-size:22px;color:red;"><strong>'.str_replace(trailingslashit(ABSPATH),'/',$cssfile).'</strong></p>', 'ERROR');
+				}
+
+			}
+			
+			/**
+			 * Store conditional critical CSS
+			 */
+			if (!empty($input['conditional_css'])) {
+				foreach ($input['conditional_css'] as $hashkey => $data) {
+					if (!isset($options['conditional_css'][$hashkey])) {
+						$error = true;
+						$this->set_notice('Conditional Critical CSS not configured.', 'ERROR');
+					} else if (empty($data['conditions'])) {
+						$error = true;
+						$this->set_notice('You did not select conditions for <strong>'.htmlentities($options['conditional_css'][$hashkey]['name'],ENT_COMPAT,'utf-8').'</strong>.', 'ERROR');
+					} else {
+						$options['conditional_css'][$hashkey]['conditions'] = $data['conditions'];
+
+						$css = trim(stripslashes($data['css']));
+						$cssfile = $this->CTRL->cache_path() . 'criticalcss_'.$hashkey.'.css';
+
+						if (file_exists($cssfile) && !is_writable($cssfile)) {
+							$this->set_notice('<p style="font-size:18px;">Failed to write to Conditional Critical CSS storage file. Please check the write permissions for the following file:</p><p style="font-size:22px;color:red;"><strong>'.str_replace(trailingslashit(ABSPATH),'/',$cssfile).'</strong></p>', 'ERROR');
+						} else {
+
+							// write Critical CSS
+							@file_put_contents( $cssfile, $css );
+
+							// failed to store Critical CSS
+							if (!is_writable($cssfile)) {
+								$this->set_notice('<p style="font-size:18px;">Failed to write to Conditional Critical CSS storage file. Please check the write permissions for the following file:</p><p style="font-size:22px;color:red;"><strong>'.str_replace(trailingslashit(ABSPATH),'/',$cssfile).'</strong></p>', 'ERROR');
+							}
+
+						}
+						
+					}
 				}
 			}
 		}
