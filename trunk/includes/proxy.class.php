@@ -254,8 +254,8 @@ class Abovethefold_Proxy {
 			trigger_error('PHP <a href="http://php.net/manual/en/book.curl.php" target="_blank">lib cURL</a> should be installed or <a href="http://php.net/manual/en/filesystem.configuration.php" target="_blank">allow_url_fopen</a> should be enabled for external resource proxy.',E_USER_ERROR);
 		}
 
-		$url = trim($_REQUEST['url']);
-		$type = trim($_REQUEST['type']);
+		$url = (isset($_REQUEST['url'])) ? trim($_REQUEST['url']) : '';
+		$type = (isset($_REQUEST['type'])) ? trim($_REQUEST['type']) : '';
 
 		if (!in_array($type,array('js','css'))) {
 			$this->forbidden();
