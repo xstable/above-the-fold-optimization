@@ -310,7 +310,7 @@ class Abovethefold_ExtractFullCss {
 		$extractkey = $parsed['extract-css'];
 		unset($parsed['extract-css']);
 		unset($parsed['output']);
-		$url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'].'/';
+		$url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . preg_replace('|\?.*$|Ui','',$_SERVER['REQUEST_URI']);
 		if(!empty($parsed))
 		{
 			$url .= '?' . http_build_query($parsed);

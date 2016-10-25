@@ -83,11 +83,19 @@
 .abtf-inner-table .form-table td {
     padding: 7px 10px;
 }
+.form-table h5.h {
+    font-size:12px;
+    line-height:14px;
+    margin:0px;
+    padding:0px;
+    padding-bottom:2px;
+    font-weight:bold;
+}
 .abtf-inner-table .inside {
     background-color:white;
 }
 
-.abtf-inner-table h3.h {
+.form-table h3.h {
     border-bottom:solid 1px #e5e5e5;
     background-color:#efefef;
     font-size: 14px!important;

@@ -43,15 +43,17 @@ class Abovethefold_WebFonts {
 
 		$this->CTRL =& $CTRL;
 
+		if ($this->CTRL->disabled) {
+			return; // above the fold optimization disabled for area / page
+		}
+
+		// parse google fonts from settings
 		if (!isset($this->CTRL->options['gwfo_googlefonts'])) {
 			$this->CTRL->options['gwfo_googlefonts'] = '';
 		}
 		$this->googlefonts = explode("\n",$this->CTRL->options['gwfo_googlefonts']);
 
-		if ($this->CTRL->disabled) {
-			return; // above the fold optimization disabled for area / page
-		}
-
+		// define default settings
 		if (!isset($this->CTRL->options['gwfo_loadmethod'])) {
 			$this->CTRL->options['gwfo_loadmethod'] = 'inline';
 		}
@@ -281,7 +283,7 @@ class Abovethefold_WebFonts {
 			$replace[] = $this->webfontconfig();
 		}
 
-		return array($search, $replace);
+		return array($search, $replace); 
 	}
 
 	/**
@@ -393,7 +395,7 @@ class Abovethefold_WebFonts {
 				// not valid
 			} else {
 
-				$WebFontConfig = $this->CTRL->options['gwfo_config'];
+				$WebFontConfig = trim($this->CTRL->options['gwfo_config']);
 			}
 		}
 
@@ -417,10 +419,15 @@ class Abovethefold_WebFonts {
 					}
 
 					$WebFontConfig = preg_replace('|google\s*:\s*(\{[^\}]+\})|is','google:' . json_encode($googlefontconfig),$WebFontConfig);
-				} else {
-					$WebFontConfig = 'WebFontConfig={google:' . json_encode($googlefontconfig) . '};';
 				}
+			} else {
+				$WebFontConfig = 'WebFontConfig={google:' . json_encode($googlefontconfig) . '};';
 			}
+		}
+
+		// no webfont config
+		if (empty($WebFontConfig)) {
+			return null;
 		}
 
 		// return parsed json

@@ -45,7 +45,6 @@
 	}
 
 ?>
-<?php require_once('admin.author.class.php'); ?>
 <form method="post" action="<?php echo admin_url('admin-post.php?action=abovethefold_compare'); ?>" class="clearfix">
 	<?php wp_nonce_field('abovethefold'); ?>
 	<div class="wrap abovethefold-wrapper">
@@ -54,16 +53,16 @@
 				<div id="post-body-content">
 					<div class="postbox">
 						<h3 class="hndle">
-							<span><?php _e( 'Compare Critical CSS (Quality Test)', 'abovethefold' ); ?></span>
+							<span><?php _e( 'Above The Fold Quality Test', 'abovethefold' ); ?></span>
 						</h3>
 						<div class="inside testcontent">
 
-
-							<p>You can quickly compare the critical CSS of any url by adding the query string <code><strong>?compare-abtf=<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?></strong></code>.</p>
+						<p>This test enables to compare the critical CSS display with the full CSS display to test for differences that could cause a <a href="https://en.wikipedia.org/wiki/Flash_of_unstyled_content" target="_blank">Flash of unstyled content (FOUC)</a>. Good quality critical CSS will provide a near perfect match between the critical CSS and full CSS display. </p>
+							<p>You can quickly open the critical CSS mirror view of any url by adding the query string <code><strong>?compare-abtf=<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?></strong></code>.</p>
 								<div>
 								<select id="comparepages"><option value=""></option><?php print implode('',$options); ?></select>
 
-								<button type="button" id="comparepages_split" rel="<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?>" class="button button-large">Split View (Compare)</button>
+								<button type="button" id="comparepages_split" rel="<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?>" class="button button-large">Mirror View (Compare)</button>
 								<button type="button" id="comparepages_full" rel="<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?>" class="button button-large">Full View (Critical CSS only)</button>
 							</div>
 

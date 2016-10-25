@@ -12,14 +12,36 @@
  */
 
 
-class Abovethefold_Proxy {
+class Abovethefold_Proxy { 
 
 	/**
 	 * Above the fold controller
 	 *
 	 * @var      object    $CTRL
 	 */
-	public $CTRL;
+	public $CTRL; 
+
+	/**
+	 * Include list for javascript
+	 */
+	public $js_include = array();
+
+	/**
+	 * Include list for styles (CSS) 
+	 */
+	public $css_include = array();
+
+	/**
+	 * Exclude list for javascript
+	 */
+	public $js_exclude = array();
+
+	/**
+	 * Exclude list for styles (CSS) 
+	 */
+	public $css_exclude = array(
+		'fonts.googleapis.com/css'
+	);
 
 	/**
 	 * Valid javascript mimetypes
@@ -42,12 +64,17 @@ class Abovethefold_Proxy {
 	);
 
 	/**
+	 * Absolute path with trailingslash
+	 */
+	private $abspath;
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0
 	 * @var      object    $Optimization       The Optimization class.
 	 */
-	public function __construct( &$CTRL ) {
+	public function __construct( &$CTRL ) { 
 
 		$this->CTRL =& $CTRL;
 
@@ -62,6 +89,21 @@ class Abovethefold_Proxy {
 			$this->CTRL->options['css_proxy'] = false;
 		}
 
+		// set include/exclude list
+		$keys = array('js_include','css_include','css_include','css_exclude');
+		foreach ($keys as $key) {
+			$params = explode('_',$key);
+
+			// merge default include / exclude list with settings
+			$this->$key = array_unique(
+				array_filter(
+					array_merge($this->$key,((isset($this->CTRL->options['js_proxy_' . $params[1]]) && trim($this->CTRL->options['js_proxy_' . $params[1]]) !== '') ? explode("\n",$this->CTRL->options[$key[0] . '_proxy_' . $params[1]]) : array())),
+					create_function('$value', 'return trim($value) !== "";')
+				));
+		}
+
+		// sanitize array (remove empty)
+
 		if ($this->CTRL->options['css_proxy']) {
 		
 			// add filter for CSS file processing
@@ -74,36 +116,64 @@ class Abovethefold_Proxy {
 			$this->CTRL->loader->add_filter( 'abtf_jsfile_pre', $this, 'process_jsfile' );
 		}
 
+		// WordPress root with trailingslash
+		$this->abspath = trailingslashit( ABSPATH );
+
 	}
 
 	/**
-	 * Get proxy url
+	 * Get proxy url for an URL
 	 *
-	 * @since  2.5.0 temporary until further improvement
+	 * Returns cache url 
 	 */
 	public function url($url = '{PROXY:URL}', $type = '{PROXY:TYPE}', $tryCache = false, $htmlUrl = false) {
 
 		if ($url !== '{PROXY:URL}') {
-
-			// remove hash from url
-			$url = preg_replace('|\#.*$|Ui','',$url);
-
-			// try direct url to file
-			if ($tryCache) {
-				$cache_url = $this->cache_url(md5($url), $type);
-				if ($cache_url) {
-					return $cache_url;
-				}
+			
+			// strip hash from url
+			if (strpos($url,'#') !== false) {
+				$url = strstr($url, '#', true);
 			}
 
-			$url = urlencode($url);
+			// parse url
+			$parsed = $this->parse_url($url);
+			if ($parsed) {
+				list($url,$filehash,$local_file) = $parsed;
+
+				// try direct url to file
+				if ($tryCache) {
+					$cache_url = $this->cache_url($filehash, $type);
+					if ($cache_url) {
+						return $cache_url;
+					}
+				}
+
+				$url = urlencode($url);
+			}
 		}
 
 		// html valid ampersand
 		$amp = ($htmlUrl) ? '&amp;' : '&';
 
-		$site_url = site_url();
-		$proxy_url = $site_url . ((strpos($site_url,'?') !== false) ? $amp : '?') . 'url=' . $url . $amp . 'type=' . $type . $amp . 'abtf-proxy=' . md5(SECURE_AUTH_KEY . AUTH_KEY);
+		// custom proxy url
+		if (isset($this->CTRL->options['proxy_url']) && $this->CTRL->options['proxy_url'] !== '') {
+
+			$proxy_url = $this->CTRL->options['proxy_url'];
+			if ($url !== '{PROXY:URL}') {
+				$proxy_url = str_replace(array(
+					'{PROXY:URL}',
+					'{PROXY:TYPE}'
+				), array(
+					$url,
+					$type
+				),$proxy_url);
+			}
+		} else {
+
+			// default WordPress PHP proxy url
+			$site_url = site_url();
+			$proxy_url = $site_url . ((strpos($site_url,'?') !== false) ? $amp : '?') . 'url=' . $url . $amp . 'type=' . $type . $amp . 'abtf-proxy=' . md5(SECURE_AUTH_KEY . AUTH_KEY); 
+		}
 
 		return $proxy_url; 
 
@@ -126,6 +196,20 @@ class Abovethefold_Proxy {
 			return $cssfile;
 		}
 
+		/**
+		 * File does not match include list, ignore
+		 */
+		if (!$this->url_include($cssfile, 'css')) {
+			return $cssfile;
+		}
+
+		/**
+		 * File matches exclude list, ignore
+		 */
+		if ($this->url_exclude($cssfile, 'css')) {
+			return $cssfile;
+		}
+
 		// External, proxify url
 		return $this->url($cssfile,'css',true,true);
 	}
@@ -144,6 +228,20 @@ class Abovethefold_Proxy {
 		if ($parsed_url['host'] === $_SERVER['HTTP_HOST']) {
 
 			// not external
+			return $jsfile;
+		}
+
+		/**
+		 * File does not match include list, ignore
+		 */
+		if (!$this->url_include($jsfile, 'js')) {
+			return $jsfile;
+		}
+
+		/**
+		 * File matches exclude list, ignore
+		 */
+		if ($this->url_exclude($jsfile, 'js')) {
 			return $jsfile;
 		}
 
@@ -257,10 +355,6 @@ class Abovethefold_Proxy {
 		$url = (isset($_REQUEST['url'])) ? trim($_REQUEST['url']) : '';
 		$type = (isset($_REQUEST['type'])) ? trim($_REQUEST['type']) : '';
 
-		if ($url === '') {
-			$this->forbidden();
-		}
-
 		if (!in_array($type,array('js','css'))) {
 			$this->forbidden();
 		}
@@ -352,64 +446,24 @@ class Abovethefold_Proxy {
 			wp_die('Invalid proxy resource');
 		}
 
-		/**
-		 * Translate protocol relative url
-		 * 
-		 * @since  2.5.3
-		 */
-		if (preg_match('|^//|Ui',$url)) {
+		// parse url
+		$parsed = $this->parse_url($url);
+		if (!$parsed) { return; }
+		list($url,$filehash,$local_file) = $parsed;
 
-			// prefix url with protocol
-			$url = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https:' : 'http:') . $url;
-		}
-
-		/**
-		 * Handle local file
-		 */
-		$local_file = false;
-
-		// http(s):// based file, match host with server host
-		if (preg_match('|^http(s)?://|Ui',$url)) {
-
-			$parsed_url = parse_url($url);
-			if ($parsed_url['host'] === $_SERVER['HTTP_HOST']) {
-
-				// local file
-				$url = preg_replace('|^http(s)?://'.preg_quote($parsed_url['host'],'|').'|Ui','',$url);
-			}
-		}
-
-		// local file
-		if (!preg_match('|^http(s)?://|Ui',$url)) {
-
-			/**
-			 * Invalid protocol
-			 * @security
-			 */
-			if (preg_match('|^[a-z0-9_-]*://|Ui',$url)) {
-				return false;
-			}
-
-			// get home path
-			$path = trailingslashit( ABSPATH );
-
-			if (substr($url,0,1) === '/') {
-				$url = substr($url,1);
-			}
-			$resource_path = realpath($path . $url);
-
-			/**
-			 * Make sure resource is in WordPress root
-			 * @security
-			 */
-			if (strpos($resource_path, $path) === false || !file_exists($resource_path)) {
-				return false;
-			}
+		// verify local file
+		if ($local_file) {
 
 			/**
 			 * Detect mime type of file
 			 */
-			$mime = mime_content_type($resource_path);
+			$mime = mime_content_type($local_file);
+
+			if (!$mime) {
+				// failed
+				// @todo test support / stability in all environments
+				return false;
+			}
 
 			/**
 			 * Make sure file has valid mime type
@@ -429,93 +483,27 @@ class Abovethefold_Proxy {
 				}
 			}
 
-			// define path to local file
-			$local_file = $resource_path;
-
-			// create file hash based on file contents (force browser cache update on file changes)
-			$filehash = md5_file($local_file);
-
-		} else {
-
-			// file hash based on url
-			$filehash = md5($url);
 		}
 
 		/**
-		 * Javascript
+		 * External file? Require proxy to be enabled
 		 */
-		if ($type === 'js' ) {
-
-			/**
-			 * External file? Require proxy to be enabled
-			 */
-			if (!$local_file && (!isset($this->CTRL->options['js_proxy']) || !$this->CTRL->options['js_proxy'])) {
-				return false; // wp_die('Proxy is disabled');
-			}
-
-			$include_key = 'js_proxy_include';
-			$exclude_key = 'js_proxy_exclude';
+		if (!$local_file && (!isset($this->CTRL->options[$type . '_proxy']) || !$this->CTRL->options[$type . '_proxy'])) {
+			return false;
 		}
 
 		/**
-		 * Javascript
+		 * File does not match include list, ignore
 		 */
-		if ($type === 'css' ) {
-			
-			/**
-			 * External file? Require proxy to be enabled
-			 */
-			if (!$local_file && (!isset($this->CTRL->options['css_proxy']) || !$this->CTRL->options['css_proxy'])) {
-				return false; // wp_die('Proxy is disabled');
-			}
-
-			$include_key = 'css_proxy_include';
-			$exclude_key = 'css_proxy_exclude';
+		if (!$this->url_include($url, $type)) {
+			return false;
 		}
 
 		/**
-		 * Include list, url must match include list
+		 * File matches exclude list, ignore
 		 */
-		if (isset($this->CTRL->options[$include_key]) && trim($this->CTRL->options[$include_key]) !== '') {
-			$include = explode("\n",$this->CTRL->options[$include_key]);
-		} else { $include = array(); }
-		if (!empty($include)) {
-
-			$match = false;
-			foreach ($include as $str) {
-				if (trim($str) === '') { continue; }
-				if (strpos($url,$str) !== false) {
-					$match = true;
-					break;
-				}
-			}
-
-			if (!$match) {
-				return false; // wp_die('Proxy is disabled for file');
-			}
-		}
-
-		/**
-		 * Exclude list, verify if url should be ignored
-		 */
-		if (isset($this->CTRL->options[$exclude_key]) && trim($this->CTRL->options[$exclude_key]) !== '') {
-			$exclude = explode("\n",$this->CTRL->options[$exclude_key]);
-		} else { $exclude = array(); }
-
-		if (!empty($exclude)) {
-
-			$match = false;
-			foreach ($exclude as $str) {
-				if (trim($str) === '') { continue; }
-				if (strpos($url,$str) !== false) {
-					$match = true;
-					break;
-				}
-			}
-
-			if ($match) {
-				return false; // wp_die('Proxy is disabled for file');
-			}
+		if ($this->url_exclude($url, $type)) {
+			return false;
 		}
 
 		// cache file
@@ -546,6 +534,178 @@ class Abovethefold_Proxy {
 		}
 
 		return array($filehash,$cache_file);
+	}
+
+	/**
+	 * Parse url
+	 */
+	public function parse_url($url) {
+
+		$url = trim($url);
+
+		/**
+		 * Translate protocol relative url
+		 * 
+		 * @since  2.5.3
+		 */
+		if (substr($url,0,2) === '//') {
+
+			// prefix url with protocol
+			$url = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https:' : 'http:') . $url;
+		}
+
+		/**
+		 * Handle local file
+		 */
+		$local_file = false;
+
+		// http(s):// based file, match host with server host
+		if (stripos($url, '://') !== false) {
+
+			$http_prefix = false;
+
+			$prefix_match = substr($url,0,6);
+			if ($prefix_match === 'https:') {
+				
+				// HTTPS
+				$http_prefix = 'https://';
+
+			} else if ($prefix_match === 'http:/') {
+
+				// HTTPS
+				$http_prefix = 'http://';
+			} else {
+
+				/**
+				 * Invalid protocol
+				 * @security
+				 */
+				return false;
+			}
+
+			if ($http_prefix) {
+				$parsed_url = parse_url($url);
+				if ($parsed_url['host'] === $_SERVER['HTTP_HOST']) {
+
+					// local file
+					$url = str_replace( $http_prefix . $parsed_url['host'], '', $url);
+				}
+			}
+		}
+
+		// local file
+		if (stripos($url, '://') === false) {
+
+			// get real path for url
+			if (substr($url,0,1) === '/') {
+				$url = substr($url,1);
+			}
+			$resource_path = realpath($this->abspath . $url);
+
+			/**
+			 * Make sure resource is in WordPress root
+			 * @security
+			 */
+			if (strpos($resource_path, $this->abspath) === false || !file_exists($resource_path)) {
+				return false;
+			}
+
+			// create file hash based on file contents (force browser cache update on file changes)
+			$filehash = md5_file($resource_path);
+
+			return array($url, $filehash, $resource_path);
+
+		} else {
+
+			// file hash based on url
+			$filehash = md5($url);
+
+			return array($url, $filehash);
+		}
+	}
+
+	/**
+	 * Return cache hash for url
+	 */
+	public function cache_hash($url, $type) {
+
+		$parsed = $this->parse_url($url);
+		if ($parsed) {
+			if ($this->cache_file_path($parsed[1], $type, false)) {
+				return $parsed[1];
+			}
+		}
+
+		// not in cache
+		return false;
+	}
+
+	/**
+	 * Match url against include list
+	 */
+	public function url_include($url, $type) {
+
+		/**
+		 * Require proxy to be enabled
+		 */
+		if (!isset($this->CTRL->options[$type . '_proxy']) || !$this->CTRL->options[$type . '_proxy']) {
+			return false; // wp_die('Proxy is disabled');
+		}
+
+		$include_key = $type . '_include';
+
+		/**
+		 * Include list empty, include all
+		 */
+		if (empty($this->$include_key)) {
+			return true;
+		}
+		
+		/**
+		 * Match url against include list
+		 */
+		foreach ($this->$include_key as $str) {
+			if (strpos($url,$str) !== false) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Match url against exclude list
+	 */
+	public function url_exclude($url, $type) {
+
+		/**
+		 * Require proxy to be enabled
+		 */
+		if (!isset($this->CTRL->options[$type . '_proxy']) || !$this->CTRL->options[$type . '_proxy']) {
+			return false; // wp_die('Proxy is disabled');
+		}
+
+		$exclude_key = $type . '_exclude';
+
+		/**
+		 * Exclude list empty, exclude none
+		 */
+		if (empty($this->$exclude_key)) {
+			
+			return false;
+
+		}
+
+		/**
+		 * Match url against exclude list
+		 */
+		foreach ($this->$exclude_key as $str) {
+			if (strpos($url,$str) !== false) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

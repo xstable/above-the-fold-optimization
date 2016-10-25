@@ -81,7 +81,7 @@ class Abovethefold_CompareABTF {
 		$extractkey = $parsed['extract-css'];
 		unset($parsed['compare-abtf']);
 		unset($parsed['output']);
-		$url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'].'/';
+		$url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . preg_replace('|\?.*$|Ui','',$_SERVER['REQUEST_URI']);
 		if(!empty($parsed))
 		{
 			$url .= '?' . http_build_query($parsed);

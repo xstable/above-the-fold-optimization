@@ -34,6 +34,31 @@ class Abovethefold_Admin {
 	public $options;
 
 	/**
+	 * Critical CSS controller
+	 *
+	 * @since    2.5.4
+	 * @access   public
+	 * @var      object
+	 */
+	public $criticalcss;
+
+	/**
+	 * Tabs
+	 *
+	 * @since    2.5.4
+	 * @access   public
+	 * @var      array
+	 */
+	public $tabs = array(
+    	'criticalcss' => 'Critical CSS',
+    	'css' => 'CSS',
+    	'javascript' => 'Javascript',
+    	'proxy' => 'Proxy',
+    	'settings' => 'Settings',
+		'compare' => 'Quality Test'
+    );
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0
@@ -65,26 +90,48 @@ class Abovethefold_Admin {
 			$this->CTRL->loader->add_action('admin_enqueue_scripts', $this, 'enqueue_scripts',30);
 
 
-			// Register settings (data storage)
-			$this->CTRL->loader->add_action('admin_init', $this, 'register_settings');
-
 			// add settings link to plugin overview
 			$this->CTRL->loader->add_filter('plugin_action_links_above-the-fold-optimization/abovethefold.php', $this, 'settings_link' );
-
-			/**
-			 * Handle form submissions
-			 */
-			$this->CTRL->loader->add_action('admin_post_abovethefold_update', $this,  'update_settings');
-			$this->CTRL->loader->add_action('admin_post_abovethefold_add_ccss', $this,  'add_ccss');
-			$this->CTRL->loader->add_action('admin_post_abovethefold_del_ccss', $this,  'del_ccss');
-			$this->CTRL->loader->add_action('admin_post_abovethefold_extract', $this,  'download_fullcss');
-			$this->CTRL->loader->add_action('admin_post_abovethefold_javascript', $this,  'update_javascript');
 
 			// Handle admin notices
 			$this->CTRL->loader->add_action( 'admin_notices', $this, 'show_notices' );
 
 	        // Update body class
 			$this->CTRL->loader->add_filter( 'admin_body_class', $this, 'admin_body_class' );
+
+			/**
+			 * Load dependencies
+			 */
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/admin.criticalcss.class.php';
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/admin.css.class.php';
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/admin.javascript.class.php';
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/admin.proxy.class.php';
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/admin.settings.class.php';
+
+			/**
+			 * Load critical CSS management
+			 */
+			$this->criticalcss = new Abovethefold_Admin_CriticalCSS( $CTRL );
+
+			/**
+			 * Load CSS management
+			 */
+			$this->css = new Abovethefold_Admin_CSS( $CTRL );
+
+			/**
+			 * Load Javascript management
+			 */
+			$this->javascript = new Abovethefold_Admin_Javascript( $CTRL );
+
+			/**
+			 * Load proxy management
+			 */
+			$this->proxy = new Abovethefold_Admin_Proxy( $CTRL );
+
+			/**
+			 * Load settings management
+			 */
+			$this->settings = new Abovethefold_Admin_Settings( $CTRL );
 
 		}
 
@@ -116,6 +163,22 @@ class Abovethefold_Admin {
 	}
 
 	/**
+	 * Get active tab
+	 */
+	public function active_tab( $default = 'criticalcss' ) {
+
+		// get tab from query string
+		$tab = (isset($_REQUEST['tab'])) ? trim(strtolower($_REQUEST['tab'])) : $default;
+
+		// invalid tab
+		if (!isset($this->tabs[$tab])) {
+			$tab = $default;
+		}
+
+		return $tab;
+	}
+
+	/**
 	 * Enqueue scripts and styles
 	 *
 	 * @since	2.3.5
@@ -127,45 +190,24 @@ class Abovethefold_Admin {
 			return;
 		}
 
-		if (isset($_REQUEST['clear']) && $_REQUEST['clear'] === 'pagecache') {
+		/**
+		 * Clear page cache
+		 */
+		if ((isset($_REQUEST['clear']) && $_REQUEST['clear'] === 'pagecache') || isset($_POST['clear_pagecache'])) {
 
 			check_admin_referer('abovethefold');
 
 			$this->clear_pagecache();
 
-			wp_redirect(admin_url('admin.php?page=abovethefold'));
+			wp_redirect(admin_url('admin.php?page=abovethefold&tab=settings'));
 			exit;
 		}
 
-		$options = get_option('abovethefold');
-
+		// add general admin javascript
 		wp_enqueue_script( 'abtf_admincp', plugin_dir_url( __FILE__ ) . 'js/admincp.min.js', array( 'jquery' ) );
 
+		// add general admin CSS
 		wp_enqueue_style( 'abtf_admincp', plugin_dir_url( __FILE__ ) . 'css/admincp.min.css' );
-
-		$tab = (isset($_REQUEST['tab'])) ? trim($_REQUEST['tab']) : 'settings';
-
-		switch($tab) {
-			case "settings":
-
-				if (!isset($options['csseditor']) || intval($options['csseditor']) === 1) {
-
-					/**
-					 * Codemirror CSS highlighting
-					 */
-					wp_enqueue_style( 'abtf_codemirror', plugin_dir_url( __FILE__ ) . 'css/codemirror.min.css' );
-					wp_enqueue_script( 'abtf_codemirror', plugin_dir_url( __FILE__ ) . 'js/codemirror.min.js', array( 'jquery','jquery-ui-resizable','abtf_admincp' ) );
-				}
-
-			break;
-			case "extract":
-			case "compare":
-
-			break;
-			default:
-
-			break;
-		}
 
 	}
 
@@ -229,11 +271,17 @@ class Abovethefold_Admin {
 
 		$admin_bar->add_group( array(
 			'parent' => 'abovethefold',
-	        'id'     => 'abovethefold-tests',
+	        'id'     => 'abovethefold-top',
 	        'meta'   => array(
 	            'class' => 'ab-sub-secondary', // 
-	        ),
+	        )
 	    ) );
+
+		$admin_bar->add_node( array(
+			'parent' => 'abovethefold-top',
+			'id' => 'abovethefold-tools',
+			'title' => __( 'ABTF Tools', 'abovethefold' )
+		) );
 
 		if (is_admin()
 			|| ( defined( 'DOING_AJAX' ) && DOING_AJAX )
@@ -245,37 +293,36 @@ class Abovethefold_Admin {
 		}
 
 		/**
-		 * Extract Full CSS
-		 */
-		$extracturl = preg_replace('|\#.*$|Ui','',$currenturl) . ((strpos($currenturl,'?') !== false) ? '&' : '?') . 'extract-css=' . md5(SECURE_AUTH_KEY . AUTH_KEY) . '&output=print';
-		$admin_bar->add_node( array(
-			'parent' => 'abovethefold-tests',
-			'id' => 'abovethefold-extract',
-			'title' => __( 'Extract Full CSS', 'abovethefold' ),
-			'href' => $extracturl,
-			'meta' => array( 'title' => __( 'Extract Full CSS', 'abovethefold' ), 'target' => '_blank' )
-		) );
-
-		/**
 		 * Compare Critical CSS vs Full CSS
 		 */
 		$compareurl = preg_replace('|\#.*$|Ui','',$currenturl) . ((strpos($currenturl,'?') !== false) ? '&' : '?') . 'compare-abtf=' . md5(SECURE_AUTH_KEY . AUTH_KEY);
 		$admin_bar->add_node( array(
-			'parent' => 'abovethefold-tests',
-			'id' => 'abovethefold-compare',
-			'title' => __( 'Compare Critical CSS', 'abovethefold' ),
+			'parent' => 'abovethefold-tools',
+			'id' => 'abovethefold-tools-compare',
+			'title' => __( 'Critical CSS Quality Test (mirror view)', 'abovethefold' ),
 			'href' => $compareurl,
-			'meta' => array( 'title' => __( 'Compare Critical CSS', 'abovethefold' ), 'target' => '_blank' )
+			'meta' => array( 'title' => __( 'Critical CSS Quality Test (mirror view)', 'abovethefold' ), 'target' => '_blank' )
 		) );
 
+		/**
+		 * Extract Full CSS
+		 */
+		$extracturl = preg_replace('|\#.*$|Ui','',$currenturl) . ((strpos($currenturl,'?') !== false) ? '&' : '?') . 'extract-css=' . md5(SECURE_AUTH_KEY . AUTH_KEY) . '&output=print';
+		$admin_bar->add_node( array(
+			'parent' => 'abovethefold-tools',
+			'id' => 'abovethefold-tools-extract',
+			'title' => __( 'Extract Full CSS', 'abovethefold' ),
+			'href' => $extracturl,
+			'meta' => array( 'title' => __( 'Extract Full CSS', 'abovethefold' ), 'target' => '_blank' )
+		) );
 		/**
 		 * Page cache clear 
 		 */
 		$clear_url = add_query_arg( array( 'page' => 'abovethefold', 'clear' => 'pagecache' ), '/wp-admin/admin.php' );
 		$nonced_url = wp_nonce_url( $clear_url, 'abovethefold' );
 		$admin_bar->add_node( array(
-			'parent' => 'abovethefold-tests',
-			'id' => 'abovethefold-clear-pagecache',
+			'parent' => 'abovethefold-tools',
+			'id' => 'abovethefold-tools-clear-pagecache',
 			'title' => __( 'Clear Page Caches', 'abovethefold' ),
 			'href' => $nonced_url,
 			'meta' => array( 'title' => __( 'Clear Page Caches', 'abovethefold' ) )
@@ -310,6 +357,7 @@ class Abovethefold_Admin {
 			'id' => 'abovethefold-check-technical',
 			'title' => __( 'Technical & security tests', 'abovethefold' )
 		) );
+
 
 		/**
 		 * Google Tests
@@ -363,9 +411,9 @@ class Abovethefold_Admin {
 		$admin_bar->add_node( array(
 			'parent' => 'abovethefold-check-speed',
 			'id' => 'abovethefold-check-gtmetrix',
-			'title' => __( 'GTMetrix', 'abovethefold' ),
+			'title' => __( 'GTmetrix', 'abovethefold' ),
 			'href' => 'http://gtmetrix.com/?url='.urlencode($currenturl).'',
-			'meta' => array( 'title' => __( 'GTMetrix', 'abovethefold' ), 'target' => '_blank' )
+			'meta' => array( 'title' => __( 'GTmetrix', 'abovethefold' ), 'target' => '_blank' )
 		) );
 		$admin_bar->add_node( array(
 			'parent' => 'abovethefold-check-speed',
@@ -413,593 +461,62 @@ class Abovethefold_Admin {
 			'href' => 'https://pagespeed.pro/tests#url='.urlencode($currenturl),
 			'meta' => array( 'title' => __( 'More tests', 'abovethefold' ), 'target' => '_blank' )
 		) );
-
-		$admin_bar->add_node( array(
-			'parent' => 'abovethefold',
-			'id' => 'abovethefold-more-tests',
-			'title' => __( 'More website tests', 'abovethefold' ),
-			'href' => 'https://pagespeed.pro/tests#url='.urlencode($currenturl),
-			'meta' => array( 'title' => __( 'More website tests', 'abovethefold' ), 'target' => '_blank' )
-		) );
-	}
-
-	public function register_settings() {
-
-		// Register settings (data-storage)
-		register_setting('abovethefold_group', 'abovethefold'); // Above the fold options
-
 	}
 
 	/**
 	 * Clear page cache with notice
 	 */
-	public function clear_pagecache() {
+	public function clear_pagecache( $notice = true ) {
 
 		$this->CTRL->plugins->clear_pagecache();
 
-		$this->set_notice('Page related caches from <a href="https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/" target="_blank">supported plugins</a> cleared.<p><strong>Note:</strong> This plugin does not contain a page cache. The page cache clear function for multiple other plugins is a tool.', 'NOTICE');
+		if ($notice) {
+			$this->set_notice('Page related caches from <a href="https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/" target="_blank">supported plugins</a> cleared.<p><strong>Note:</strong> This plugin does not contain a page cache. The page cache clear function for multiple other plugins is a tool.', 'NOTICE');
+		}
+	}
+
+	/**
+	 * Save settings
+	 */
+	public function save_settings( $options, $notice ) {
+
+		if (!is_array($options) || empty($options)) {
+			wp_die('No settings to save');
+		}
+
+		// store update count
+		if (!isset($options['update_count'])) {
+			$options['update_count'] = 0;
+		}
+		$options['update_count']++;
+
+		// update settings
+		update_option('abovethefold',$options);
+
+		// add notice
+		$saved_notice = '<div style="font-size:18px;line-height:20px;margin:0px;">'.$notice.'</div>';
+
+		/**
+		 * Clear full page cache
+		 */
+		if ($options['clear_pagecache']) {
+			$this->CTRL->admin->clear_pagecache(false);
+
+			$saved_notice .= '<p style="font-style:italic;font-size:14px;line-height:16px;">Page related caches from <a href="https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/" target="_blank">supported plugins</a> cleared.</p>';
+		}
+
+		$this->CTRL->admin->set_notice($saved_notice, 'NOTICE');
 	}
 
     /**
-	 * Update settings
-	 */
-	public function update_settings() {
-
-		check_admin_referer('abovethefold');
-		$error = false;
-
-		// stripslashes should always be called
-		// @link https://codex.wordpress.org/Function_Reference/stripslashes_deep
-		$_POST = array_map( 'stripslashes_deep', $_POST );
-
-		/**
-		 * Clear Page Caches
-		 */
-		if (isset($_POST['clear_pagecache'])) {
-
-			$this->clear_pagecache();
-			
-			wp_redirect(admin_url('admin.php?page=abovethefold'));
-			exit;
-		}
-
-		$options = get_option('abovethefold');
-		if (!is_array($options)) {
-			$options = array();
-		}
-
-		$input = $_POST['abovethefold'];
-		if (!is_array($input)) {
-			$input = array();
-		}
-
-		/**
-		 * Critical CSS settings
-		 */
-		$options['csseditor'] = (isset($input['csseditor']) && intval($input['csseditor']) === 1) ? true : false;
-		$options['conditionalcss_enabled'] = (isset($input['conditionalcss_enabled']) && intval($input['conditionalcss_enabled']) === 1) ? true : false;
-		
-		/**
-		 * Optimize CSS delivery
-		 */
-		$options['cssdelivery'] = (isset($input['cssdelivery']) && intval($input['cssdelivery']) === 1) ? true : false;
-		$options['loadcss_enhanced'] = (isset($input['loadcss_enhanced']) && intval($input['loadcss_enhanced']) === 1) ? true : false;
-		$options['cssdelivery_position'] = trim($input['cssdelivery_position']);
-		$options['cssdelivery_ignore'] = trim(sanitize_text_field($input['cssdelivery_ignore']));
-		$options['cssdelivery_remove'] = trim(sanitize_text_field($input['cssdelivery_remove']));
-		$options['cssdelivery_renderdelay'] = (isset($input['cssdelivery_renderdelay']) && is_numeric($input['cssdelivery_renderdelay']) && intval($input['cssdelivery_renderdelay']) > 0) ? intval($input['cssdelivery_renderdelay']) : false;
-		$options['css_proxy'] = (isset($input['css_proxy']) && intval($input['css_proxy']) === 1) ? true : false;
-		$options['css_proxy_include'] = trim(sanitize_text_field($input['css_proxy_include']));
-		$options['css_proxy_exclude'] = trim(sanitize_text_field($input['css_proxy_exclude']));
-
-		/**
-		 * Web Font Optimization
-		 */
-		$options['gwfo'] = (isset($input['gwfo']) && intval($input['gwfo']) === 1) ? true : false;
-		$options['gwfo_loadmethod'] = trim($input['gwfo_loadmethod']);
-		$options['gwfo_loadposition'] = trim($input['gwfo_loadposition']);
-		$options['gwfo_config'] = trim($input['gwfo_config']);
-
-		// verify WebFontConfig
-		if ($options['gwfo_config'] !== '') {
-			if (substr($options['gwfo_config'], -1) === '}') {
-				$options['gwfo_config'] .= ';';
-			}
-			if (!preg_match('|^WebFontConfig\s*=\s*\{.*;$|s',$options['gwfo_config'])) {
-				$error = true;
-				$this->set_notice('WebFontConfig variable is not valid. It should consist of <code>WebFontConfig = { ... };</code>.', 'ERROR');
-			}
-		}
-
-		$options['gwfo_googlefonts'] = trim($input['gwfo_googlefonts']);
-
-		// parse google fonts
-		if ($options['gwfo_googlefonts'] !== '') {
-			$fonts = array();
-			$rows = explode("\n",$options['gwfo_googlefonts']);
-			foreach ($rows as $row) {
-				if (trim($row) === '') { continue 1; }
-				$fonts[] = trim($row);
-			}
-			$options['gwfo_googlefonts'] = implode("\n",$fonts);
-		}
-		
-		$options['gwfo_googlefonts_auto'] = (isset($input['gwfo_googlefonts_auto']) && intval($input['gwfo_googlefonts_auto']) === 1) ? true : false;
-
-
-		$options['localizejs_enabled'] = (isset($input['localizejs_enabled']) && intval($input['localizejs_enabled']) === 1) ? true : false;
-
-		/**
-		 * Debug / admin options
-		 */
-		$options['debug'] = (isset($input['debug']) && intval($input['debug']) === 1) ? true : false;
-		$options['clear_pagecache'] = (isset($input['clear_pagecache']) && intval($input['clear_pagecache']) === 1) ? true : false;
-		$options['adminbar'] = (isset($input['adminbar']) && intval($input['adminbar']) === 1) ? true : false;
-	
-		if (!is_writable($this->CTRL->cache_path())) {
-			$this->set_notice('<p style="font-size:18px;">Critical CSS storage directory is not writable. Please check the write permissions for the following directory:</p><p style="font-size:22px;color:red;"><strong>'.str_replace(trailingslashit(ABSPATH),'/',$this->CTRL->cache_path()).'</strong></p>', 'ERROR');
-		} else {
-
-			/**
-			 * Store global critical CSS
-			 */
-			$css = trim($input['css']);
-			$cssfile = $this->CTRL->cache_path() . 'criticalcss_global.css';
-			if (file_exists($cssfile) && !is_writable($cssfile)) {
-				$this->set_notice('<p style="font-size:18px;">Failed to write to Critical CSS storage file. Please check the write permissions for the following file:</p><p style="font-size:22px;color:red;"><strong>'.str_replace(trailingslashit(ABSPATH),'/',$cssfile).'</strong></p>', 'ERROR');
-			} else {
-
-				// write Critical CSS
-				@file_put_contents( $cssfile, $css );
-
-				// failed to store Critical CSS
-				if (!is_writable($cssfile)) {
-					$this->set_notice('<p style="font-size:18px;">Failed to write to Critical CSS storage file. Please check the write permissions for the following file:</p><p style="font-size:22px;color:red;"><strong>'.str_replace(trailingslashit(ABSPATH),'/',$cssfile).'</strong></p>', 'ERROR');
-				}
-
-			}
-			
-			/**
-			 * Store conditional critical CSS
-			 */
-			if (!empty($input['conditional_css'])) {
-				foreach ($input['conditional_css'] as $hashkey => $data) {
-					if (!isset($options['conditional_css'][$hashkey])) {
-						$error = true;
-						$this->set_notice('Conditional Critical CSS not configured.', 'ERROR');
-					} else if (empty($data['conditions'])) {
-						$error = true;
-						$this->set_notice('You did not select conditions for <strong>'.htmlentities($options['conditional_css'][$hashkey]['name'],ENT_COMPAT,'utf-8').'</strong>.', 'ERROR');
-					} else {
-						$options['conditional_css'][$hashkey]['conditions'] = $data['conditions'];
-
-						$css = trim(stripslashes($data['css']));
-						$cssfile = $this->CTRL->cache_path() . 'criticalcss_'.$hashkey.'.css';
-
-						if (file_exists($cssfile) && !is_writable($cssfile)) {
-							$this->set_notice('<p style="font-size:18px;">Failed to write to Conditional Critical CSS storage file. Please check the write permissions for the following file:</p><p style="font-size:22px;color:red;"><strong>'.str_replace(trailingslashit(ABSPATH),'/',$cssfile).'</strong></p>', 'ERROR');
-						} else {
-
-							// write Critical CSS
-							@file_put_contents( $cssfile, $css );
-
-							// failed to store Critical CSS
-							if (!is_writable($cssfile)) {
-								$this->set_notice('<p style="font-size:18px;">Failed to write to Conditional Critical CSS storage file. Please check the write permissions for the following file:</p><p style="font-size:22px;color:red;"><strong>'.str_replace(trailingslashit(ABSPATH),'/',$cssfile).'</strong></p>', 'ERROR');
-							}
-
-						}
-						
-					}
-				}
-			}
-		}
-
-		// store update count
-		if (!isset($options['update_count'])) {
-			$options['update_count'] = 0;
-		}
-		$options['update_count']++;
-
-		/**
-		 * Verify cURL support
-		 */
-		if (!$this->CTRL->curl_support()) {
-			$curl_required = array();
-
-			// localize javascript
-			if ($options['localizejs_enabled']) {
-				$curl_required[] = 'Localize Javascript';
-				$options['localizejs_enabled'] = false;
-			}
-
-			// proxy
-			if ($options['css_proxy'] || $options['js_proxy']) {
-				$curl_required[] = 'External Resource Proxy';
-				$options['css_proxy'] = $options['js_proxy'] = false;
-			}
-
-			if (!empty($curl_required)) {
-
-				$last = array_pop($curl_required);
-				$curl_required = count($curl_required) ? implode("</strong>, <strong>", $curl_required) . "</strong> and <strong>" . $last : $last;
-				$this->set_notice('PHP <a href="http://php.net/manual/en/book.curl.php" target="_blank">lib cURL</a> should be installed or <a href="http://php.net/manual/en/filesystem.configuration.php" target="_blank">allow_url_fopen</a> should be enabled for <strong>'.$curl_required.'</strong>.<br /><span style="font-weight:bold;color:red;">The selected options have been disabled.</span>', 'ERROR');
-			}
-			
-		}
-
-		update_option('abovethefold',$options);
-
-		/**
-		 * Clear full page cache
-		 */
-		if ($options['clear_pagecache']) {
-			$this->clear_pagecache();
-		}
-
-		if ($error) {
-			wp_redirect(admin_url('admin.php?page=abovethefold'));
-			exit;
-		}
-
-		wp_redirect(admin_url('admin.php?page=abovethefold'));
-		exit;
-    }
-
-
-    /**
-	 * Update javascript settings
-	 */
-	public function update_javascript() {
-
-		check_admin_referer('abovethefold');
-		$error = false;
-
-		// stripslashes should always be called
-		// @link https://codex.wordpress.org/Function_Reference/stripslashes_deep
-		$_POST = array_map( 'stripslashes_deep', $_POST );
-
-		$options = get_option('abovethefold');
-		if (!is_array($options)) {
-			$options = array();
-		}
-
-		$input = $_POST['abovethefold'];
-		if (!is_array($input)) {
-			$input = array();
-		}
-
-		/**
-		 * Optimize Javascript delivery
-		 */
-		//$options['cssdelivery'] = (isset($input['cssdelivery']) && intval($input['cssdelivery']) === 1) ? true : false;
-
-		$options['js_proxy'] = (isset($input['js_proxy']) && intval($input['js_proxy']) === 1) ? true : false;
-		$options['js_proxy_include'] = trim(sanitize_text_field($input['js_proxy_include']));
-		$options['js_proxy_exclude'] = trim(sanitize_text_field($input['js_proxy_exclude']));
-
-		// Lazy Load Scripts
-		$options['lazyscripts_enabled'] = (isset($input['lazyscripts_enabled']) && intval($input['lazyscripts_enabled']) === 1) ? true : false;
-
-		// store update count
-		if (!isset($options['update_count'])) {
-			$options['update_count'] = 0;
-		}
-		$options['update_count']++;
-
-		/**
-		 * Verify cURL support
-		 */
-		if (!$this->CTRL->curl_support()) {
-			$curl_required = array();
-
-			// proxy
-			if ($options['css_proxy'] || $options['js_proxy']) {
-				$curl_required[] = 'External Resource Proxy';
-				$options['css_proxy'] = $options['js_proxy'] = false;
-			}
-
-			if (!empty($curl_required)) {
-
-				$last = array_pop($curl_required);
-				$curl_required = count($curl_required) ? implode("</strong>, <strong>", $curl_required) . "</strong> and <strong>" . $last : $last;
-				$this->set_notice('PHP <a href="http://php.net/manual/en/book.curl.php" target="_blank">lib cURL</a> should be installed or <a href="http://php.net/manual/en/filesystem.configuration.php" target="_blank">allow_url_fopen</a> should be enabled for <strong>'.$curl_required.'</strong>.<br /><span style="font-weight:bold;color:red;">The selected options have been disabled.</span>', 'ERROR');
-			}
-			
-		}
-
-		update_option('abovethefold',$options);
-
-		/**
-		 * Clear full page cache
-		 */
-		if ($options['clear_pagecache']) {
-			$this->clear_pagecache();
-		}
-
-		if ($error) {
-			wp_redirect(admin_url('admin.php?page=abovethefold&tab=javascript'));
-			exit;
-		}
-
-		wp_redirect(admin_url('admin.php?page=abovethefold&tab=javascript'));
-		exit;
-    }
-
-    /**
-	 * Add conditional critical CSS
-	 */
-	public function add_ccss() {
-		check_admin_referer('abovethefold');
-
-		if ( get_magic_quotes_gpc() ) {
-			$_POST = array_map( 'stripslashes_deep', $_POST );
-			$_GET = array_map( 'stripslashes_deep', $_GET );
-			$_COOKIE = array_map( 'stripslashes_deep', $_COOKIE );
-			$_REQUEST = array_map( 'stripslashes_deep', $_REQUEST );
-		}
-
-		$options = get_option('abovethefold');
-		if (!is_array($options)) {
-			$options = array();
-		}
-
-		if (!isset($options['conditional_css'])) {
-			$options['conditional_css'] = array();
-		}
-
-		$form_error = new WP_Error;
-
-		$name = trim(stripslashes($_POST['name']));
-
-		if ($name === '') {
-			$this->set_notice('You did not enter a name.', 'ERROR');
-			wp_redirect(admin_url('admin.php?page=abovethefold') );
-			exit;
-		}
-
-		$id = md5($name);
-		if (isset($options['conditional_css'][$id])) {
-			$this->set_notice('A conditional critical CSS configuration with the name <strong>'.htmlentities($name,ENT_COMPAT,'utf-8').'</strong> already exists.', 'ERROR');
-			wp_redirect(admin_url('admin.php?page=abovethefold') );
-			exit;
-		}
-
-		$_conditions = (isset($_POST['conditions']) && !empty($_POST['conditions'])) ? $_POST['conditions'] : array();
-
-		$conditions = array();
-		foreach ($_conditions as $condition) {
-			if (trim($condition) === '') { continue 1; }
-			$conditions[] = trim($condition);
-		}
-
-		if (empty($conditions)) {
-			$this->set_notice('You did not select conditions.', 'ERROR');
-			wp_redirect(admin_url('admin.php?page=abovethefold') );
-			exit;
-		}
-
-		$options['conditional_css'][$id] = array(
-			'name' => $name,
-			'conditions' => $conditions,
-			'css' => ''
-		);
-
-		update_option('abovethefold',$options);
-
-		$this->set_notice('Conditional Critical CSS created.', 'NOTICE');
-
-		wp_redirect(admin_url('admin.php?page=abovethefold') . '#conditional' );
-		exit;
-    }
-
-    /**
-	 * Delete conditional critical CSS
-	 */
-	public function del_ccss() {
-
-		check_admin_referer('abovethefold');
-
-		if ( get_magic_quotes_gpc() ) {
-			$_POST = array_map( 'stripslashes_deep', $_POST );
-			$_GET = array_map( 'stripslashes_deep', $_GET );
-			$_COOKIE = array_map( 'stripslashes_deep', $_COOKIE );
-			$_REQUEST = array_map( 'stripslashes_deep', $_REQUEST );
-		}
-
-		$options = get_option('abovethefold');
-		if (!is_array($options)) {
-			$options = array();
-		}
-
-		if (!isset($options['conditional_css'])) {
-			$options['conditional_css'] = array();
-		}
-
-		$form_error = new WP_Error;
-
-		$id = trim(stripslashes($_POST['id']));
-
-		// verify hash
-		if (!preg_match('|^[a-z0-9]{32}|Ui',$id)) {
-			wp_die('Invalid conditional critical CSS ID.');
-		}
-
-		/**
-		 * Delete critical CSS entry
-		 */
-		if (isset($options['conditional_css'][$id])) {
-			unset($options['conditional_css'][$id]);
-		}
-
-		/**
-		 * Delete critical CSS file
-		 */
-		$cssfile = $this->CTRL->cache_path() . 'criticalcss_'.$id.'.css';
-		if (file_exists($cssfile)) {
-
-			// empty it if deletion fails
-			file_put_contents( $cssfile, '' );
-			
-			// delete file
-			@unlink( $cssfile );
-		}
-
-		update_option('abovethefold',$options);
-
-		$this->set_notice('Conditional Critical CSS deleted.', 'NOTICE');
-
-		wp_redirect(admin_url('admin.php?page=abovethefold') . '#conditional' );
-		exit;
-    }
-
-    /**
-	 * Download Full CSS
-	 */
-    public function download_fullcss() {
-
-    	$options = get_option('abovethefold');
-		if (!is_array($options)) {
-			$options = array();
-		}
-
-		if ( get_magic_quotes_gpc() ) {
-			$_POST = array_map( 'stripslashes_deep', $_POST );
-			$_GET = array_map( 'stripslashes_deep', $_GET );
-			$_COOKIE = array_map( 'stripslashes_deep', $_COOKIE );
-			$_REQUEST = array_map( 'stripslashes_deep', $_REQUEST );
-		}
-
-		$input = $_POST['abovethefold'];
-		if (!is_array($input)) {
-			$input = array();
-		}
-
-		$urls = array();
-		$_urls = explode("\n",$input['genurls']);
-		foreach ($_urls as $url) {
-			if (trim($url) === '') { continue 1; }
-
-			$url = str_replace(get_option('siteurl'),'',$url);
-
-			if (preg_match('|^http(s)?:|Ui',$url)) {
-				add_settings_error(
-					'abovethefold',                     // Setting title
-					'urls_texterror',            // Error ID
-					'Invalid URL: ' . $url,     // Error message
-					'error'                         // Type of message
-				);
-				$error = true;
-			} else {
-				if (!preg_match('|^/|Ui',$url)) {
-					$url = '/' . $url;
-				}
-				$urls[] = $url;
-			}
-		}
-		if (empty($urls)) {
-			add_settings_error(
-				'abovethefold',                     // Setting title
-				'urls_texterror',            // Error ID
-				'You did not enter any paths.',     // Error message
-				'error'                         // Type of message
-			);
-			$error = true;
-		} else {
-			$options['genurls'] = implode("\n",$urls);
-		}
-
-		update_option('abovethefold',$options);
-
-		$this->options = $options;
-
-		if ($error) {
-			return;
-		}
-
-		/**
-		 * Generate Crtical CSS
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/penthouse.class.php';
-
-		$this->generator = new Abovethefold_Generator_Penthouse( $this );
-
-		$fullCSS = $this->generator->extract_fullcss();
-
-		ob_end_clean();
-
-		header('Content-disposition: attachment; filename=full-css-'.date('c').'.css');
-        header('Content-type: text/plain');
-        header('Content-length: '.strlen($fullCSS).'');
-
-        die($fullCSS);
-    }
-
-	public function settings_tabs( $current = 'homepage' ) {
-        $tabs = array(
-        	'settings' => 'Critical CSS &amp; Settings',
-			'compare' => 'Quality Test',
-			'extract' => 'Extract Full CSS',
-			'javascript' => 'Javascript Optimization'
-        );
-        echo '<div id="icon-themes" class="icon32"><br></div>';
-        echo '<h1 class="nav-tab-wrapper">';
-        foreach( $tabs as $tab => $name ){
-            $class = ( $tab == $current ) ? ' nav-tab-active' : '';
-            echo "<a class='nav-tab$class' href='?page=abovethefold&tab=$tab'>$name</a>";
-
-        }
-        echo '</h1>';
-    }
-
+     * Display settings page
+     */
 	public function settings_page() {
 		global $pagenow, $wp_query;
 
+		// load options
 		$options = get_option('abovethefold');
-		if (!is_array($options)) {
-			$options = array();
-		}
-
-		/**
-		 * Load default paths
-		 */
-		$default_paths = array(
-			'/' // root
-		);
-
-		// Get random post
-		$args = array( 'post_type' => 'post', 'numberposts' => 1, 'orderby' => 'rand' );
-		query_posts($args);
-		if (have_posts()) {
-			while (have_posts()) {
-				the_post();
-				$default_paths[] = str_replace(get_option('siteurl'),'',get_permalink($wp_query->post->ID));
-				break;
-			}
-		}
-
-		// Get random page
-		$post = false;
-		$args = array( 'post_type' => 'page', 'numberposts' => 1, 'orderby' => 'rand' );
-		query_posts($args);
-		if (have_posts()) {
-			while (have_posts()) {
-				the_post();
-				$default_paths[] = str_replace(get_option('siteurl'),'',get_permalink($wp_query->post->ID));
-				break;
-			}
-		}
-
-		// Random category
-		$taxonomy = 'category';
-        $terms = get_terms($taxonomy);
-        shuffle ($terms);
-        if ($terms) {
-        	foreach($terms as $term) {
-        		$default_paths[] = str_replace(get_option('siteurl'),'',get_category_link( $term->term_id ));
-        		break;
-        	}
-        }
+		if (!is_array($options)) { $options = array(); }
 
 ?>
 <div class="wrap">
@@ -1007,36 +524,37 @@ class Abovethefold_Admin {
 </div>
 <?php
 
-		if ( !isset ( $_GET['tab'] ) ) {
-			$_GET['tab'] = 'settings';
+		// active tab
+		$tab = (isset($_REQUEST['tab'])) ? trim($_REQUEST['tab']) : 'criticalcss';
+
+		// invalid tab
+		if (!isset($this->tabs[$tab])) {
+			$tab = 'criticalcss';
 		}
 
-		$this->settings_tabs($_GET['tab']);
+		// print tabs
+        echo '<div id="icon-themes" class="icon32"><br></div>';
+        echo '<h1 class="nav-tab-wrapper">';
+        foreach( $this->tabs as $tabkey => $name ){
+            $class = ( $tabkey == $tab ) ? ' nav-tab-active' : '';
+            echo "<a class='nav-tab$class' href='?page=abovethefold&amp;tab=$tabkey'>$name</a>";
 
-		switch(strtolower(trim($_GET['tab']))) {
+        }
+        echo '</h1>';
 
-			case "settings":
-
-				require_once('admin.settings.class.php');
-
-			break;
-
-			case "extract":
-
-				require_once('admin.extract.class.php');
-
-			break;
-
-			case "compare":
-
-				require_once('admin.compare.class.php');
-
-			break;
-
+		// author info
+		require_once('admin.author.inc.php');
+		 
+        // print tab content
+		switch($tab) {
+			case "criticalcss":
+			case "css":
 			case "javascript":
-
-				require_once('admin.javascript.class.php');
-
+			case "proxy":
+			case "settings":
+			case "extract":
+			case "compare":
+				require_once('admin.'.$tab.'.inc.php');
 			break;
 		}
 
@@ -1188,17 +706,22 @@ class Abovethefold_Admin {
 					$options['css_proxy'] = true;
 					$update_options = true;
 				}
+			}
 
-				// remove old options
-				$old_options = array(
-					'dimensions',
-					'phantomjs_path',
-					'cleancss_path',
-					'remove_datauri',
-					'urls'
-				);
-				foreach ($old_options as $opt) {
+			// remove old options
+			$old_options = array(
+				'dimensions',
+				'phantomjs_path',
+				'cleancss_path',
+				'remove_datauri',
+				'urls',
+				'genurls',
+				'localizejs_enabled'
+			);
+			foreach ($old_options as $opt) {
+				if (isset($options[$opt])) {
 					unset($option[$opt]);
+					$update_options = true;
 				}
 			}
 

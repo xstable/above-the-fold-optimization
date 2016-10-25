@@ -12,6 +12,7 @@
 	 * Proxy url
 	 */
 	var PROXY_URL;
+	var PROXY_BASE;
 
 	/**
 	 * Proxy enabled
@@ -24,11 +25,19 @@
 	var PROXY_CSS_INCLUDE = false;
 	var PROXY_CSS_EXCLUDE = false;
 
+	var PROXY_PRELOAD = false;
+	var PROXY_PRELOAD_URLS = [];
+	var PROXY_PRELOAD_HASHES = [];
+
 	/**
 	 * Proxy setup
 	 */
 	window['Abtf'].proxy_setup = function(cnf) {
 		
+		if (typeof ajaxurl === 'undefined') {
+			var ajaxurl = false;
+		}
+
 		PROXY_URL = cnf.url || ajaxurl;
 		if (!PROXY_URL) {
 			if (ABTFDEBUG) {
@@ -43,6 +52,19 @@
 		PROXY_JS_EXCLUDE = cnf.js_exclude || false;
 		PROXY_CSS_INCLUDE = cnf.css_include || false;
 		PROXY_CSS_EXCLUDE = cnf.css_exclude || false;
+
+		if (cnf.preload) {
+			PROXY_PRELOAD = true;
+
+			var url;
+			for (var i = 0; i < cnf.preload.length; i++) {
+				PROXY_PRELOAD_URLS.push(cnf.preload[i][0]);
+				PROXY_PRELOAD_HASHES.push(cnf.preload[i][1]);
+			}
+
+			PROXY_BASE = cnf.base || false;
+		}
+		
 	};
 
 	/**
@@ -80,8 +102,61 @@
 	var PARSE_URL = function(url) {
 		var parser = document.createElement('a');
 		parser.href = url;
+
 		return parser;
 	};
+
+	/**
+	 * Return proxy or direct cache url based on preload list
+	 */
+	var PROXIFY_URL = function(url,type) {
+
+		// check preload list
+		if (PROXY_PRELOAD) {
+
+			// check preload list
+			var isCached = PROXY_PRELOAD_URLS.indexOf(url);
+			if (isCached > -1) {
+
+				if (type === 'js') {
+					var ext = '.js';
+				} else if (type === 'css') {
+					var ext = '.css';
+				}
+
+				// cache hash for url
+				var cachehash = PROXY_PRELOAD_HASHES[isCached];
+
+				if (cachehash && ext) {
+
+					var path = PROXY_BASE;
+					path += cachehash.substr(0,2) + '/';
+					path += cachehash.substr(2,2) + '/';
+					path += cachehash.substr(4,2) + '/';
+					path += cachehash.substr(6,2) + '/';
+					path += cachehash.substr(8,2) + '/';
+					path += cachehash;
+					path += ext;
+
+					return path;
+				}
+			}
+		}
+
+		if (type === 'css') {
+
+        	return PROXY_URL
+				.replace('{PROXY:URL}',escape(url))
+				.replace('{PROXY:TYPE}',escape(type));
+
+        } else if (type === 'js') {
+
+        	return PROXY_URL
+				.replace('{PROXY:URL}',escape(url))
+				.replace('{PROXY:TYPE}',escape(type));
+        }
+
+	}
 
 	/**
 	 * Detect if node is external script or stylesheet
@@ -212,17 +287,16 @@
     	 */
     	var url = PARSE_URL((type === 'css') ? node.href : node.src).href;
 
+    	// proxy or direct cache url
+    	var proxy_url = PROXIFY_URL(url, type);
+
         if (type === 'css') {
 
-        	node.href = PROXY_URL
-				.replace('{PROXY:URL}',escape(url))
-				.replace('{PROXY:TYPE}',escape(type));
+        	node.href = proxy_url;
 
         } else if (type === 'js') {
 
-        	node.src = PROXY_URL
-				.replace('{PROXY:URL}',escape(url))
-				.replace('{PROXY:TYPE}',escape(type));
+        	node.src = proxy_url;
         }
 
 	}

@@ -12,6 +12,8 @@ if ($conditionalcss_enabled) {
 
 	$coptions[] = '<optgroup label="'.__('Page Types').'" data-data=\'{"class":"optgroup-pagetype"}\'>';
 
+	$coptions[] = '<option value="frontpage" data-data=\'{"title": "Front Page","class":"pagetype"}\'>Front Page</option>';
+
 	$post_types = get_post_types();
 	foreach ($post_types as $pt) {
 		if (in_array($pt,array('revision','nav_menu_item'))) {
@@ -30,12 +32,43 @@ if ($conditionalcss_enabled) {
 		
 	}
 
+	/**
+	 * Templates
+	 */
 	$templates = get_page_templates();
 	foreach ($templates as $tplname => $file) {
 		$coptions[] = '<option value="pt_tpl_'.htmlentities($file,ENT_COMPAT,'utf-8').'" data-data=\'{"title": "Tpl: '.ucfirst(htmlentities($tplname,ENT_COMPAT,'utf-8')).'","class":"pagetype"}\'>Template: '.htmlentities($tplname,ENT_COMPAT,'utf-8').'</option>';
 	}
 
+	/**
+	 * WooCommerce
+	 *
+	 * @link https://docs.woocommerce.com/document/conditional-tags/
+	 */
+	if ( class_exists( 'WooCommerce' ) ) {
+
+		$coptions[] = '<option value="wc_shop" data-data=\'{"title": "is_shop()","class":"pagetype"}\'>WooCommerce: is_shop()</option>';
+		$coptions[] = '<option value="wc_product_category" data-data=\'{"title": "is_product_category()","class":"pagetype"}\'>WooCommerce: is_product_category()</option>';
+		$coptions[] = '<option value="wc_product_tag" data-data=\'{"title": "is_product_tag()","class":"pagetype"}\'>WooCommerce: is_product_tag()</option>';
+		$coptions[] = '<option value="wc_product" data-data=\'{"title": "is_product()","class":"pagetype"}\'>WooCommerce: is_product()</option>';
+		$coptions[] = '<option value="wc_cart" data-data=\'{"title": "is_cart()","class":"pagetype"}\'>WooCommerce: is_cart()</option>';
+		$coptions[] = '<option value="wc_checkout" data-data=\'{"title": "is_checkout()","class":"pagetype"}\'>WooCommerce: is_checkout()</option>';
+		$coptions[] = '<option value="wc_account_page" data-data=\'{"title": "is_account_page()","class":"pagetype"}\'>WooCommerce: is_account_page()</option>';
+	}
+
 	$coptions[] = '</optgroup>';
+
+
+	// blog categories
+	/*$taxonomy = 'category';
+	$terms = get_terms($taxonomy);
+	if (!empty($terms)) {
+		$coptions[] = '<optgroup label="'.__('Posts with categories').'" data-data=\'{"class":"optgroup-cat"}\'>';
+		foreach($terms as $term) {
+			$coptions[] = '<option value="cat'.$term->term_id.'" data-data=\'{"title" : "'.$term->term_id.'","class":"cat"}\'>' . $term->term_id . ': '.$term->slug.'</option>';
+		}
+		$coptions[] = '</optgroup>';
+	}*/
 
 
 	// categories
@@ -49,20 +82,18 @@ if ($conditionalcss_enabled) {
 		$coptions[] = '</optgroup>';
 	}
 
-
-	// Tags
-	/*
-	$tags = get_tags();
-	if (!empty($tags)) {
-		$coptions[] = '<optgroup label="'.__('Posts with tags').'" data-data=\'{"class":"optgroup-cat"}\'>';
-		foreach($tags as $term) {
-			$coptions[] = '<option value="tag'.$term->term_id.'" data-data=\'{"title" : "'.$term->slug.'","class":"cat"}\'>' . $term->slug . '</option>';
+	// Taxomies
+	$taxs = get_taxonomies();
+	if (!empty($taxs)) {
+		$coptions[] = '<optgroup label="'.__('Taxonomy').'" data-data=\'{"class":"optgroup-post"}\'>';
+		foreach($taxs as $tax) {
+			$coptions[] = '<option value="tax'.$tax.'" data-data=\'{"title" : "'.$tax.'","class":"post"}\'>' . $tax . '</option>';
 		}
 		$coptions[] = '</optgroup>';
-	}*/
-
+	}
 
 	// Posts
+	 /*
 	$args = array( 'post_type' => 'post', 'posts_per_page' => -1 );
 	query_posts($args);
 	if (have_posts()) {
@@ -73,6 +104,7 @@ if ($conditionalcss_enabled) {
 		}
 		$coptions[] = '</optgroup>';
 	}
+	*/
 
 	// Pages
 	$args = array( 'post_type' => 'page', 'posts_per_page' => -1 );
@@ -110,7 +142,7 @@ if ($conditionalcss_enabled) {
 		<label><input type="checkbox" name="abovethefold[conditionalcss_enabled]" value="1"<?php if ($conditionalcss_enabled) { print ' checked="checked"'; } ?> <?php if (!$conditionalcss_enabled) { ?> onchange="if (jQuery(this).is(':checked')) { jQuery('.conditionalcssopts').fadeIn( { duration: 100 } ); } else { jQuery('.conditionalcssopts').hide(); }"<?php } ?>> Enable Conditional Critical CSS.</label>
 	</p>
 
-	<div style="clear:both;margin-top:10px;padding:5px;color:#079c2d;float:left;display:none;background-color:#efefef;margin-bottom:10px;" class="conditionalcssopts">
+	<div style="clear:both;margin-top:10px;padding:5px;color:#000;float:left;display:none;background-color:#efefef;margin-bottom:10px;" class="conditionalcssopts">
 		New options will become visible after saving.
 	</div>
 
@@ -146,6 +178,7 @@ if ($conditionalcss_enabled) {
 
 	if (!empty($options['conditional_css'])) {
 
+		
 		foreach ($options['conditional_css'] as $condition_hash => $cCSS) {
 
 			/**
@@ -162,7 +195,7 @@ if ($conditionalcss_enabled) {
 			<div class="menu-item-handle" style="width:auto!important;cursor: pointer;">
 				<span class="item-title">
 					<span class="menu-item-title"><?php print $cCSS['name']; ?></span> 
-					<span class="is-submenu" ><?php if (trim($inlinecss) !== '') { print '<span>'.size_format(strlen($inlinecss),2).'</span>'; } else { print '<span style="color:#f1b70a;">empty</span>';} ?></span>
+					<span class="is-submenu" ><?php if (trim($inlinecss) !== '') { print '<span>'.size_format(strlen($inlinecss),2).'</span>'; } else { print '<span style="color:#f1b70a;">empty</span>';} ?> <span style="float:right;">Weight: <?php print $cCSS['weight']; ?></span></span>
 					<span class="is-submenu loading-editor" style="display:none;">
 						<span style="color:#ea4335;">Loading editor...</span>
 					</span>
@@ -188,6 +221,7 @@ if ($conditionalcss_enabled) {
 	}
 ?>
 </select>
+			<div>Weight: <input type="number" size="3" style="width:50px;" name="abovethefold[conditional_css][<?php print htmlentities($condition_hash,ENT_COMPAT,'utf-8'); ?>][weight]" value="<?php print (isset($cCSS['weight']) ? intval($cCSS['weight']) : '1'); ?>" placeholder="..." /> (higher weight is selected over lower weight conditions)</div>
 
 			</div>
 			<div style="height:10px;clear:both;overflow:hidden;font-size:1px;">&nbsp;</div>

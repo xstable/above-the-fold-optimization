@@ -213,6 +213,16 @@ class Abovethefold {
 	public function is_enabled() {
 
 		/**
+		 * Disable for Google AMP pages
+		 *
+		 * @since  2.5.4
+		 * @link https://wordpress.org/support/topic/error-to-validate-amp-posts/
+		 */
+		if (function_exists('is_amp_endpoint') && is_amp_endpoint()) {
+			return false;
+		}
+
+		/**
 		 * Disable above the fold optimization
 		 */
 		if (defined('DONOTABTF') && DONOTABTF) {

@@ -1,99 +1,85 @@
-<?php 
+<?php
 
-// author info
-require_once('admin.author.class.php');
+/**
+ * Settings admin controller
+ *
+ * @since      2.5.4
+ * @package    abovethefold
+ * @subpackage abovethefold/admin
+ * @author     PageSpeed.pro <info@pagespeed.pro>
+ */
 
-?>
-<form method="post" action="<?php echo admin_url('admin-post.php?action=abovethefold_update'); ?>" data-addccss="<?php echo admin_url('admin-post.php?action=abovethefold_add_ccss'); ?>" data-delccss="<?php echo admin_url('admin-post.php?action=abovethefold_del_ccss'); ?>" id="abtf_settings_form" class="clearfix" style="margin-top:0px;">
-	<?php wp_nonce_field('abovethefold'); ?>
-	<div class="wrap abovethefold-wrapper">
-		<div id="poststuff">
-			<div id="post-body" class="metabox-holder">
-				<div id="post-body-content">
-					<div class="postbox">
+class Abovethefold_Admin_Settings {
 
-						<h3 class="hndle">
-							<span><?php _e( 'Critical CSS', 'abovethefold' ); ?></span>
-						</h3>
-						<div class="inside testcontent">
+	/**
+	 * Above the fold controller
+	 *
+	 * @access   public
+	 */
+	public $CTRL;
 
-							<p>Critical CSS is the minimum CSS required to render above the fold content (<a href="https://developers.google.com/speed/docs/insights/PrioritizeVisibleContent?hl=<?php print $lgcode;?>" target="_blank">documentation by Google</a>).</p>
+	/**
+	 * Options
+	 *
+	 * @access   public
+	 */
+	public $options;
 
-							<p><a href="https://github.com/addyosmani/critical-path-css-tools" target="_blank">This article</a> by a Google engineer provides information about the available methods for creating critical path CSS. Check out <a href="https://criticalcss.com/#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=PageSpeed.pro%3A%20Above%20The%20Fold%20Optimization" target="_blank">CriticalCSS.com</a> for an easy automated critical path CSS generator. </p>
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @since    1.0
+	 * @var      string    $plugin_name       The name of this plugin.
+	 * @var      string    $version    The version of this plugin.
+	 */
+	public function __construct( &$CTRL ) {
 
-							<table class="form-table">
-								<tr valign="top">
-									<td class="criticalcsstable">
+		$this->CTRL =& $CTRL;
+		$this->options =& $CTRL->options;
 
-										<h3 style="padding:0px;margin:0px;margin-bottom:10px;">Critical CSS</h3>
+		/**
+		 * Admin panel specific
+		 */
+		if (is_admin()) {
 
-										<p class="description" style="margin-bottom:1em;"><?php _e('Configure the Critical Path CSS to be inserted inline into the <code>&lt;head&gt;</code> of the page.', 'abovethefold'); ?></p>
+			/**
+			 * Handle form submissions
+			 */
+			$this->CTRL->loader->add_action('admin_post_abtf_settings_update', $this,  'update_settings');
 
-										<ul class="menu ui-sortable" style="width:auto!important;margin-top:0px;padding-top:0px;">
-											
-											<?php
-												require_once('admin.settings.criticalcss.inc.php');
-											?>
+		}
 
-											<?php
-												require_once('admin.settings.conditionalcss.inc.php');
-											?>
-										</ul>
-									</td>
-								</tr>
-							</table>
+	}
 
-							<table class="form-table">
+    /**
+	 * Update settings
+	 */
+	public function update_settings() {
 
-								<?php
+		check_admin_referer('abovethefold');
 
-									/**
-									 * CSS Delivery Optimization Settings
-									 */
-									require_once('admin.settings.optimizecss.inc.php');
-								
-									/**
-									 * Google Webfont Optimization Settings
-									 */
-									require_once('admin.settings.webfontoptimizer.inc.php');
-								?>
+		// stripslashes should always be called
+		// @link https://codex.wordpress.org/Function_Reference/stripslashes_deep
+		$_POST = array_map( 'stripslashes_deep', $_POST );
 
-								<tr valign="top">
-									<th scope="row">Admin Bar</th>
-									<td>
-                                        <label><input type="checkbox" name="abovethefold[adminbar]" value="1"<?php if (!isset($options['adminbar']) || intval($options['adminbar']) === 1) { print ' checked'; } ?>> Enabled</label>
-                                        <p class="description">Show a <code>PageSpeed</code> menu in the top admin bar with links to website speed and security tests such as Google PageSpeed Insights.</p>
-									</td>
-								</tr>
-								<tr valign="top">
-									<th scope="row">Clear Page Caches</th>
-									<td>
-                                        <label><input type="checkbox" name="abovethefold[clear_pagecache]" value="1"<?php if (!isset($options['clear_pagecache']) || intval($options['clear_pagecache']) === 1) { print ' checked'; } ?>> Enabled</label>
-                                        <p class="description">If enabled, the page related caches of <a href="https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/" target="_blank">supported plugins</a> is cleared when updating the above the fold settings.</p>
-									</td>
-								</tr>
-								<tr valign="top">
-									<th scope="row">Debug Modus</th>
-									<td>
-                                        <label><input type="checkbox" name="abovethefold[debug]" value="1"<?php if (isset($options['debug']) && intval($options['debug']) === 1) { print ' checked'; } ?>> Enabled</label>
-                                        <p class="description">Show debug info in the browser console for logged in admin-users.</p>
-									</td>
-								</tr>
-							</table>
-							<hr />
-							<?php
-								submit_button( __( 'Save' ), 'primary large', 'is_submit', false );
-							?>&nbsp;
-							<?php
-								submit_button( __( 'Clear Page Caches' ), 'large', 'clear_pagecache', false );
-							?>
-						</div>
-					</div>
+		$options = get_option('abovethefold');
+		if (!is_array($options)) { $options = array(); }
 
-					<!-- End of #post_form -->
+		// input
+		$input = (isset($_POST['abovethefold']) && is_array($_POST['abovethefold'])) ? $_POST['abovethefold'] : array();
 
-				</div>
-			</div> <!-- End of #post-body -->
-		</div> <!-- End of #poststuff -->
-	</div> <!-- End of .wrap -->
-</form>
+		/**
+		 * Debug / admin options
+		 */
+		$options['debug'] = (isset($input['debug']) && intval($input['debug']) === 1) ? true : false;
+		$options['clear_pagecache'] = (isset($input['clear_pagecache']) && intval($input['clear_pagecache']) === 1) ? true : false;
+		$options['adminbar'] = (isset($input['adminbar']) && intval($input['adminbar']) === 1) ? true : false;
+	
+		// update settings
+		$this->CTRL->admin->save_settings($options, 'Settings saved.');
+
+		wp_redirect(admin_url('admin.php?page=abovethefold&tab=settings'));
+		exit;
+    }
+
+}

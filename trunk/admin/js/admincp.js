@@ -119,7 +119,7 @@ jQuery(function($) {
 
     /**
      * Review animation
-     */ 
+     * / 
     if (jQuery('#reviewanim').data('count')) {
 
         window.inputChange = false;
@@ -207,5 +207,6 @@ jQuery(function($) {
         },(1000 * 60));
 
     }
+    */
 
 });

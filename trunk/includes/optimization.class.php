@@ -21,7 +21,7 @@ class Abovethefold_Optimization {
 	 * @access   public
 	 * @var      object    $CTRL
 	 */
-	public $CTRL;
+	public $CTRL; 
 
 	/**
 	 * CSS buffer started
@@ -61,11 +61,6 @@ class Abovethefold_Optimization {
 		 * Optimize CSS delivery
 		 */
 		$this->optimize_css_delivery = (isset($this->CTRL->options['cssdelivery']) && intval($this->CTRL->options['cssdelivery']) === 1) ? true : false;
-
-		// Disable CSS delivery optimization for Full CSS verification view
-		if ($this->CTRL->view === 'abtf-critical-verify') {
-			$this->optimize_css_delivery = false;
-		}
 
 		/**
 		 * Extract Full CSS view
@@ -260,7 +255,7 @@ class Abovethefold_Optimization {
 			/**
 			 * Parse CSS links
 			 */
-			$_styles = array();
+			$async_styles = array();
 			if (preg_match_all($stylesheet_regex,$buffer,$out)) {
 
 				foreach ($out[4] as $n => $file) {
@@ -333,10 +328,19 @@ class Abovethefold_Optimization {
 					if (!$media) {
 						$media = 'all';
 					}
+
+					/**
+					 * Convert HTML entities
+					 * @since 2.5.4
+					 */
+					$media = html_entity_decode($media,ENT_COMPAT,'utf-8');
+					$file = html_entity_decode($file,ENT_COMPAT,'utf-8');
+
+					// convert media to array
 					$media = explode(',',$media);
 
 					// add file to style array to be processed
-					$_styles[] = array($media,$file);
+					$async_styles[] = array($media,$file);
 
 					// remove file from HTML
 					$search[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
@@ -434,35 +438,37 @@ class Abovethefold_Optimization {
 		}
 
 
-		/**
-		 * Remove full CSS and show critical CSS only
-		 */
-		if ($this->CTRL->view === 'abtf-critical-only') {
-
-			// do not render the stylesheet files
-			$styles = false;
-
-		} else {
-
-			/**
-			 * Remove duplicate CSS files
-			 */
-			$reflog = array();
-			$styles = array();
-			foreach ($_styles as $link) {
-				$hash = md5($link[1]);
-				if (isset($reflog[$hash])) {
-					continue 1;
-				}
-				$reflog[$hash] = 1;
-				$styles[] = $link;
-			}
-		}
 
 		/**
 		 * CSS Delivery Optimization
 		 */
 		if ($this->optimize_css_delivery) {
+
+			/**
+			 * Remove full CSS and show critical CSS only
+			 */
+			if ($this->CTRL->view === 'abtf-critical-only') {
+
+				// do not render the stylesheet files
+				$styles = false;
+
+			} else {
+
+				/**
+				 * Remove duplicate CSS files
+				 */
+				$reflog = array();
+				$styles = array();
+				if (isset($async_styles) && !empty($async_styles)) {
+					foreach ($async_styles as $link) {
+						if (isset($reflog[$link[1]])) {
+							continue 1;
+						}
+						$reflog[$link[1]] = 1;
+						$styles[] = $link;
+					}
+				}
+			}
 		
 			/**
 			 * Update CSS JSON configuration
@@ -520,12 +526,23 @@ class Abovethefold_Optimization {
 		$conditionalcss_enabled = (isset($this->CTRL->options['conditionalcss_enabled']) && intval($this->CTRL->options['conditionalcss_enabled']) === 1) ? true : false;
 		
 		if ($conditionalcss_enabled && !empty($this->CTRL->options['conditional_css'])) {
+
 			foreach ($this->CTRL->options['conditional_css'] as $conditionhash => $conditional) {
 				if (empty($conditional['conditions']) || !is_array($conditional['conditions'])) { continue 1; }
 
 				foreach ($conditional['conditions'] as $condition) {
 
-					if (substr($condition,0,3) === 'pt_') {
+					if ($condition === 'frontpage') {
+
+						if (is_front_page()) {
+
+							// condition matches
+							$criticalcss_file = $this->CTRL->cache_path() . 'criticalcss_'.$conditionhash.'.css';
+							$criticalcss_name = $conditional['name'];
+							break 2;
+						}
+
+					} else if (substr($condition,0,3) === 'pt_') {
 
 						/**
 						 * Page Template Condition
@@ -546,8 +563,7 @@ class Abovethefold_Optimization {
 							 * Post Type Condition
 							 */
 							$posttype = substr($condition,3);
-							$current_posttype = get_post_type();
-							if ($current_posttype === $posttype) {
+							if (is_singular($posttype)) {
 
 								// condition matches
 								$criticalcss_file = $this->CTRL->cache_path() . 'criticalcss_'.$conditionhash.'.css';
@@ -555,6 +571,74 @@ class Abovethefold_Optimization {
 								break 2;
 							}
 						}
+					} else if (class_exists( 'WooCommerce' ) && substr($condition,0,3) === 'wc_') {
+
+						/**
+						 * WooCommerce page type
+						 */
+						$wcpage = substr($condition,3);
+						$match = false;
+						switch($wcpage) {
+							case "shop":
+								if (is_shop()) {
+									$match = true;
+								}
+							break;
+							case "product_category":
+								if (is_product_category()) {
+									$match = true;
+								}
+							break;
+							case "product_tag":
+
+								if (is_product_tag()) {
+									$match = true;
+								}
+							break;
+							case "product":
+								if (is_product()) {
+									$match = true;
+								}
+							break;
+							case "cart":
+								if (is_cart()) {
+									$match = true;
+								}
+							break;
+							case "checkout":
+								if (is_checkout()) {
+									$match = true;
+								}
+							break;
+							case "account_page":
+								if (is_account_page()) {
+									$match = true;
+								}
+							break;
+
+						}
+						if ($match) {
+
+							// condition matches
+							$criticalcss_file = $this->CTRL->cache_path() . 'criticalcss_'.$conditionhash.'.css';
+							$criticalcss_name = $conditional['name'];
+							break 2;
+						}
+
+					} else if (substr($condition,0,3) === 'tax') {
+
+						/**
+						 * Taxonomy page
+						 */
+						$tax = substr($condition,3);
+						if (is_tax( $tax )) {
+
+							// condition matches
+							$criticalcss_file = $this->CTRL->cache_path() . 'criticalcss_'.$conditionhash.'.css';
+							$criticalcss_name = $conditional['name'];
+							break 2;
+						}
+
 					} else if (substr($condition,0,3) === 'cat') {
 
 						/**
@@ -639,7 +723,6 @@ class Abovethefold_Optimization {
 			if ($this->CTRL->options['gwfo_loadmethod'] === 'inline') {
 
 				$jsfiles[] = WPABTF_PATH . 'public/js/webfont.js';
-
 				$jssettings['gwf'] = array($this->CTRL->gwfo->webfontconfig(true));
 				if ($this->CTRL->options['gwfo_loadposition'] === 'footer') {
 					$jssettings['gwf'][] = true;
@@ -693,50 +776,42 @@ class Abovethefold_Optimization {
 			);
 
 			/**
-			 * Javascript include list
+			 * Preload urls
 			 */
-			if ($this->CTRL->options['js_proxy'] && isset($this->CTRL->options['js_proxy_include']) && trim($this->CTRL->options['js_proxy_include']) !== '') {
-				$include = explode("\n",$this->CTRL->options['js_proxy_include']);
-				$jssettings['proxy']['js_include'] = array();
-				foreach ($include as $str) {
-					if (trim($str) === '') { continue; }
-					$jssettings['proxy']['js_include'][] = $str;
+			$preload_hashes = array();
+			if (isset($this->CTRL->options['js_proxy_preload']) && $this->CTRL->options['js_proxy_preload'] !== '') {
+				$preload_urls = explode("\n",$this->CTRL->options['js_proxy_preload']);
+				foreach ($preload_urls as $url) {
+					if (trim($url) !== '') {
+						$cache_hash = $this->CTRL->proxy->cache_hash(trim($url),'js');
+						if ($cache_hash) {
+							$preload[] = array(trim($url),$cache_hash);
+						}
+					}
+				}
+			}
+			if (isset($this->CTRL->options['css_proxy_preload']) && $this->CTRL->options['css_proxy_preload'] !== '') {
+				$preload_urls = explode("\n",$this->CTRL->options['css_proxy_preload']);
+				foreach ($preload_urls as $url) {
+					if (trim($url) !== '') {
+						$cache_hash = $this->CTRL->proxy->cache_hash(trim($url),'css');
+						if ($cache_hash) {
+							$preload[] = array(trim($url),$cache_hash);
+						}
+					}
 				}
 			}
 
-			/**
-			 * CSS include list
-			 */
-			if ($this->CTRL->options['css_proxy'] && trim($this->CTRL->options['css_proxy_include']) !== '') {
-				$include = explode("\n",$this->CTRL->options['css_proxy_include']);
-				$jssettings['proxy']['css_include'] = array();
-				foreach ($include as $str) {
-					if (trim($str) === '') { continue; }
-					$jssettings['proxy']['css_include'][] = $str;
-				}
+			if (!empty($preload)) {
+				$jssettings['proxy']['preload'] = $preload;
+				$jssettings['proxy']['base'] = $this->CTRL->cache_dir() . 'proxy/';
 			}
 
-			/**
-			 * Javascript exclude list
-			 */
-			if ($this->CTRL->options['js_proxy'] && trim($this->CTRL->options['js_proxy_exclude']) !== '') {
-				$exclude = explode("\n",$this->CTRL->options['js_proxy_exclude']);
-				$jssettings['proxy']['js_exclude'] = array();
-				foreach ($exclude as $str) {
-					if (trim($str) === '') { continue; }
-					$jssettings['proxy']['js_exclude'][] = $str;
-				}
-			}
-
-			/**
-			 * CSS exclude list
-			 */
-			if ($this->CTRL->options['css_proxy'] && trim($this->CTRL->options['css_proxy_exclude']) !== '') {
-				$exclude = explode("\n",$this->CTRL->options['css_proxy_exclude']);
-				$jssettings['proxy']['css_exclude'] = array();
-				foreach ($exclude as $str) {
-					if (trim($str) === '') { continue; }
-					$jssettings['proxy']['css_exclude'][] = $str;
+			$keys = array('js_include','css_include','css_include','css_exclude');
+			foreach ($keys as $key) {
+				$params = explode('_',$key);
+				if ($this->CTRL->options[$params[0] . '_proxy'] && !empty($this->CTRL->proxy->$key)) {
+					$jssettings['proxy'][$key] = $this->CTRL->proxy->$key;
 				}
 			}
 
@@ -798,46 +873,50 @@ class Abovethefold_Optimization {
 		$inlineJS .= 'Abtf.h(' . json_encode($jssettings) . ');';
 		print '<script rel="abtf">' . $inlineJS . '</script>';
 
-		if ($this->CTRL->view === 'abtf-critical-verify') {
+		print '<style type="text/css" rel="abtf" id="AbtfCSS">';
 
-			// hide Critical CSS in verifification display
-			print '<style type="text/css" rel="abtf" id="AbtfCSS">
+		/**
+		 * Hide Critical CSS for verification view
+		 */
+		if ($this->CTRL->view === 'abtf-critical-verify') {
+			if ($debug) {
+				print '
 /*!
  * Above The Fold Optimization ' . $this->CTRL->get_version() . '
- * Critical CSS hidden for Full CSS verification view
+ * Full CSS View
+ * No Critical CSS
  */
-</style>';
-		} else {
+';
+			}
+		}
 
-			print '<style type="text/css" rel="abtf" id="AbtfCSS">';
+		/**
+		 * Include inline CSS
+		 */
+		 else if ($inlineCSS !== '') {
 
 			/**
-			 * Include inline CSS
+			 * Debug header
 			 */
-			if ($inlineCSS !== '') {
-
-				/**
-				 * Debug header
-				 */
-				if ($debug) {
-					print '
+			if ($debug) {
+				print '
 /*!
  * Above The Fold Optimization ' . $this->CTRL->get_version() . '
  * Debug enabled (admin only)
  * Critical CSS: ' . htmlentities($criticalcss_name, ENT_COMPAT, 'utf-8') . (($criticalcss_conditional) ? ' (conditional)': '') . '
  */
-	';
-				}
+';
+			}
 
-				print $inlineCSS;
+			print $inlineCSS;
 
-			} else {
+		} else {
 
-				/**
-				 * Print warning for admin users that critical CSS is empty
-				 */
-				if (current_user_can( 'manage_options' )) {
-					print '
+			/**
+			 * Print warning for admin users that critical CSS is empty
+			 */
+			if (current_user_can( 'manage_options' )) {
+				print '
 /*!
  * Above The Fold Optimization ' . $this->CTRL->get_version() . '
  * 
@@ -848,20 +927,18 @@ class Abovethefold_Optimization {
  * This message is displayed for admins only.
  *
  */
-	';
-				} else {
-					print '
+';
+			} else {
+				print '
 /*!
  * Above The Fold Optimization ' . $this->CTRL->get_version() . ' // EMPTY
  */
-	';
-				}
-
+';
 			}
 
-			print '</style>';
-
 		}
+
+		print '</style>';
 
 		/**
 		 * Start async loading of CSS

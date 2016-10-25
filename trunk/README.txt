@@ -85,6 +85,20 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 
 == Changelog ==
 
+= 2.5.4 =
+* Bugfix: `WebFontConfig` not loaded for Google Fonts when pre set config omitted.
+* Bugfix: HTML entity encoded urls not handled correctly by proxy.
+* Bugfix: **fonts.googleapis.com/css** added to default ignore list for external CSS proxy (user agent based font serving).
+* Bugfix: proxy ignore / include list not applied on filters.
+* Bugfix: critical CSS quality test not displaying matching url.
+* Improved: crtical CSS quality test.
+* Improved: admin panel layout.
+* Added: external resource proxy preload urls for direct access to proxy cache files for captured "script injected" async resources.
+* Added: external resource proxy custom url (e.g. nginx proxy).
+* Added: Critical CSS conditions for WordPress taxonomy and WooCommerce.
+* Added: optimization plugin module for [nginx-helper](https://wordpress.org/plugins/nginx-helper/) (Nginx fastcgi cache plugin).
+* Disabled plugin for AMP pages. (@RebellionNT1)
+
 = 2.5.3 =
 * Improved: external resource proxy support for protocol relative urls.
 
@@ -98,6 +112,7 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 = 2.5.0 =
 * Bugfix: full CSS extraction for pages with query string.
 * Bugfix: admin PageSpeed menu not disabled.
+* Bugfix: removed stripslashes on conditional CSS.
 * Improved Above the fold client javascript.
 * Improved full CSS extraction.
 * Improved cleanup on plugin removal.
