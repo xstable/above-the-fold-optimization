@@ -58,7 +58,7 @@
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Preload List</h5>
 										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[js_proxy_preload]"><?php if (isset($options['js_proxy_preload'])) { echo htmlentities($options['js_proxy_preload'],ENT_COMPAT,'utf-8'); } ?></textarea>
-										<p class="description">Enter the exact urls of external scripts to preload for "script injected" async script capture, e.g. <code>https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js</code>. This setting will enable the proxy to load the direct cache url instead of the WordPress PHP proxy url. One url per line.</p>
+										<p class="description">Enter the exact urls of external scripts to preload for "script injected" async script capture, e.g. <code>https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url per line.</p>
 									</td>
 								</tr>
 								<tr valign="top">
@@ -89,7 +89,7 @@
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Preload List</h5>
 										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_preload]"><?php if (isset($options['css_proxy_preload'])) { echo htmlentities($options['css_proxy_preload'],ENT_COMPAT,'utf-8'); } ?></textarea>
-										<p class="description">Enter the exact urls of external stylesheets to preload for "script injected" async stylesheet capture, e.g. <code>https://fonts.googleapis.com/css?family=Open+Sans:400</code>. This setting will enable the proxy to load the direct cache url instead of the WordPress PHP proxy url. One url per line.</p>
+										<p class="description">Enter the exact urls of external stylesheets to preload for "script injected" async stylesheet capture, e.g. <code>https://fonts.googleapis.com/css?family=Open+Sans:400</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url per line.</p>
 									</td>
 								</tr>
 							
