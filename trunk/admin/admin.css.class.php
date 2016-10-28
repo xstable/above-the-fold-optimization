@@ -97,7 +97,41 @@ class Abovethefold_Admin_CSS {
 			}
 		}
 
-		$options['gwfo_googlefonts'] = trim($input['gwfo_googlefonts']);
+		/**
+		 * Google Fonts
+		 */
+		$options['gwfo_googlefonts'] = array();
+
+		$input['gwfo_googlefonts'] = trim($input['gwfo_googlefonts']);
+		if ($input['gwfo_googlefonts'] !== '') {
+			$fonts = explode("\n",$input['gwfo_googlefonts']);
+			if (!empty($fonts)) {
+				foreach ($fonts as $font) {
+					$font = trim($font);
+					if ($font === '') { continue; }
+					$options['gwfo_googlefonts'][] = $font;
+				}
+				$options['gwfo_googlefonts'] = array_unique($options['gwfo_googlefonts']);
+			}
+		}
+
+		/**
+		 * Google Fonts Remove List
+		 */
+		$options['gwfo_googlefonts_remove'] = array();
+
+		$input['gwfo_googlefonts_remove'] = trim($input['gwfo_googlefonts_remove']);
+		if ($input['gwfo_googlefonts_remove'] !== '') {
+			$fonts = explode("\n",$input['gwfo_googlefonts_remove']);
+			if (!empty($fonts)) {
+				foreach ($fonts as $font) {
+					$font = trim($font);
+					if ($font === '') { continue; }
+					$options['gwfo_googlefonts_remove'][] = $font;
+				}
+				$options['gwfo_googlefonts_remove'] = array_unique($options['gwfo_googlefonts_remove']);
+			}
+		}
 
 
 		// update settings

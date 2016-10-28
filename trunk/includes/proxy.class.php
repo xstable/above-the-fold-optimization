@@ -22,6 +22,16 @@ class Abovethefold_Proxy {
 	public $CTRL; 
 
 	/**
+	 * Preload list for javascript
+	 */
+	public $js_preload = array();
+
+	/**
+	 * Preload list for styles (CSS) 
+	 */
+	public $css_preload = array();
+
+	/**
 	 * Include list for javascript
 	 */
 	public $js_include = array();
@@ -42,6 +52,16 @@ class Abovethefold_Proxy {
 	public $css_exclude = array(
 		'fonts.googleapis.com/css'
 	);
+
+	/**
+	 * Resources with custom expire time
+	 */
+	public $custom_expire = array();
+
+	/**
+	 * Regex based target url translation
+	 */
+	public $regex_url_translation = array();
 
 	/**
 	 * Valid javascript mimetypes
@@ -67,6 +87,11 @@ class Abovethefold_Proxy {
 	 * Absolute path with trailingslash
 	 */
 	private $abspath;
+	
+	/**
+	 * Default cache expire time in seconds
+	 */
+	public $default_cache_expire = 2592000; // 30 days
 
 	/**
 	 * Initialize the class and set its properties.
@@ -102,23 +127,92 @@ class Abovethefold_Proxy {
 				));
 		}
 
-		// sanitize array (remove empty)
+		// preload list
+		$preloadlist = array();
 
 		if ($this->CTRL->options['css_proxy']) {
 		
 			// add filter for CSS file processing
 			$this->CTRL->loader->add_filter( 'abtf_cssfile_pre', $this, 'process_cssfile' );
+
+			/**
+			 * Preload urls
+			 */
+			if (isset($this->CTRL->options['css_proxy_preload']) && is_array($this->CTRL->options['css_proxy_preload']) && !empty($this->CTRL->options['css_proxy_preload'])) {
+				if (!empty($this->CTRL->options['css_proxy_preload'])) {
+					foreach ($this->CTRL->options['css_proxy_preload'] as $url) {
+						$preloadlist[] = array($url,'css');
+					}
+				}
+			}
 		}
 
 		if ($this->CTRL->options['js_proxy']) {
 		
 			// add filter for javascript file processing
 			$this->CTRL->loader->add_filter( 'abtf_jsfile_pre', $this, 'process_jsfile' );
+
+			/**
+			 * Preload urls
+			 */
+			if (isset($this->CTRL->options['js_proxy_preload']) && is_array($this->CTRL->options['js_proxy_preload']) && !empty($this->CTRL->options['js_proxy_preload'])) {
+				foreach ($this->CTRL->options['js_proxy_preload'] as $url) {
+					$preloadlist[] = array($url,'js');
+				}
+			}
+		}
+
+		if (!empty($preloadlist)) {
+
+			$preload_hashes = array();
+			foreach ($preloadlist as $preloadurl) {
+
+				list ($url,$type) = $preloadurl;
+
+				$url_config = false;
+
+				// JSON config
+				if ($url && is_array($url)) {
+
+					// regex
+					if (!isset($url['url']) || trim($url['url']) === '') {
+						// no target url
+						continue 1;
+					}
+
+					// apply custom expire time
+					if (isset($url['expire']) && $url['expire']) {
+						$this->custom_expire[$url['url']] = $url['expire'];
+					}
+
+					if (isset($url['regex']) && $url['regex']) {
+						$this->regex_url_translation[$url['url']] = array($url['regex'],$url['regex-flags']);
+					}
+
+					$url_config = $url;
+					$url = $url_config['url'];
+					unset($url_config['url']);
+				}
+
+				// verify url
+				$url = trim($url);
+				if ($url === '') { continue; }
+
+				$cache_hash = $this->cache_hash($url,$type,$url);
+				if ($cache_hash) {
+					if ($url_config && isset($url_config['regex'])) {
+						$this->{$type . '_preload'}[] = array('regex',$cache_hash,$url_config['regex'],(isset($url_config['regex-flags']) ? $url_config['regex-flags'] : ''));
+					} else {
+						$this->{$type . '_preload'}[] = array($url,$cache_hash);
+					}
+				} else if ($url_config && isset($url_config['regex'])) {
+					$this->{$type . '_preload'}[] = array('regex',false,$url_config['regex'],(isset($url_config['regex-flags']) ? $url_config['regex-flags'] : ''),$url);
+				}
+			}
 		}
 
 		// WordPress root with trailingslash
 		$this->abspath = trailingslashit( ABSPATH );
-
 	}
 
 	/**
@@ -142,7 +236,7 @@ class Abovethefold_Proxy {
 
 				// try direct url to file
 				if ($tryCache) {
-					$cache_url = $this->cache_url($filehash, $type);
+					$cache_url = $this->cache_url($filehash, $type, $url);
 					if ($cache_url) {
 						return $cache_url;
 					}
@@ -271,7 +365,9 @@ class Abovethefold_Proxy {
 		// Initialize cache path
 		$cache_path = $this->CTRL->cache_path() . 'proxy/';
 		if (!is_dir($cache_path)) {
-			mkdir($cache_path,0775);
+			if (!@mkdir($cache_path, $this->CTRL->CHMOD_DIR, true)) {
+				wp_die('Failed to create directory ' . $cache_path);
+			}
 		}
 
 		$dir_blocks = array_slice(str_split($hash, 2), 0, 5);
@@ -284,7 +380,9 @@ class Abovethefold_Proxy {
 		}
 
 		if (!is_dir($cache_path)) {
-			mkdir($cache_path, 0755, true);
+			if (!@mkdir($cache_path, $this->CTRL->CHMOD_DIR, true)) {
+				wp_die('Failed to create directory ' . $cache_path);
+			}
 		}
 
 		$cache_path .= $hash;
@@ -303,17 +401,49 @@ class Abovethefold_Proxy {
 	}
 
 	/**
+	 * Cache file expired check
+	 */
+	public function cache_file_expired($cache_file, $url) {
+
+		// file does not exist
+		if (!$cache_file || !file_exists($cache_file)) {
+			return true;
+		}
+
+		$last_modified = filemtime($cache_file);
+
+		if (!empty($this->custom_expire) && isset($this->custom_expire[$url])) {
+			$expire_time = $this->custom_expire[$url];
+		} else {
+			$expire_time = $this->default_cache_expire;
+		}
+
+		// expired
+		if ($last_modified < (time() - $expire_time)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Cache url
 	 */
-	public function cache_url($hash, $type) {
+	public function cache_url($hash, $type, $urlExpiredCheck = false) {
 
 		// verify hash
 		if (strlen($hash) !== 32) {
 			wp_die('Invalid cache file hash');
 		}
 
-		$exists = $this->cache_file_path($hash, $type, false);
-		if (!$exists) {
+		// check if cache file exists
+		$cache_path = $this->cache_file_path($hash, $type, false);
+		if (!$cache_path) {
+			return false;
+		}
+
+		// check if cache file is expired
+		if ($urlExpiredCheck && $this->cache_file_expired($cache_path, $urlExpiredCheck)) {
 			return false;
 		}
 
@@ -359,24 +489,12 @@ class Abovethefold_Proxy {
 			$this->forbidden();
 		}
 
-		/**
-		 * Translate protocol relative url
-		 * 
-		 * @since  2.5.3
-		 */
-		if (preg_match('|^//|Ui',$url)) {
-
-			// prefix url with protocol
-			$url = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https:' : 'http:') . $url;
-		}
-
-		// invalid protocol
-		if (!preg_match('|^http(s)?://|Ui',$url) && preg_match('|^[a-z0-9_-]*://|Ui',$url)) {
+		// proxy resource
+		$proxy_resource = $this->proxy_resource($url, $type);
+		if (!$proxy_resource) {
 			$this->forbidden();
 		}
-
-		// proxy resource
-		list($filehash, $cache_file) = $this->proxy_resource($url, $type);
+		list($filehash, $cache_file, $url) = $proxy_resource;
 
 		// Proxy failed for url (potentially insecure, not a valid javascript or CSS resource, url not recognized etc)
 		if (!$cache_file) {
@@ -419,18 +537,24 @@ class Abovethefold_Proxy {
 		    ini_set("zlib.output_compression", 1);
 		}
 
-
 		// prevent sniffing of content type
 		header("X-Content-Type-Options: nosniff", true);
 
 		/**
+		 * Custom expire time for url
+		 */
+		if (!empty($this->custom_expire) && isset($this->custom_expire[$url])) {
+			$expire_time = $this->custom_expire[$url];
+		} else {
+			$expire_time = $this->default_cache_expire;
+		}
+
+		/**
 		 * Cache headers
 		 */
-		// cache age: 30 days
-		$cache_age = 2592000;
 		header("Pragma: cache");
-		header("Cache-Control: max-age=2592000, public");
-		header("Expires: " .  gmdate("D, d M Y H:i:s", ($last_modified + $cache_age)) . " GMT");
+		header("Cache-Control: max-age=".$expire_time.", public");
+		header("Expires: " .  gmdate("D, d M Y H:i:s", ($last_modified + $expire_time)) . " GMT");
 
 		readfile($cache_file);
 
@@ -448,8 +572,36 @@ class Abovethefold_Proxy {
 
 		// parse url
 		$parsed = $this->parse_url($url);
-		if (!$parsed) { return; }
+		if (!$parsed) { return false; }
 		list($url,$filehash,$local_file) = $parsed;
+
+		/**
+		 * File does not match include list, ignore
+		 */
+		if (!$this->url_include($url, $type)) {
+			return false;
+		}
+
+		/**
+		 * File matches exclude list, ignore
+		 */
+		if ($this->url_exclude($url, $type)) {
+			return false;
+		}
+
+		// cache file
+		$cache_file = $this->cache_file_path($filehash, $type);
+		
+		/**
+		 * Return cache file
+		 */
+		if (file_exists($cache_file)) {
+
+			// check if cache file is expired
+			if (!$this->cache_file_expired($cache_file, $url)) {
+				return array($filehash,$cache_file, $url);
+			}
+		}
 
 		// verify local file
 		if ($local_file) {
@@ -493,47 +645,27 @@ class Abovethefold_Proxy {
 		}
 
 		/**
-		 * File does not match include list, ignore
-		 */
-		if (!$this->url_include($url, $type)) {
-			return false;
-		}
-
-		/**
-		 * File matches exclude list, ignore
-		 */
-		if ($this->url_exclude($url, $type)) {
-			return false;
-		}
-
-		// cache file
-		$cache_file = $this->cache_file_path($filehash, $type);
-		
-		/**
 		 * Download file
 		 */
-		if (!file_exists($cache_file)) {
-
-			if ($local_file) {
-				$file_data = file_get_contents($local_file);
-			} else {
-				$file_data = $this->CTRL->curl_get($url);
-			}
-
-			/**
-			 * Apply optimization filters to resource content
-			 */
-			$file_data = apply_filters('abtf_css', $file_data);
-
-			if ($file_data) {
-				file_put_contents($cache_file,$file_data);
-			} else {
-				wp_die('Failed to proxy file ' . htmlentities($url,ENT_COMPAT,'utf-8'));
-			}
-
+		if ($local_file) {
+			$file_data = file_get_contents($local_file);
+		} else {
+			$file_data = $this->CTRL->curl_get($url);
 		}
 
-		return array($filehash,$cache_file);
+		/**
+		 * Apply optimization filters to resource content
+		 */
+		$file_data = apply_filters('abtf_css', $file_data);
+
+		if ($file_data) {
+			file_put_contents($cache_file,$file_data);
+			chmod($cache_file, $this->CTRL->CHMOD_FILE);
+		} else {
+			wp_die('Failed to proxy file ' . htmlentities($url,ENT_COMPAT,'utf-8'));
+		}
+
+		return array($filehash,$cache_file,$url);
 	}
 
 	/**
@@ -545,8 +677,6 @@ class Abovethefold_Proxy {
 
 		/**
 		 * Translate protocol relative url
-		 * 
-		 * @since  2.5.3
 		 */
 		if (substr($url,0,2) === '//') {
 
@@ -617,6 +747,9 @@ class Abovethefold_Proxy {
 
 		} else {
 
+			// translate url
+			$url = $this->regex_translate_url($url);
+
 			// file hash based on url
 			$filehash = md5($url);
 
@@ -625,15 +758,38 @@ class Abovethefold_Proxy {
 	}
 
 	/**
+	 * Translate url based on regex config
+	 */
+	public function regex_translate_url($url) {
+		if (empty($this->regex_url_translation)) {
+			return $url;
+		}
+		foreach ($this->regex_url_translation as $matchurl => $regex) {
+			if (preg_match('|'.str_replace('|','\\|',$regex[0]).'|' . $regex[1],$url)) {
+				return $matchurl;
+			}
+		}
+		return $url;
+	}
+
+	/**
 	 * Return cache hash for url
 	 */
-	public function cache_hash($url, $type) {
+	public function cache_hash($url, $type, $urlExpiredCheck = false) {
 
 		$parsed = $this->parse_url($url);
 		if ($parsed) {
-			if ($this->cache_file_path($parsed[1], $type, false)) {
-				return $parsed[1];
+			$cache_path = $this->cache_file_path($parsed[1], $type, false);
+			if (!$cache_path) {
+				return false;
 			}
+
+			// check if cache file is expired
+			if ($urlExpiredCheck && $this->cache_file_expired($cache_path, $urlExpiredCheck)) {
+				return false;
+			}
+
+			return $parsed[1];
 		}
 
 		// not in cache

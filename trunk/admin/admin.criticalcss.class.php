@@ -130,6 +130,7 @@ class Abovethefold_Admin_CriticalCSS {
 
 				// write Critical CSS
 				@file_put_contents( $cssfile, $css );
+				chmod($cssfile, $this->CTRL->CHMOD_FILE);
 
 				// failed to store Critical CSS
 				if (!is_writable($cssfile)) {
@@ -162,6 +163,7 @@ class Abovethefold_Admin_CriticalCSS {
 
 							// write Critical CSS
 							@file_put_contents( $cssfile, $css );
+							chmod($cssfile, $this->CTRL->CHMOD_FILE);
 
 							// failed to store Critical CSS
 							if (!is_writable($cssfile)) {

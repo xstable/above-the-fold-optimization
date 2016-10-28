@@ -93,13 +93,92 @@ class Abovethefold_Admin_Proxy {
 		$options['css_proxy'] = (isset($input['css_proxy']) && intval($input['css_proxy']) === 1) ? true : false;
 		$options['css_proxy_include'] = trim($input['css_proxy_include']);
 		$options['css_proxy_exclude'] = trim($input['css_proxy_exclude']);
-		$options['css_proxy_preload'] = trim($input['css_proxy_preload']);
+
+		// verify preload urls
+		if (trim($input['css_proxy_preload']) !== '') {
+
+			$preload_urls = explode("\n",trim($input['css_proxy_preload']));
+			$options['css_proxy_preload'] = array();
+
+			if (!empty($preload_urls)) {
+				foreach ($preload_urls as $url) {
+					$url = trim($url);
+					if ($url === '') { continue; }
+
+					// JSON config
+					if (substr($url,0,1) === '{') {
+						$url_config = @json_decode($url,true);
+						if (!is_array($url_config)) {
+							$this->CTRL->admin->set_notice('The CSS preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> was not recognized as valid JSON.', 'ERROR');
+							continue;
+						}
+						if (!isset($url_config['url'])) {
+							$this->CTRL->admin->set_notice('The CSS preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> does not contain a target url.', 'ERROR');
+							// no target url
+							continue 1;
+						}
+
+						if (isset($url_config['expire']) && $url_config['expire'] !== '' && !(!is_numeric($url_config['expire']) || intval($url_config['expire']) <= 0)) {
+							$this->CTRL->admin->set_notice('The CSS preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid expire time.', 'ERROR');
+							// invalid expire time
+							
+							$url_config['expire'] = 86400;
+						}
+
+						$options['css_proxy_preload'][] = $url_config;
+					} else {
+
+						$options['css_proxy_preload'][] = $url;
+					}
+				}
+			}
+		}
 
 		// Javascript proxy
 		$options['js_proxy'] = (isset($input['js_proxy']) && intval($input['js_proxy']) === 1) ? true : false;
 		$options['js_proxy_include'] = trim($input['js_proxy_include']);
 		$options['js_proxy_exclude'] = trim($input['js_proxy_exclude']);
-		$options['js_proxy_preload'] = trim($input['js_proxy_preload']);
+
+		// verify preload urls
+		if (trim($input['js_proxy_preload']) !== '') {
+
+			$preload_urls = explode("\n",trim($input['js_proxy_preload']));
+			$options['js_proxy_preload'] = array();
+
+			if (!empty($preload_urls)) {
+				foreach ($preload_urls as $url) {
+					$url = trim($url);
+					if ($url === '') { continue; }
+
+					// JSON config
+					if (substr($url,0,1) === '{') {
+						$url_config = @json_decode($url,true);
+						
+						if (!is_array($url_config)) {
+							$this->CTRL->admin->set_notice('The Javascript preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> was not recognized as valid JSON.', 'ERROR');
+							continue;
+						}
+						if (!isset($url_config['url'])) {
+							$this->CTRL->admin->set_notice('The Javascript preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> does not contain a target url.', 'ERROR');
+							// no target url
+							continue 1;
+						}
+
+						if (isset($url_config['expire']) && $url_config['expire'] !== '' && !(!is_numeric($url_config['expire']) || intval($url_config['expire']) <= 0)) {
+							$this->CTRL->admin->set_notice('The Javascript preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid expire time.', 'ERROR');
+							// invalid expire time
+							$url_config['expire'] = 86400;
+						}
+
+						$options['js_proxy_preload'][] = $url_config;
+					} else {
+
+						$options['js_proxy_preload'][] = $url;
+					}
+				}
+			}
+
+		}
 
 		// update settings
 		$this->CTRL->admin->save_settings($options, 'Proxy settings saved.');

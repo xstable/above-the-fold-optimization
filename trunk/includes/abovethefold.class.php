@@ -89,6 +89,12 @@ class Abovethefold {
 	public $template_redirect_called = false;
 
 	/**
+	 * Default permissions
+	 */
+	public $CHMOD_DIR;
+	public $CHMOD_FILE;
+
+	/**
 	 * Construct and initiated Abovethefold class.
 	 *
 	 * @since    1.0
@@ -106,6 +112,10 @@ class Abovethefold {
 		if (!$this->is_enabled()) {
 			$this->disabled = true;
 		}
+
+		// set permissions
+		$this->CHMOD_DIR = ( ! defined('FS_CHMOD_DIR') ) ? ( fileperms( ABSPATH ) & 0777 | 0755 ) : FS_CHMOD_DIR;
+		$this->CHMOD_FILE = ( ! defined('FS_CHMOD_FILE') ) ? ( fileperms( ABSPATH . 'index.php' ) & 0777 | 0644 ) : FS_CHMOD_FILE;
 
 		/**
 		 * Register Activate / Deactivate hooks.
@@ -455,7 +465,9 @@ class Abovethefold {
 		$dir = wp_upload_dir();
 		$path = trailingslashit($dir['basedir']) . 'abovethefold/';
 		if (!is_dir($path)) {
-			mkdir( $path, 0755);
+			if (!@mkdir( $path, $this->CHMOD_DIR)) {
+				wp_die('Failed to write to ' . $path);
+			}
 		}
 		return apply_filters('abovethefold_cache_path', $path);
 	}

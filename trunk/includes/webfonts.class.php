@@ -34,6 +34,11 @@ class Abovethefold_WebFonts {
 	public $cdn_version = '1.6.26';
 
 	/**
+	 * Google fonts
+	 */
+	public $googlefonts = array();
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0
@@ -47,11 +52,10 @@ class Abovethefold_WebFonts {
 			return; // above the fold optimization disabled for area / page
 		}
 
-		// parse google fonts from settings
-		if (!isset($this->CTRL->options['gwfo_googlefonts'])) {
-			$this->CTRL->options['gwfo_googlefonts'] = '';
+		// load google fonts from settings
+		if (isset($this->CTRL->options['gwfo_googlefonts']) && is_array($this->CTRL->options['gwfo_googlefonts'])) {
+			$this->googlefonts = $this->CTRL->options['gwfo_googlefonts'];
 		}
-		$this->googlefonts = explode("\n",$this->CTRL->options['gwfo_googlefonts']);
 
 		// define default settings
 		if (!isset($this->CTRL->options['gwfo_loadmethod'])) {
@@ -300,6 +304,7 @@ class Abovethefold_WebFonts {
 		$new = false; // new fonts?
 
 		foreach ($googlefonts as $googlefont) {
+			$googlefont = trim($googlefont);
 			if (!in_array($googlefont,$current_googlefonts)) {
 				$new = true;
 				$current_googlefonts[] = $googlefont;
@@ -310,11 +315,11 @@ class Abovethefold_WebFonts {
 		 * Update Google Web Font Configuration
 		 */
 		if ($new) {
-			$options['gwfo_googlefonts'] = implode("\n",array_unique($current_googlefonts));
+			$options['gwfo_googlefonts'] = array_unique($current_googlefonts);
 			update_option('abovethefold',$options);
 
 			$this->CTRL->options['gwfo_googlefonts'] = $options['gwfo_googlefonts'];
-			$this->googlefonts = array_unique($current_googlefonts);
+			$this->googlefonts = $options['gwfo_googlefonts'];
 		}
 	}
 
@@ -334,17 +339,9 @@ class Abovethefold_WebFonts {
 		 */
         if (isset($urlParameters['text'])) {
 
-        	// initiate custom fonts array
-        	/*if (!isset($fonts['custom'])) {
-        		$fonts['custom'] = array(
-        			'name' => array(),
-        			'url' => array()
-        		);
-        	}
-
-            $fontFamily = explode(':', $urlParameters['family']);
-            $fonts['custom']['name'][] = $fontFamily[0];
-            $fonts['custom']['url'][] = $fontLink;*/
+        	/**
+        	 * @todo custom fonts
+        	 */
 
         } else {
 
@@ -397,6 +394,31 @@ class Abovethefold_WebFonts {
 
 				$WebFontConfig = trim($this->CTRL->options['gwfo_config']);
 			}
+		}
+
+		/**
+		 * Apply Google Font Remove List
+		 * 
+		 * @since 2.5.6
+		 */
+		if (!empty($this->googlefonts) && isset($this->CTRL->options['gwfo_googlefonts_remove']) && !empty($this->CTRL->options['gwfo_googlefonts_remove'])) {
+
+			$googlefonts = array();
+			foreach ($this->googlefonts as $font) {
+
+				$remove = false;
+				foreach ($this->CTRL->options['gwfo_googlefonts_remove'] as $removeFont) {
+					if (strpos($font,$removeFont) !== false) {
+						// remove
+						$remove = true;
+					}
+				}
+				if (!$remove) {
+					$googlefonts[] = $font;
+				}
+			}
+
+			$this->googlefonts = $googlefonts;
 		}
 
 		/**

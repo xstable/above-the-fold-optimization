@@ -170,9 +170,19 @@
 												<tr valign="top">
 													<th scope="row">Google Web Fonts</th>
 													<td>
-														<textarea style="width: 100%;height:<?php if (count(explode("\n",$options['gwfo_googlefonts'])) > 3) { print '100px'; } else { print '50px'; } ?>;font-size:11px;" name="abovethefold[gwfo_googlefonts]" placeholder="Droid Sans
-							Open Sans Condensed:300,700:latin,greek"><?php if (isset($options['gwfo_googlefonts'])) { echo htmlentities($options['gwfo_googlefonts']); } ?></textarea>
+														<h5 class="h">&nbsp;Include List</h5>
+														<textarea style="width: 100%;height:<?php if (count($options['gwfo_googlefonts']) > 3) { print '100px'; } else { print '50px'; } ?>;font-size:11px;" name="abovethefold[gwfo_googlefonts]" placeholder="Droid Sans
+							Open Sans Condensed:300,700:latin,greek"><?php if (isset($options['gwfo_googlefonts']) && !empty($options['gwfo_googlefonts'])) { echo htmlentities(implode("\n",$options['gwfo_googlefonts'])); } ?></textarea>
 														<p class="description">Enter the <a href="https://developers.google.com/fonts/docs/getting_started?hl=<?php print $lgcode;?>&csw=1" target="_blank">Google Font API</a> definitions of <a href="https://fonts.google.com/?hl=<?php print $lgcode;?>" target="_blank">Google Web Fonts</a> to load. One font per line. (<a href="https://github.com/typekit/webfontloader#google" target="_blank">documentation</a>)</p>
+														<br />
+														<h5 class="h">&nbsp;Exclude List</h5>
+														<textarea style="width: 100%;height:<?php if (count($options['gwfo_googlefonts_remove']) > 3) { print '100px'; } else { print '50px'; } ?>;font-size:11px;" name="abovethefold[gwfo_googlefonts_remove]"><?php if (isset($options['gwfo_googlefonts_remove']) && !empty($options['gwfo_googlefonts_remove'])) { echo htmlentities(implode("\n",$options['gwfo_googlefonts_remove'])); } ?></textarea>
+														<p class="description">Enter (parts of) Google Web Font definitions to remove, e.g. <code>Open Sans</code>. This feature is useful when loading fonts locally. One font per line.</p>
+														
+														<h4 class="h" style="margin-bottom:10px;">Local Font Loading</h4>
+														<p class="description">Google Fonts are served from <code>fonts.googleapis.com</code> that is causing a render-blocking warning in the Google PageSpeed test. The Google fonts stylesheet can not be cached by the <em>external resource proxy</em> because it serves different content based on the client.</p>
+														<p class="description" style="margin-top:7px;">To solve the PageSpeed Score issue while also achieving the best font render performance, it is possible to download the Google fonts and load them locally (from the critical CSS). Loading Google fonts locally enables to achieve a Google PageSpeed 100 Score while also preventing a font flicker effect during navigation.</p>
+														<p class="description" style="margin-top:7px;">Check out <a href="https://google-webfonts-helper.herokuapp.com/fonts#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=PageSpeed.pro%3A%20Above%20The%20Fold%20Optimization" target="_blank">Google Webfonts Helper</a> for a solution to download Google fonts.</p>
 													</td>
 												</tr>
 											</table>

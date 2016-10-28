@@ -779,26 +779,14 @@ class Abovethefold_Optimization {
 			 * Preload urls
 			 */
 			$preload_hashes = array();
-			if (isset($this->CTRL->options['js_proxy_preload']) && $this->CTRL->options['js_proxy_preload'] !== '') {
-				$preload_urls = explode("\n",$this->CTRL->options['js_proxy_preload']);
-				foreach ($preload_urls as $url) {
-					if (trim($url) !== '') {
-						$cache_hash = $this->CTRL->proxy->cache_hash(trim($url),'js');
-						if ($cache_hash) {
-							$preload[] = array(trim($url),$cache_hash);
-						}
-					}
+			if (isset($this->CTRL->options['css_proxy']) && $this->CTRL->options['css_proxy'] && !empty($this->CTRL->proxy->css_preload)) {
+				foreach ($this->CTRL->proxy->css_preload as $url) {
+					$preload[] = $url;
 				}
 			}
-			if (isset($this->CTRL->options['css_proxy_preload']) && $this->CTRL->options['css_proxy_preload'] !== '') {
-				$preload_urls = explode("\n",$this->CTRL->options['css_proxy_preload']);
-				foreach ($preload_urls as $url) {
-					if (trim($url) !== '') {
-						$cache_hash = $this->CTRL->proxy->cache_hash(trim($url),'css');
-						if ($cache_hash) {
-							$preload[] = array(trim($url),$cache_hash);
-						}
-					}
+			if (isset($this->CTRL->options['js_proxy']) && $this->CTRL->options['js_proxy'] && !empty($this->CTRL->proxy->js_preload)) {
+				foreach ($this->CTRL->proxy->js_preload as $url) {
+					$preload[] = $url;
 				}
 			}
 

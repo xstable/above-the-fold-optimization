@@ -85,6 +85,14 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 
 == Changelog ==
 
+= 2.5.6 =
+* Added: Google Webfont remove tool (Web Font Optimization) to be able to load fonts locally.
+
+= 2.5.5 =
+* Improved: external resource proxy regex translation of urls (JSON config).
+* Improved: external resource proxy custom expire time per url (JSON config).
+* Improved: external resource proxy "async script" injection capture debug information.
+
 = 2.5.4 =
 * Bugfix: `WebFontConfig` not loaded for Google Fonts when pre set config omitted.
 * Bugfix: HTML entity encoded urls not handled correctly by proxy.

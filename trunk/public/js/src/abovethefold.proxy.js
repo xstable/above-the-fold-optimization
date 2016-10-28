@@ -28,6 +28,7 @@
 	var PROXY_PRELOAD = false;
 	var PROXY_PRELOAD_URLS = [];
 	var PROXY_PRELOAD_HASHES = [];
+	var PROXY_PRELOAD_REGEX = [];
 
 	/**
 	 * Proxy setup
@@ -58,8 +59,16 @@
 
 			var url;
 			for (var i = 0; i < cnf.preload.length; i++) {
-				PROXY_PRELOAD_URLS.push(cnf.preload[i][0]);
-				PROXY_PRELOAD_HASHES.push(cnf.preload[i][1]);
+
+				if (cnf.preload[i][0] === 'regex') {
+
+					PROXY_PRELOAD_REGEX.push([cnf.preload[i][2],cnf.preload[i][3],cnf.preload[i][1],cnf.preload[i][4]]);
+
+				} else {
+					PROXY_PRELOAD_URLS.push(cnf.preload[i][0]);
+					PROXY_PRELOAD_HASHES.push(cnf.preload[i][1]);	
+				}
+
 			}
 
 			PROXY_BASE = cnf.base || false;
@@ -102,7 +111,6 @@
 	var PARSE_URL = function(url) {
 		var parser = document.createElement('a');
 		parser.href = url;
-
 		return parser;
 	};
 
@@ -111,6 +119,11 @@
 	 */
 	var PROXIFY_URL = function(url,type) {
 
+		if (ABTFDEBUG) {
+			var regexmatch = false;
+			var originalUrl;
+		}
+
 		// check preload list
 		if (PROXY_PRELOAD) {
 
@@ -118,30 +131,83 @@
 			var isCached = PROXY_PRELOAD_URLS.indexOf(url);
 			if (isCached > -1) {
 
-				if (type === 'js') {
-					var ext = '.js';
-				} else if (type === 'css') {
-					var ext = '.css';
-				}
-
 				// cache hash for url
 				var cachehash = PROXY_PRELOAD_HASHES[isCached];
 
-				if (cachehash && ext) {
+			} else if (PROXY_PRELOAD_REGEX.length > 0) {
 
-					var path = PROXY_BASE;
-					path += cachehash.substr(0,2) + '/';
-					path += cachehash.substr(2,2) + '/';
-					path += cachehash.substr(4,2) + '/';
-					path += cachehash.substr(6,2) + '/';
-					path += cachehash.substr(8,2) + '/';
-					path += cachehash;
-					path += ext;
+				var l = PROXY_PRELOAD_REGEX.length;
+				var r, error;
+				for (var i = 0; i < l; i++) {
 
-					return path;
+					error = false;
+
+					// parse regex
+					try {
+						r = new RegExp(PROXY_PRELOAD_REGEX[i][0],PROXY_PRELOAD_REGEX[i][1] || '');
+					} catch (e) {
+						error = true;
+					}
+					if (error) {
+						continue;
+					}
+
+					if (r.test(url)) {
+
+						if (ABTFDEBUG) {
+							regexmatch = true;
+							originalUrl = url;
+				        }
+
+						// cache hash
+						if (PROXY_PRELOAD_REGEX[i][2]) {
+							cachehash = PROXY_PRELOAD_REGEX[i][2];
+						} else if (PROXY_PRELOAD_REGEX[i][3]) {
+
+							// replace url with target
+							url = PROXY_PRELOAD_REGEX[i][3];
+						}
+
+						break;
+					}
 				}
 			}
+
+			if (cachehash) {
+
+				var path = PROXY_BASE;
+				path += cachehash.substr(0,2) + '/';
+				path += cachehash.substr(2,2) + '/';
+				path += cachehash.substr(4,2) + '/';
+				path += cachehash.substr(6,2) + '/';
+				path += cachehash.substr(8,2) + '/';
+				path += cachehash;
+
+				if (type === 'js') {
+					path += '.js';
+				} else if (type === 'css') {
+					path += '.css';
+				}
+
+				if (ABTFDEBUG) {
+					if (regexmatch) {
+						console.log('Abtf.proxy()', 'capture', originalUrl, 'regex', '➤', 'cache:' + cachehash);
+					} else {
+		            	console.log('Abtf.proxy()', 'capture', url, '➤', 'cache:' + cachehash);
+		        	}
+		        }
+
+				return path;
+			}
 		}
+
+		if (ABTFDEBUG) {
+			if (regexmatch) {
+				console.log('Abtf.proxy()', 'capture', originalUrl, 'regex', '➤', url);
+			} else {
+            	console.log('Abtf.proxy()', 'capture', url);
+        	}
+        }
 
 		if (type === 'css') {
 
@@ -275,10 +341,6 @@
 		if (!type) {
 			return false;
 		}
-		
-		if (ABTFDEBUG) {
-            console.log('Abtf.proxy()', 'capture', (type === 'css') ? node.href : node.src);
-        }
 
     	/**
     	 * Translate relative url

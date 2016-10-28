@@ -650,9 +650,7 @@ class Abovethefold_Admin {
 			update_option( 'wpabtf_version', WPABTF_VERSION );
 
 			/**
-			 * Pre 2.5.0 update functions
-			 * 
-			 * @since  2.5.0
+			 * Pre 2.5.0 update
 			 */
 			if (version_compare($current_version, '2.5.0', '<')) {
 
@@ -704,6 +702,48 @@ class Abovethefold_Admin {
 
 					$options['js_proxy'] = true;
 					$options['css_proxy'] = true;
+					$update_options = true;
+				}
+			}
+
+			/**
+			 * Pre 2.5.4 update
+			 */
+			if (version_compare($current_version, '2.5.4', '<=')) {
+
+				/**
+				 * Convert preload list strings to array
+				 */
+				if (isset($options['css_proxy_preload']) && is_string($options['css_proxy_preload']) && $options['css_proxy_preload'] !== '') {
+					$options['css_proxy_preload'] = explode("\n",$options['css_proxy_preload']);
+					$update_options = true;
+				}
+				if (isset($options['js_proxy_preload']) && is_string($options['js_proxy_preload']) && $options['js_proxy_preload'] !== '') {
+					$options['js_proxy_preload'] = explode("\n",$options['js_proxy_preload']);
+					$update_options = true;
+				}
+			}
+
+			/**
+			 * Pre 2.5.5 update
+			 */
+			if (version_compare($current_version, '2.5.5', '<=')) {
+
+				/**
+				 * Convert Google Web Font list string to array
+				 */
+				if (isset($options['gwfo_googlefonts']) && is_string($options['gwfo_googlefonts']) && $options['gwfo_googlefonts'] !== '') {
+
+					// convert url list to array
+					$fonts = explode("\n",$options['gwfo_googlefonts']);
+					$options['gwfo_googlefonts'] = array();
+					if (!empty($fonts)) {
+						foreach ($fonts as $font) {
+							$font = trim($font);
+							if ($font === '') { continue; }
+							$options['gwfo_googlefonts'][] = $font;
+						}
+					}
 					$update_options = true;
 				}
 			}
