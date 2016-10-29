@@ -118,11 +118,37 @@ class Abovethefold_Admin_Proxy {
 							continue 1;
 						}
 
-						if (isset($url_config['expire']) && $url_config['expire'] !== '' && !(!is_numeric($url_config['expire']) || intval($url_config['expire']) <= 0)) {
-							$this->CTRL->admin->set_notice('The CSS preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid expire time.', 'ERROR');
-							// invalid expire time
-							
-							$url_config['expire'] = 86400;
+						/**
+						 * Verify expire time
+						 */
+						if (isset($url_config['expire']) && $url_config['expire'] !== '') {
+							if (!preg_match('|^[0-9]+$|Ui',$url_config['expire']) || intval($url_config['expire']) <= 0) {
+								$this->CTRL->admin->set_notice('The CSS preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid expire time.', 'ERROR');
+
+								// set expire time to 30 days
+								$url_config['expire'] = 2592000;
+							} else {
+								$url_config['expire'] = intval($url_config['expire']);
+							}
+						}
+
+						/**
+						 * Verify regex
+						 */
+						if (isset($url_config['regex'])) {
+							if ($url_config['regex'] === '') {
+								unset($url_config['regex']);
+								unset($url_config['regex-flags']);
+							} else {
+
+								// exec preg_match on null
+								$valid = @preg_match('|'.str_replace('|','\\|',$url_config['regex']).'|' . (isset($url_config['regex-flags']) ? $url_config['regex-flags'] : ''),null);
+								$error = $this->is_preg_error();
+								if ($valid === false || $error) {
+									$this->CTRL->admin->set_notice('The CSS preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid regular expression.' . (($error) ? '<br /><p>Error: '.$error.'</p>' : ''), 'ERROR');
+									continue 1;
+								}
+							}
 						}
 
 						$options['css_proxy_preload'][] = $url_config;
@@ -164,10 +190,36 @@ class Abovethefold_Admin_Proxy {
 							continue 1;
 						}
 
-						if (isset($url_config['expire']) && $url_config['expire'] !== '' && !(!is_numeric($url_config['expire']) || intval($url_config['expire']) <= 0)) {
-							$this->CTRL->admin->set_notice('The Javascript preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid expire time.', 'ERROR');
-							// invalid expire time
-							$url_config['expire'] = 86400;
+						/**
+						 * Verify expire time
+						 */
+						if (isset($url_config['expire']) && $url_config['expire'] !== '') {
+							if (!preg_match('|^[0-9]+$|Ui',$url_config['expire']) || intval($url_config['expire']) <= 0) {
+								$this->CTRL->admin->set_notice('The Javascript preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid expire time.', 'ERROR');
+								// invalid expire time
+								$url_config['expire'] = 2592000;
+							} else {
+								$url_config['expire'] = intval($url_config['expire']);
+							}
+						}
+
+						/**
+						 * Verify regex
+						 */
+						if (isset($url_config['regex'])) {
+							if ($url_config['regex'] === '') {
+								unset($url_config['regex']);
+								unset($url_config['regex-flags']);
+							} else {
+
+								// exec preg_match on null
+								$valid = @preg_match('|'.str_replace('|','\\|',$url_config['regex']).'|' . (isset($url_config['regex-flags']) ? $url_config['regex-flags'] : ''),null);
+								$error = $this->is_preg_error();
+								if ($valid === false || $error) {
+									$this->CTRL->admin->set_notice('The Javascript preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid regular expression.' . (($error) ? '<br /><p>Error: '.$error.'</p>' : ''), 'ERROR');
+									continue 1;
+								}
+							}
 						}
 
 						$options['js_proxy_preload'][] = $url_config;
@@ -186,5 +238,29 @@ class Abovethefold_Admin_Proxy {
 		wp_redirect(admin_url('admin.php?page=abovethefold&tab=proxy'));
 		exit;
     }
+
+    /**
+     * Preg error
+     */
+	public function is_preg_error() {
+		if (!function_exists('preg_last_error')) {
+			return false;
+		}
+		$error = preg_last_error();
+
+		// no error
+		if ($error === PREG_NO_ERROR) {
+			return false;
+		}
+
+	    $errors = array(
+	        PREG_INTERNAL_ERROR         => 'Code 1 : There was an internal PCRE error',
+	        PREG_BACKTRACK_LIMIT_ERROR  => 'Code 2 : Backtrack limit was exhausted',
+	        PREG_RECURSION_LIMIT_ERROR  => 'Code 3 : Recursion limit was exhausted',
+	        PREG_BAD_UTF8_ERROR         => 'Code 4 : The offset didn\'t correspond to the begin of a valid UTF-8 code point',
+	        PREG_BAD_UTF8_OFFSET_ERROR  => 'Code 5 : Malformed UTF-8 data',
+	    );
+	    return $errors[$error];
+	}
 
 }

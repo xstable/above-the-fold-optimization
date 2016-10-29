@@ -180,7 +180,7 @@
 														<p class="description">Enter (parts of) Google Web Font definitions to remove, e.g. <code>Open Sans</code>. This feature is useful when loading fonts locally. One font per line.</p>
 														
 														<h4 class="h" style="margin-bottom:10px;">Local Font Loading</h4>
-														<p class="description">Google Fonts are served from <code>fonts.googleapis.com</code> that is causing a render-blocking warning in the Google PageSpeed test. The Google fonts stylesheet can not be cached by the <em>external resource proxy</em> because it serves different content based on the client.</p>
+														<p class="description">Google Fonts are served from <code>fonts.googleapis.com</code> that is causing a render-blocking warning in the Google PageSpeed test. The Google fonts stylesheet cannot be cached by the <em>external resource proxy</em> because it serves different content based on the client.</p>
 														<p class="description" style="margin-top:7px;">To solve the PageSpeed Score issue while also achieving the best font render performance, it is possible to download the Google fonts and load them locally (from the critical CSS). Loading Google fonts locally enables to achieve a Google PageSpeed 100 Score while also preventing a font flicker effect during navigation.</p>
 														<p class="description" style="margin-top:7px;">Check out <a href="https://google-webfonts-helper.herokuapp.com/fonts#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=PageSpeed.pro%3A%20Above%20The%20Fold%20Optimization" target="_blank">Google Webfonts Helper</a> for a solution to download Google fonts.</p>
 													</td>

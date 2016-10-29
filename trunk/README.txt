@@ -85,6 +85,9 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 
 == Changelog ==
 
+= 2.5.7 =
+* Added: Regular expression test for external resource proxy JSON config.
+
 = 2.5.6 =
 * Added: Google Webfont remove tool (Web Font Optimization) to be able to load fonts locally.
 

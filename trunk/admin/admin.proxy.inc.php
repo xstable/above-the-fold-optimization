@@ -105,7 +105,7 @@
 									<th scope="row">&nbsp;</th>
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Exclude List</h5>
-										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_exclude]"><?php if ($cssPreload !== '') { echo htmlentities($cssPreload,ENT_COMPAT,'utf-8'); } ?></textarea>
+										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_exclude]"><?php if (isset($options['css_proxy_exclude'])) { echo htmlentities($options['css_proxy_exclude'],ENT_COMPAT,'utf-8'); } ?></textarea>
 										<p class="description">Enter (parts of) external stylesheets to exclude from the proxy. One stylesheet per line.</p>
 									</td>
 								</tr>
@@ -113,7 +113,7 @@
 									<th scope="row">&nbsp;</th>
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Preload List</h5>
-										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_preload]"><?php if (isset($options['css_proxy_preload']) && is_array($options['css_proxy_preload'])) { echo htmlentities(implode("\n",$options['css_proxy_preload']),ENT_COMPAT,'utf-8'); } ?></textarea>
+										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_preload]"><?php if ($cssPreload !== '') { echo htmlentities($cssPreload,ENT_COMPAT,'utf-8'); } ?></textarea>
 										<p class="description">Enter the exact url or JSON object of external stylesheets to preload for "script injected" async stylesheet capture, e.g. <code>https://fonts.googleapis.com/css?family=Open+Sans:400</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url per line.</p>
 										<p class="description" style="margin-top:10px;">JSON objects must be placed on one line and contain a target url. Valid parameters are <code>url</code>, <code>regex</code>, <code>regex-flags</code> and <code>expire</code> (expire time in seconds).</p>
 										<p class="description">Example JSON object: <code>{"regex": "^https://app\\.analytics\\.com/file\\.css\\?\\d+$", "regex-flags":"i", "url": "https://app.analytics.com/file.css", "expire": "2592000"}</code></p>

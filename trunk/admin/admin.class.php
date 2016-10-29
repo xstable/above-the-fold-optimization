@@ -299,9 +299,9 @@ class Abovethefold_Admin {
 		$admin_bar->add_node( array(
 			'parent' => 'abovethefold-tools',
 			'id' => 'abovethefold-tools-compare',
-			'title' => __( 'Critical CSS Quality Test (mirror view)', 'abovethefold' ),
+			'title' => __( 'Critical CSS Quality Test', 'abovethefold' ),
 			'href' => $compareurl,
-			'meta' => array( 'title' => __( 'Critical CSS Quality Test (mirror view)', 'abovethefold' ), 'target' => '_blank' )
+			'meta' => array( 'title' => __( 'Critical CSS Quality Test', 'abovethefold' ), 'target' => '_blank' )
 		) );
 
 		/**
