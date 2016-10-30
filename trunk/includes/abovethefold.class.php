@@ -475,9 +475,14 @@ class Abovethefold {
 	/**
 	 * Cache URL
 	 */
-	public function cache_dir() {
+	public function cache_dir( $cdn = '' ) {
 		$dir = wp_upload_dir();
-		$path = trailingslashit($dir['baseurl']) . 'abovethefold/';
+
+		if ($cdn !== '') {
+			$path = trailingslashit($cdn) . trailingslashit(str_replace(trailingslashit(ABSPATH),'',$dir['basedir'])) . 'abovethefold/';
+		} else {
+			$path = trailingslashit($dir['baseurl']) . 'abovethefold/';
+		}
 		return apply_filters('abtf_cache_dir', $path);
 	}
 

@@ -20,6 +20,9 @@
 	var PROXY_JS = false;
 	var PROXY_CSS = false;
 
+	// global CDN
+	var PROXY_CDN = false;
+
 	var PROXY_JS_INCLUDE = false;
 	var PROXY_JS_EXCLUDE = false;
 	var PROXY_CSS_INCLUDE = false;
@@ -29,6 +32,9 @@
 	var PROXY_PRELOAD_URLS = [];
 	var PROXY_PRELOAD_HASHES = [];
 	var PROXY_PRELOAD_REGEX = [];
+	var PROXY_PRELOAD_CDN = {};
+
+	var CDN_URLS = [];
 
 	/**
 	 * Proxy setup
@@ -48,6 +54,10 @@
 
 		PROXY_JS = cnf.js || false;
 		PROXY_CSS = cnf.css || false;
+		PROXY_CDN = cnf.cdn || false;
+		if (PROXY_CDN) {
+			CDN_URLS.push(PROXY_CDN);
+		}
 
 		PROXY_JS_INCLUDE = cnf.js_include || false;
 		PROXY_JS_EXCLUDE = cnf.js_exclude || false;
@@ -62,16 +72,43 @@
 
 				if (cnf.preload[i][0] === 'regex') {
 
-					PROXY_PRELOAD_REGEX.push([cnf.preload[i][2],cnf.preload[i][3],cnf.preload[i][1],cnf.preload[i][4]]);
+					PROXY_PRELOAD_REGEX.push([cnf.preload[i][2],cnf.preload[i][3],cnf.preload[i][1]]);
+
+					// resource specific CDN
+					if (cnf.preload[i][4]) {
+						PROXY_PRELOAD_CDN[cnf.preload[i][0]] = cnf.preload[i][4];
+						if (CDN_URLS.indexOf(cnf.preload[i][4]) === -1) {
+							CDN_URLS.push(cnf.preload[i][4]);
+						}
+					}
 
 				} else {
 					PROXY_PRELOAD_URLS.push(cnf.preload[i][0]);
-					PROXY_PRELOAD_HASHES.push(cnf.preload[i][1]);	
+					PROXY_PRELOAD_HASHES.push(cnf.preload[i][1]);
+
+					// resource specific CDN
+					if (cnf.preload[i][4]) {
+						PROXY_PRELOAD_CDN[cnf.preload[i][0]] = cnf.preload[i][4];
+						if (CDN_URLS.indexOf(cnf.preload[i][4]) === -1) {
+							CDN_URLS.push(cnf.preload[i][4]);
+						}
+					}
 				}
 
 			}
 
 			PROXY_BASE = cnf.base || false;
+		}
+
+		if (CDN_URLS.length === 0) {
+			CDN_URLS = false;
+		} else {
+
+			// parse CDN urls
+			var l = CDN_URLS.length;
+			for (var i = 0; i < l; i++) {
+				CDN_URLS[i] = PARSE_URL(CDN_URLS[i]);
+			}
 		}
 		
 	};
@@ -175,7 +212,13 @@
 
 			if (cachehash) {
 
-				var path = PROXY_BASE;
+				// custom resource CDN
+				if (typeof PROXY_PRELOAD_CDN[url] !== 'undefined') {
+					var path = PROXY_PRELOAD_CDN[url];
+				} else {
+					var path = PROXY_BASE;
+				}
+
 				path += cachehash.substr(0,2) + '/';
 				path += cachehash.substr(2,2) + '/';
 				path += cachehash.substr(4,2) + '/';
@@ -237,7 +280,23 @@
 				}
 
 				if (node.src) {
+
+					// parse url
 					var parser = PARSE_URL(node.src);
+
+					if (CDN_URLS) {
+
+						// test CDN urls
+						var l = CDN_URLS.length;
+						var cdnparser;
+						for (var i = 0; i < l; i++) {
+
+							if (parser.href.indexOf(CDN_URLS[i].href) !== -1) {
+								// resource is on CDN = local url
+								return false;
+							}
+						}
+					}
 
 					// local url
 					if (parser.host === SITE_URL.host) {
@@ -286,6 +345,20 @@
 
 				if (node.href) {
 					var parser = PARSE_URL(node.href);
+
+					if (CDN_URLS) {
+
+						// test CDN urls
+						var l = CDN_URLS.length;
+						var cdnparser;
+						for (var i = 0; i < l; i++) {
+
+							if (parser.href.indexOf(CDN_URLS[i].href) !== -1) {
+								// resource is on CDN = local url
+								return false;
+							}
+						}
+					}
 
 					// local url
 					if (parser.host === SITE_URL.host) {

@@ -484,7 +484,10 @@ class Abovethefold_Optimization {
 		}
 
 		// apply search replace filter
-		list($search,$replace) = apply_filters('abtf_html_replace', array($search,$replace));
+		$searchreplace = apply_filters('abtf_html_replace', array($search,$replace));
+		if (is_array($searchreplace) && count($searchreplace) === 2) {
+			list($search,$replace) = $searchreplace;
+		}
 
 		// update buffer
 		if (!empty($search)) {
@@ -717,43 +720,52 @@ class Abovethefold_Optimization {
 		 */
 		if (isset($this->CTRL->options['gwfo']) && $this->CTRL->options['gwfo']) {
 
-			/**
-			 * Load webfont.js inline
-			 */
-			if ($this->CTRL->options['gwfo_loadmethod'] === 'inline') {
+			$webfontconfig = $this->CTRL->gwfo->webfontconfig(true);
+			if (!$webfontconfig) {
 
-				$jsfiles[] = WPABTF_PATH . 'public/js/webfont.js';
-				$jssettings['gwf'] = array($this->CTRL->gwfo->webfontconfig(true));
-				if ($this->CTRL->options['gwfo_loadposition'] === 'footer') {
-					$jssettings['gwf'][] = true;
-				}
+				// empty, do not load webfont.js
+				$this->CTRL->options['gwfo'] = false;
 
-			} else if ($this->CTRL->options['gwfo_loadmethod'] === 'async' || $this->CTRL->options['gwfo_loadmethod'] === 'async_cdn') {
+			} else {
 
 				/**
-				 * Load async
+				 * Load webfont.js inline
 				 */
-				$jssettings['gwf'] = array('a');
+				if ($this->CTRL->options['gwfo_loadmethod'] === 'inline') {
 
-				$jssettings['gwf'][] = ($this->CTRL->options['gwfo_loadposition'] === 'footer') ? true : false;
+					$jsfiles[] = WPABTF_PATH . 'public/js/webfont.js';
+					$jssettings['gwf'] = array($this->CTRL->gwfo->webfontconfig(true));
+					if ($this->CTRL->options['gwfo_loadposition'] === 'footer') {
+						$jssettings['gwf'][] = true;
+					}
 
-				if ($this->CTRL->options['gwfo_loadmethod'] === 'async') {
-					$jssettings['gwf'][] = WPABTF_URI . 'public/js/webfont.js';
-				} else {
+				} else if ($this->CTRL->options['gwfo_loadmethod'] === 'async' || $this->CTRL->options['gwfo_loadmethod'] === 'async_cdn') {
 
-					// load from Google CDN
-					$jssettings['gwf'][] = $this->CTRL->gwfo->cdn_url;
+					/**
+					 * Load async
+					 */
+					$jssettings['gwf'] = array('a');
+
+					$jssettings['gwf'][] = ($this->CTRL->options['gwfo_loadposition'] === 'footer') ? true : false;
+
+					if ($this->CTRL->options['gwfo_loadmethod'] === 'async') {
+						$jssettings['gwf'][] = WPABTF_URI . 'public/js/webfont.js';
+					} else {
+
+						// load from Google CDN
+						$jssettings['gwf'][] = $this->CTRL->gwfo->cdn_url;
+					}
+
+					// WebFontConfig variable
+					$inlineJS .= $this->webfont_replacement_string; //this->CTRL->gwfo->webfontconfig();
+
+				} else if ($this->CTRL->options['gwfo_loadmethod'] === 'wordpress') {
+
+					/**
+					 * WordPress include, just add the WebFontConfig variable
+					 */
+					$inlineJS .= $this->webfont_replacement_string; //$this->CTRL->gwfo->webfontconfig();
 				}
-
-				// WebFontConfig variable
-				$inlineJS .= $this->webfont_replacement_string; //this->CTRL->gwfo->webfontconfig();
-
-			} else if ($this->CTRL->options['gwfo_loadmethod'] === 'wordpress') {
-
-				/**
-				 * WordPress include, just add the WebFontConfig variable
-				 */
-				$inlineJS .= $this->webfont_replacement_string; //$this->CTRL->gwfo->webfontconfig();
 			}
 
 		}
@@ -764,46 +776,8 @@ class Abovethefold_Optimization {
 		// Proxy external files
 		if ((isset($this->CTRL->options['js_proxy']) && $this->CTRL->options['js_proxy']) || (isset($this->CTRL->options['css_proxy']) && $this->CTRL->options['css_proxy'])) {
 
-			/**
-			 * Proxy settings
-			 */
-			$proxy_url = $this->CTRL->proxy->url();
-
-			$jssettings['proxy'] = array(
-				'url' => $proxy_url,
-				'js' => (isset($this->CTRL->options['js_proxy']) && $this->CTRL->options['js_proxy']) ? true : false,
-				'css' => (isset($this->CTRL->options['css_proxy']) && $this->CTRL->options['css_proxy']) ? true : false
-			);
-
-			/**
-			 * Preload urls
-			 */
-			$preload_hashes = array();
-			if (isset($this->CTRL->options['css_proxy']) && $this->CTRL->options['css_proxy'] && !empty($this->CTRL->proxy->css_preload)) {
-				foreach ($this->CTRL->proxy->css_preload as $url) {
-					$preload[] = $url;
-				}
-			}
-			if (isset($this->CTRL->options['js_proxy']) && $this->CTRL->options['js_proxy'] && !empty($this->CTRL->proxy->js_preload)) {
-				foreach ($this->CTRL->proxy->js_preload as $url) {
-					$preload[] = $url;
-				}
-			}
-
-			if (!empty($preload)) {
-				$jssettings['proxy']['preload'] = $preload;
-				$jssettings['proxy']['base'] = $this->CTRL->cache_dir() . 'proxy/';
-			}
-
-			$keys = array('js_include','css_include','css_include','css_exclude');
-			foreach ($keys as $key) {
-				$params = explode('_',$key);
-				if ($this->CTRL->options[$params[0] . '_proxy'] && !empty($this->CTRL->proxy->$key)) {
-					$jssettings['proxy'][$key] = $this->CTRL->proxy->$key;
-				}
-			}
-
-			$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-proxy'.$jsdebug.'.min.js';
+			// get proxy client
+			$this->CTRL->proxy->client_jssettings($jssettings, $jsfiles, $jsdebug);
 		}
 
 		/**

@@ -85,6 +85,10 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 
 == Changelog ==
 
+= 2.5.8 =
+* Added: external resource proxy CDN for cached resources.
+* Bugfix: support for WordPress subdirectory installations (@mmdijkman)
+
 = 2.5.7 =
 * Added: Regular expression test for external resource proxy JSON config.
 

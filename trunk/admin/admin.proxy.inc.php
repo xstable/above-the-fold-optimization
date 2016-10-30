@@ -81,9 +81,11 @@
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Preload List</h5>
 										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[js_proxy_preload]"><?php if ($jsPreload !== '') { echo htmlentities($jsPreload,ENT_COMPAT,'utf-8'); } ?></textarea>
-										<p class="description">Enter the exact url or JSON object of external scripts to preload for "script injected" async script capture, e.g. <code>https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url per line.</p>
-										<p class="description" style="margin-top:10px;">JSON objects must be placed on one line and contain a target url. Valid parameters are <code>url</code>, <code>regex</code>, <code>regex-flags</code> and <code>expire</code> (expire time in seconds).</p>
-										<p class="description">Example JSON object: <code>{"regex": "^https://app\\.analytics\\.com/file\\.js\\?\\d+$", "regex-flags":"i", "url": "https://app.analytics.com/file.js", "expire": "2592000"}</code></p>
+										<p class="description">Enter the exact url or JSON config object of external scripts to preload for "script injected" async script capture, e.g. <code>https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url or JSON object per line.</p>
+										<fieldset style="border:solid 1px #efefef;padding:10px;margin:0px;margin-top:7px;background:#f1f1f1;">
+											<p class="description" style="margin-top:0px;">JSON config objects must be placed on one line and contain a target url. Valid parameters are <code>url</code>, <code>regex</code>, <code>regex-flags</code>, <code>cdn</code> and <code>expire</code> (expire time in seconds).</p>
+											<p class="description">Example: <code>{"regex": "^https://app\\.analytics\\.com/file\\.js\\?\\d+$", "regex-flags":"i", "url": "https://app.analytics.com/file.js", "expire": "2592000"}</code></p>
+										</fieldset>
 									</td>
 								</tr>
 								<tr valign="top">
@@ -114,12 +116,20 @@
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Preload List</h5>
 										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_preload]"><?php if ($cssPreload !== '') { echo htmlentities($cssPreload,ENT_COMPAT,'utf-8'); } ?></textarea>
-										<p class="description">Enter the exact url or JSON object of external stylesheets to preload for "script injected" async stylesheet capture, e.g. <code>https://fonts.googleapis.com/css?family=Open+Sans:400</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url per line.</p>
-										<p class="description" style="margin-top:10px;">JSON objects must be placed on one line and contain a target url. Valid parameters are <code>url</code>, <code>regex</code>, <code>regex-flags</code> and <code>expire</code> (expire time in seconds).</p>
-										<p class="description">Example JSON object: <code>{"regex": "^https://app\\.analytics\\.com/file\\.css\\?\\d+$", "regex-flags":"i", "url": "https://app.analytics.com/file.css", "expire": "2592000"}</code></p>
+										<p class="description">Enter the exact url or JSON config object of external stylesheets to preload for "script injected" async stylesheet capture, e.g. <code>https://fonts.googleapis.com/css?family=Open+Sans:400</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url or JSON object per line.</p>
+										<fieldset style="border:solid 1px #efefef;padding:10px;margin:0px;margin-top:7px;background:#f1f1f1;">
+											<p class="description" style="margin-top:0px;">JSON config objects must be placed on one line and contain a target url. Valid parameters are <code>url</code>, <code>regex</code>, <code>regex-flags</code>, <code>cdn</code> and <code>expire</code> (expire time in seconds).</p>
+										<p class="description">Example: <code>{"regex": "^https://app\\.analytics\\.com/file\\.css\\?\\d+$", "regex-flags":"i", "url": "https://app.analytics.com/file.css", "expire": "2592000"}</code></p></fieldset>
 									</td>
 								</tr>
-							
+								
+								<tr valign="top">
+									<th scope="row">Proxy CDN</th>
+									<td>
+			                            <input type="url" name="abovethefold[proxy_cdn]" style="width:100%;" placeholder="Leave blank for the default WordPress (plugin modified) upload directory url..." value="<?php if (isset($options['proxy_cdn'])) { echo htmlentities($options['proxy_cdn'],ENT_COMPAT,'utf-8'); } ?>" />
+			                            <p class="description">Enter the default CDN url for cached resources, e.g. <code><strong>https://cdn.domain.com</strong>/wp-content/uploads/abovethefold/proxy/.../resource.js</code>. You can set a custom CDN per individual resource using a JSON config object.</p>
+									</td>
+								</tr>
 								
 								<tr valign="top">
 									<th scope="row">Proxy URL</th>

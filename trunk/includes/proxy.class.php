@@ -64,6 +64,21 @@ class Abovethefold_Proxy {
 	public $regex_url_translation = array();
 
 	/**
+	 * Custom CDN url for individual resources
+	 */
+	public $custom_cdn_url_translation = array();
+
+	/**
+	 * CDN for cached resources
+	 */
+	public $cdn = false;
+
+	/**
+	 * Custom CDN url for individual resources
+	 */
+	public $custom_resource_cdn = array();
+
+	/**
 	 * Valid javascript mimetypes
 	 */
 	public $js_mimetypes = array(
@@ -112,6 +127,9 @@ class Abovethefold_Proxy {
 		}
 		if (!isset($this->CTRL->options['css_proxy'])) {
 			$this->CTRL->options['css_proxy'] = false;
+		}
+		if (isset($this->CTRL->options['proxy_cdn']) && $this->CTRL->options['proxy_cdn']) {
+			$this->cdn = $this->CTRL->options['proxy_cdn'];
 		}
 
 		// set include/exclude list
@@ -169,8 +187,6 @@ class Abovethefold_Proxy {
 
 				list ($url,$type) = $preloadurl;
 
-				$url_config = false;
-
 				// JSON config
 				if ($url && is_array($url)) {
 
@@ -185,13 +201,21 @@ class Abovethefold_Proxy {
 						$this->custom_expire[$url['url']] = $url['expire'];
 					}
 
+					// regex
 					if (isset($url['regex']) && $url['regex']) {
 						$this->regex_url_translation[$url['url']] = array($url['regex'],$url['regex-flags']);
+					}
+
+					// custom resource CDN
+					if (isset($url['cdn']) && $url['cdn']) {
+						$this->custom_resource_cdn[$url['url']] = $url['cdn'];
 					}
 
 					$url_config = $url;
 					$url = $url_config['url'];
 					unset($url_config['url']);
+				} else {
+					$url_config = false;
 				}
 
 				// verify url
@@ -199,14 +223,34 @@ class Abovethefold_Proxy {
 				if ($url === '') { continue; }
 
 				$cache_hash = $this->cache_hash($url,$type,$url);
-				if ($cache_hash) {
-					if ($url_config && isset($url_config['regex'])) {
-						$this->{$type . '_preload'}[] = array('regex',$cache_hash,$url_config['regex'],(isset($url_config['regex-flags']) ? $url_config['regex-flags'] : ''));
+				if ($url_config) {
+
+					$preload_url = array();
+
+					// JSON config object
+					if (isset($url_config['regex'])) {
+						$preload_url[0] = 'regex';
+						$preload_url[1] = ($cache_hash) ? $cache_hash : false;
+						$preload_url[2] = $url_config['regex'];
+						$preload_url[3] = (isset($url_config['regex-flags']) ? $url_config['regex-flags'] : '');
 					} else {
-						$this->{$type . '_preload'}[] = array($url,$cache_hash);
+						if ($cache_hash || (isset($url_config['cdn']) && $url_config['cdn'])) {
+							$preload_url[0] = $url;
+							$preload_url[1] = ($cache_hash) ? $cache_hash : false;
+							$preload_url[2] = false;
+							$preload_url[3] = false;
+						}
 					}
-				} else if ($url_config && isset($url_config['regex'])) {
-					$this->{$type . '_preload'}[] = array('regex',false,$url_config['regex'],(isset($url_config['regex-flags']) ? $url_config['regex-flags'] : ''),$url);
+					if (isset($url_config['cdn']) && $url_config['cdn']) {
+						$preload_url[4] = $this->CTRL->cache_dir( $url_config['cdn'] ) . 'proxy/';
+					}
+
+					$this->{$type . '_preload'}[] = $preload_url;
+
+				} else if ($cache_hash) {
+
+					// general cached resource
+					$this->{$type . '_preload'}[] = array($url,$cache_hash);
 				}
 			}
 		}
@@ -236,7 +280,16 @@ class Abovethefold_Proxy {
 
 				// try direct url to file
 				if ($tryCache) {
-					$cache_url = $this->cache_url($filehash, $type, $url);
+
+					// CDN
+					$cdn = false;
+					if (!empty($this->custom_resource_cdn) && isset($this->custom_resource_cdn[$url])) {
+						$cdn = $this->custom_resource_cdn[$url];
+					} else if ($this->cdn) {
+						$cdn = $this->cdn;
+					}
+
+					$cache_url = $this->cache_url($filehash, $type, $url, $cdn);
 					if ($cache_url) {
 						return $cache_url;
 					}
@@ -429,7 +482,7 @@ class Abovethefold_Proxy {
 	/**
 	 * Cache url
 	 */
-	public function cache_url($hash, $type, $urlExpiredCheck = false) {
+	public function cache_url($hash, $type, $urlExpiredCheck = false, $cdn = false) {
 
 		// verify hash
 		if (strlen($hash) !== 32) {
@@ -447,7 +500,7 @@ class Abovethefold_Proxy {
 			return false;
 		}
 
-		$url = $this->CTRL->cache_dir() . 'proxy/';
+		$url = $this->CTRL->cache_dir( $cdn ) . 'proxy/';
 		
 		$dir_blocks = array_slice(str_split($hash, 2), 0, 5);
 		foreach ($dir_blocks as $block) {
@@ -862,6 +915,58 @@ class Abovethefold_Proxy {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Javascript client settings
+	 */
+	public function client_jssettings(&$jssettings,&$jsfiles,$jsdebug) {
+
+		/**
+		 * Proxy settings
+		 */
+		$proxy_url = $this->url();
+
+		$jssettings['proxy'] = array(
+			'url' => $proxy_url,
+			'js' => (isset($this->CTRL->options['js_proxy']) && $this->CTRL->options['js_proxy']) ? true : false,
+			'css' => (isset($this->CTRL->options['css_proxy']) && $this->CTRL->options['css_proxy']) ? true : false
+		);
+
+		if ($this->cdn) {
+			$jssettings['proxy']['cdn'] = $this->cdn;
+		}
+
+		/**
+		 * Preload urls
+		 */
+		$preload_hashes = array();
+		if (isset($this->CTRL->options['css_proxy']) && $this->CTRL->options['css_proxy'] && !empty($this->CTRL->proxy->css_preload)) {
+			foreach ($this->CTRL->proxy->css_preload as $url) {
+				$preload[] = $url;
+			}
+		}
+		if (isset($this->CTRL->options['js_proxy']) && $this->CTRL->options['js_proxy'] && !empty($this->CTRL->proxy->js_preload)) {
+			foreach ($this->CTRL->proxy->js_preload as $url) {
+				$preload[] = $url;
+			}
+		}
+
+		if (!empty($preload)) {
+			$jssettings['proxy']['preload'] = $preload;
+			$jssettings['proxy']['base'] = $this->CTRL->cache_dir( $this->cdn ) . 'proxy/';
+		}
+
+		$keys = array('js_include','css_include','css_include','css_exclude');
+		foreach ($keys as $key) {
+			$params = explode('_',$key);
+			if ($this->CTRL->options[$params[0] . '_proxy'] && !empty($this->CTRL->proxy->$key)) {
+				$jssettings['proxy'][$key] = $this->CTRL->proxy->$key;
+			}
+		}
+
+		$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-proxy'.$jsdebug.'.min.js';
+
 	}
 
 }

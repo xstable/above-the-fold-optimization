@@ -88,7 +88,19 @@ class Abovethefold_Admin_Proxy {
 				exit;	
 			}
 		}
-		
+
+		// CDN
+		$options['proxy_cdn'] = (isset($input['proxy_cdn'])) ? trim($input['proxy_cdn']) : '';
+		if ($options['proxy_cdn'] !== '') {
+			if (!preg_match('|^http(s)://[a-z0-9]|Ui',$options['proxy_cdn'])) {
+				$this->CTRL->admin->set_notice('<p style="font-size:18px;">Proxy CDN url is not valid (only http:// and https:// urls are allowed).</p>', 'ERROR');
+				$options['proxy_cdn'] = '';
+			}
+
+			// remove trailing slash
+			$options['proxy_cdn'] = rtrim($options['proxy_cdn'], '/');
+		}	
+
 		// CSS proxy
 		$options['css_proxy'] = (isset($input['css_proxy']) && intval($input['css_proxy']) === 1) ? true : false;
 		$options['css_proxy_include'] = trim($input['css_proxy_include']);
@@ -121,14 +133,18 @@ class Abovethefold_Admin_Proxy {
 						/**
 						 * Verify expire time
 						 */
-						if (isset($url_config['expire']) && $url_config['expire'] !== '') {
-							if (!preg_match('|^[0-9]+$|Ui',$url_config['expire']) || intval($url_config['expire']) <= 0) {
-								$this->CTRL->admin->set_notice('The CSS preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid expire time.', 'ERROR');
-
-								// set expire time to 30 days
-								$url_config['expire'] = 2592000;
+						if (isset($url_config['expire'])) {
+							if ($url_config['expire'] === '') {
+								unset($url_config['expire']);
 							} else {
-								$url_config['expire'] = intval($url_config['expire']);
+								if (!preg_match('|^[0-9]+$|Ui',$url_config['expire']) || intval($url_config['expire']) <= 0) {
+									$this->CTRL->admin->set_notice('The CSS preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid expire time.', 'ERROR');
+
+									// set expire time to 30 days
+									$url_config['expire'] = 2592000;
+								} else {
+									$url_config['expire'] = intval($url_config['expire']);
+								}
 							}
 						}
 
@@ -148,6 +164,24 @@ class Abovethefold_Admin_Proxy {
 									$this->CTRL->admin->set_notice('The CSS preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid regular expression.' . (($error) ? '<br /><p>Error: '.$error.'</p>' : ''), 'ERROR');
 									continue 1;
 								}
+							}
+						}
+
+						/**
+						 * Verify custom CDN
+						 */
+						if (isset($url_config['cdn'])) {
+							if ($url_config['cdn'] === '') {
+								unset($url_config['cdn']);
+							} else {
+								if (!preg_match('|^http(s)://[a-z0-9]|Ui',$url_config['cdn'])) {
+									$this->CTRL->admin->set_notice('The CSS preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> does not contain a valid CDN url.', 'ERROR');
+									// no target url
+									continue 1;
+								}
+
+								// remove trailing slash
+								$url_config['cdn'] = rtrim($url_config['cdn'], '/');
 							}
 						}
 
@@ -219,6 +253,24 @@ class Abovethefold_Admin_Proxy {
 									$this->CTRL->admin->set_notice('The Javascript preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> contains an invalid regular expression.' . (($error) ? '<br /><p>Error: '.$error.'</p>' : ''), 'ERROR');
 									continue 1;
 								}
+							}
+						}
+
+						/**
+						 * Verify custom CDN
+						 */
+						if (isset($url_config['cdn'])) {
+							if ($url_config['cdn'] === '') {
+								unset($url_config['cdn']);
+							} else {
+								if (!preg_match('|^http(s)://[a-z0-9]|Ui',$url_config['cdn'])) {
+									$this->CTRL->admin->set_notice('The Javascript preload JSON <code>'.htmlentities($url,ENT_COMPAT,'utf-8').'</code> does not contain a valid CDN url.', 'ERROR');
+									// no target url
+									continue 1;
+								}
+
+								// remove trailing slash
+								$url_config['cdn'] = rtrim($url_config['cdn'], '/');
 							}
 						}
 

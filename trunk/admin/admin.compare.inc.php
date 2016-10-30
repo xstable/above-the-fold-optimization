@@ -58,7 +58,7 @@
 						<div class="inside testcontent">
 
 						<p>This test enables to compare the critical CSS display with the full CSS display to test for differences that could cause a <a href="https://en.wikipedia.org/wiki/Flash_of_unstyled_content" target="_blank">Flash of unstyled content (FOUC)</a>. Good quality critical CSS will provide a near perfect match between the critical CSS and full CSS display. </p>
-							<p>You can quickly open the critical CSS mirror view of any url by adding the query string <code><strong>?compare-abtf=<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?></strong></code>.</p>
+							<p>You can quickly open the critical CSS quality test for any url by adding the query string <code><strong>?compare-abtf=<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?></strong></code>.</p>
 								<div>
 								<select id="comparepages"><option value=""></option><?php print implode('',$options); ?></select>
 
