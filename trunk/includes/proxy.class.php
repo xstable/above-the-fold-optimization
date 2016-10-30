@@ -64,11 +64,6 @@ class Abovethefold_Proxy {
 	public $regex_url_translation = array();
 
 	/**
-	 * Custom CDN url for individual resources
-	 */
-	public $custom_cdn_url_translation = array();
-
-	/**
 	 * CDN for cached resources
 	 */
 	public $cdn = false;
@@ -77,6 +72,11 @@ class Abovethefold_Proxy {
 	 * Custom CDN url for individual resources
 	 */
 	public $custom_resource_cdn = array();
+
+	/**
+	 * CDN hosts (for localhost checking)
+	 */
+	public $cdn_hosts = array();
 
 	/**
 	 * Valid javascript mimetypes
@@ -130,6 +130,9 @@ class Abovethefold_Proxy {
 		}
 		if (isset($this->CTRL->options['proxy_cdn']) && $this->CTRL->options['proxy_cdn']) {
 			$this->cdn = $this->CTRL->options['proxy_cdn'];
+
+			$parsed_url = parse_url($this->cdn);
+			$this->cdn_hosts[] = $parsed_url['host'];
 		}
 
 		// set include/exclude list
@@ -209,6 +212,11 @@ class Abovethefold_Proxy {
 					// custom resource CDN
 					if (isset($url['cdn']) && $url['cdn']) {
 						$this->custom_resource_cdn[$url['url']] = $url['cdn'];
+
+						$parsed_url = parse_url($url['cdn']);
+						if (!in_array($parsed_url['host'],$this->cdn_hosts)) {
+							$this->cdn_hosts[] = $parsed_url['host'];
+						}
 					}
 
 					$url_config = $url;
@@ -343,6 +351,12 @@ class Abovethefold_Proxy {
 			return $cssfile;
 		}
 
+		if (!empty($this->cdn_hosts) && in_array($parsed_url['host'],$this->cdn_hosts)) {
+
+			// on CDN, not external
+			return $cssfile;
+		}
+
 		/**
 		 * File does not match include list, ignore
 		 */
@@ -375,6 +389,12 @@ class Abovethefold_Proxy {
 		if ($parsed_url['host'] === $_SERVER['HTTP_HOST']) {
 
 			// not external
+			return $jsfile;
+		}
+
+		if (!empty($this->cdn_hosts) && in_array($parsed_url['host'],$this->cdn_hosts)) {
+
+			// on CDN, not external
 			return $jsfile;
 		}
 
