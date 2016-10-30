@@ -39,11 +39,6 @@ class Abovethefold_Optimization {
 	public $criticalcss_replacement_string = '++|ABTF_CRITICALCSS|++';
 
 	/**
-	 * Web Font replacement string
-	 */
-	public $webfont_replacement_string = 'var ABTF_WEBFONT_CONFIG;';
-
-	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0
@@ -210,10 +205,10 @@ class Abovethefold_Optimization {
 		}
 
 		// stylesheet regex
-		$stylesheet_regex = '#(<\!--\[if[^>]+>)?([\s|\n]+)?<link([^>]+)href=[\'|"]([^\'|"]+)[\'|"]([^>]+)?>#is';
+		$stylesheet_regex = '#(<\!--\[if[^>]+>)?([\s|\n]*)<link([^>]+)href=[\'|"]([^\'|"]+)[\'|"]([^>]*)>#is';
 
 		// script regex
-		$script_regex = '#(<\!--\[if[^>]+>)?([\s|\n]+)?<script([^>]+)src=[\'|"]([^\'|"]+)[\'|"]([^>]+)?>#is';
+		$script_regex = '#(<\!--\[if[^>]+>)?([\s|\n]*)<script([^>]+)src=[\'|"]([^\'|"]+)[\'|"]([^>]*)>#is';
 
 		/**
 		 * CSS Delivery Optimization
@@ -720,53 +715,8 @@ class Abovethefold_Optimization {
 		 */
 		if (isset($this->CTRL->options['gwfo']) && $this->CTRL->options['gwfo']) {
 
-			$webfontconfig = $this->CTRL->gwfo->webfontconfig(true);
-			if (!$webfontconfig) {
-
-				// empty, do not load webfont.js
-				$this->CTRL->options['gwfo'] = false;
-
-			} else {
-
-				/**
-				 * Load webfont.js inline
-				 */
-				if ($this->CTRL->options['gwfo_loadmethod'] === 'inline') {
-
-					$jsfiles[] = WPABTF_PATH . 'public/js/webfont.js';
-					$jssettings['gwf'] = array($this->CTRL->gwfo->webfontconfig(true));
-					if ($this->CTRL->options['gwfo_loadposition'] === 'footer') {
-						$jssettings['gwf'][] = true;
-					}
-
-				} else if ($this->CTRL->options['gwfo_loadmethod'] === 'async' || $this->CTRL->options['gwfo_loadmethod'] === 'async_cdn') {
-
-					/**
-					 * Load async
-					 */
-					$jssettings['gwf'] = array('a');
-
-					$jssettings['gwf'][] = ($this->CTRL->options['gwfo_loadposition'] === 'footer') ? true : false;
-
-					if ($this->CTRL->options['gwfo_loadmethod'] === 'async') {
-						$jssettings['gwf'][] = WPABTF_URI . 'public/js/webfont.js';
-					} else {
-
-						// load from Google CDN
-						$jssettings['gwf'][] = $this->CTRL->gwfo->cdn_url;
-					}
-
-					// WebFontConfig variable
-					$inlineJS .= $this->webfont_replacement_string; //this->CTRL->gwfo->webfontconfig();
-
-				} else if ($this->CTRL->options['gwfo_loadmethod'] === 'wordpress') {
-
-					/**
-					 * WordPress include, just add the WebFontConfig variable
-					 */
-					$inlineJS .= $this->webfont_replacement_string; //$this->CTRL->gwfo->webfontconfig();
-				}
-			}
+			// get web font loader client
+			$this->CTRL->gwfo->client_jssettings($jssettings, $jsfiles, $inlineJS, $jsdebug);
 
 		}
 

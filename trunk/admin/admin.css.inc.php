@@ -141,16 +141,17 @@
 												<tr valign="top">
 													<th scope="row">webfont.js Load Method</th>
 													<td>
-														<select name="abovethefold[gwfo_loadmethod]">
+														<select name="abovethefold[gwfo_loadmethod]" onchange="if (jQuery(this).val() === 'disabled') { jQuery('.gwfloadoptions').hide(); } else { jQuery('.gwfloadoptions').show(); } ">
 															<option value="inline"<?php if (!isset($options['gwfo_loadmethod']) || $options['gwfo_loadmethod'] === 'inline') { print ' selected'; } ?>>Inline</option>
 															<option value="async"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'async') { print ' selected'; } ?>>Async</option>
 															<option value="async_cdn"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'async_cdn') { print ' selected'; } ?>>Async from Google CDN (v<?php print $this->CTRL->gwfo->cdn_version; ?>)</option>
 															<option value="wordpress"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'wordpress') { print ' selected'; } ?>>WordPress include</option>
+															<option value="disabled"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print ' selected'; } ?>>Disabled (remove all fonts)</option>
 														</select>
 														<p class="description">Select the method to load <a href="https://developers.google.com/speed/libraries/?hl=<?php print $lgcode;?>#web-font-loader" target="_blank">webfont.js</a> (v<?php print $webfont_version; ?>).</p>
 													</td>
 												</tr>
-												<tr valign="top">
+												<tr valign="top" class="gwfloadoptions" style="<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print 'display:none;'; } ?>">
 													<th scope="row">Load Position</th>
 													<td>
 														<select name="abovethefold[gwfo_loadposition]">
@@ -160,7 +161,7 @@
 														<p class="description">Select the position where the loading of web fonts will start.</p>
 													</td>
 												</tr>
-												<tr valign="top">
+												<tr valign="top" class="gwfloadoptions" style="<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print 'display:none;'; } ?>">
 													<th scope="row">WebFontConfig</th>
 													<td>
 														<textarea style="width: 100%;height:100px;font-size:11px;" name="abovethefold[gwfo_config]" placeholder="WebFontConfig = { classes: false, typekit: { id: 'xxxxxx' }, loading: function() {}, google: { families: ['Droid Sans', 'Droid Serif'] } };"><?php if (isset($options['gwfo_config'])) { echo htmlentities($options['gwfo_config']); } ?></textarea>
@@ -170,16 +171,19 @@
 												<tr valign="top">
 													<th scope="row">Google Web Fonts</th>
 													<td>
-														<h5 class="h">&nbsp;Include List</h5>
-														<textarea style="width: 100%;height:<?php if (count($options['gwfo_googlefonts']) > 3) { print '100px'; } else { print '50px'; } ?>;font-size:11px;" name="abovethefold[gwfo_googlefonts]" placeholder="Droid Sans
-							Open Sans Condensed:300,700:latin,greek"><?php if (isset($options['gwfo_googlefonts']) && !empty($options['gwfo_googlefonts'])) { echo htmlentities(implode("\n",$options['gwfo_googlefonts'])); } ?></textarea>
-														<p class="description">Enter the <a href="https://developers.google.com/fonts/docs/getting_started?hl=<?php print $lgcode;?>&csw=1" target="_blank">Google Font API</a> definitions of <a href="https://fonts.google.com/?hl=<?php print $lgcode;?>" target="_blank">Google Web Fonts</a> to load. One font per line. (<a href="https://github.com/typekit/webfontloader#google" target="_blank">documentation</a>)</p>
-														<br />
-														<h5 class="h">&nbsp;Exclude List</h5>
-														<textarea style="width: 100%;height:<?php if (count($options['gwfo_googlefonts_remove']) > 3) { print '100px'; } else { print '50px'; } ?>;font-size:11px;" name="abovethefold[gwfo_googlefonts_remove]"><?php if (isset($options['gwfo_googlefonts_remove']) && !empty($options['gwfo_googlefonts_remove'])) { echo htmlentities(implode("\n",$options['gwfo_googlefonts_remove'])); } ?></textarea>
-														<p class="description">Enter (parts of) Google Web Font definitions to remove, e.g. <code>Open Sans</code>. This feature is useful when loading fonts locally. One font per line.</p>
-														
-														<h4 class="h" style="margin-bottom:10px;">Local Font Loading</h4>
+														<div class="gwfloadoptions" style="<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print 'display:none;'; } ?>">
+															<h5 class="h">&nbsp;Include List</h5>
+															<textarea style="width: 100%;height:<?php if (count($options['gwfo_googlefonts']) > 3) { print '100px'; } else { print '50px'; } ?>;font-size:11px;" name="abovethefold[gwfo_googlefonts]" placeholder="Droid Sans
+								Open Sans Condensed:300,700:latin,greek"><?php if (isset($options['gwfo_googlefonts']) && !empty($options['gwfo_googlefonts'])) { echo htmlentities(implode("\n",$options['gwfo_googlefonts'])); } ?></textarea>
+															<p class="description">Enter the <a href="https://developers.google.com/fonts/docs/getting_started?hl=<?php print $lgcode;?>&csw=1" target="_blank">Google Font API</a> definitions of <a href="https://fonts.google.com/?hl=<?php print $lgcode;?>" target="_blank">Google Web Fonts</a> to load. One font per line. (<a href="https://github.com/typekit/webfontloader#google" target="_blank">documentation</a>)</p>
+															<br />
+															<h5 class="h">&nbsp;Exclude List</h5>
+															<textarea style="width: 100%;height:<?php if (count($options['gwfo_googlefonts_remove']) > 3) { print '100px'; } else { print '50px'; } ?>;font-size:11px;" name="abovethefold[gwfo_googlefonts_remove]"><?php if (isset($options['gwfo_googlefonts_remove']) && !empty($options['gwfo_googlefonts_remove'])) { echo htmlentities(implode("\n",$options['gwfo_googlefonts_remove'])); } ?></textarea>
+															<p class="description">Enter (parts of) Google Web Font definitions to remove, e.g. <code>Open Sans</code>. This feature is useful when loading fonts locally. One font per line.</p>
+															<br />
+														</div>
+
+														<h4 class="h" style="margin-bottom:10px;margin-top:0px;">Local Font Loading</h4>
 														<p class="description">Google Fonts are served from <code>fonts.googleapis.com</code> that is causing a render-blocking warning in the Google PageSpeed test. The Google fonts stylesheet cannot be cached by the <em>external resource proxy</em> because it serves different content based on the client.</p>
 														<p class="description" style="margin-top:7px;">To solve the PageSpeed Score issue while also achieving the best font render performance, it is possible to download the Google fonts and load them locally (from the critical CSS). Loading Google fonts locally enables to achieve a Google PageSpeed 100 Score while also preventing a font flicker effect during navigation.</p>
 														<p class="description" style="margin-top:7px;">Check out <a href="https://google-webfonts-helper.herokuapp.com/fonts#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=PageSpeed.pro%3A%20Above%20The%20Fold%20Optimization" target="_blank">Google Webfonts Helper</a> for a solution to download Google fonts.</p>

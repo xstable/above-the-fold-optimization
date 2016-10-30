@@ -39,6 +39,11 @@ class Abovethefold_WebFonts {
 	public $googlefonts = array();
 
 	/**
+	 * Web Font replacement string
+	 */
+	public $webfont_replacement_string = 'var ABTF_WEBFONT_CONFIG;';
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0
@@ -278,12 +283,12 @@ class Abovethefold_WebFonts {
 		/**
 		 * Inline Web Font Loading
 		 */
-		if (isset($this->CTRL->options['gwfo_loadmethod']) && $this->CTRL->options['gwfo_loadmethod'] !== 'inline') {
+		if (isset($this->CTRL->options['gwfo_loadmethod']) && !in_array($this->CTRL->options['gwfo_loadmethod'],array('inline','disabled'))) {
 
 			/**
-			 * Update Web FOnt configuration
+			 * Update Web Font configuration
 			 */
-			$search[] = '#' . preg_quote($this->CTRL->optimization->webfont_replacement_string) . '#Ui';
+			$search[] = '#' . preg_quote($this->webfont_replacement_string) . '#Ui';
 			$replace[] = $this->webfontconfig();
 		}
 
@@ -499,7 +504,7 @@ REGEX;
 		 * Google Web Font Loader WordPress inlcude
 		 */
 		$in_footer = (isset($this->CTRL->options['gwfo_loadposition']) && $this->CTRL->options['gwfo_loadposition'] === 'footer') ? true : false;
-		wp_enqueue_script( 'abtf_webfontjs', WPABTF_URI . 'public/js/webfont.js', array(), $this->CTRL->gwfo->package_version(), $in_footer );
+		wp_enqueue_script( 'abtf_webfontjs', WPABTF_URI . 'public/js/webfont.js', array(), $this->package_version(), $in_footer );
 	}
 
 	/**
@@ -533,6 +538,71 @@ REGEX;
 				return $package['version'];
 			}
 		}
+	}
+
+
+	/**
+	 * Javascript client settings
+	 */
+	public function client_jssettings(&$jssettings,&$jsfiles,&$inlineJS,$jsdebug) {
+
+		if (isset($this->CTRL->options['gwfo_loadmethod']) && $this->CTRL->options['gwfo_loadmethod'] === 'disabled') {
+
+			// disabled, remove Web Font Loader
+			//$this->CTRL->options['gwfo'] = false;
+
+		} else {
+
+			$webfontconfig = $this->webfontconfig(true);
+			if (!$webfontconfig) {
+
+				// empty, do not load webfont.js
+				$this->CTRL->options['gwfo'] = false;
+
+			} else {
+
+				/**
+				 * Load webfont.js inline
+				 */
+				if ($this->CTRL->options['gwfo_loadmethod'] === 'inline') {
+
+					$jsfiles[] = WPABTF_PATH . 'public/js/webfont.js';
+					$jssettings['gwf'] = array($this->webfontconfig(true));
+					if ($this->CTRL->options['gwfo_loadposition'] === 'footer') {
+						$jssettings['gwf'][] = true;
+					}
+
+				} else if ($this->CTRL->options['gwfo_loadmethod'] === 'async' || $this->CTRL->options['gwfo_loadmethod'] === 'async_cdn') {
+
+					/**
+					 * Load async
+					 */
+					$jssettings['gwf'] = array('a');
+
+					$jssettings['gwf'][] = ($this->CTRL->options['gwfo_loadposition'] === 'footer') ? true : false;
+
+					if ($this->CTRL->options['gwfo_loadmethod'] === 'async') {
+						$jssettings['gwf'][] = WPABTF_URI . 'public/js/webfont.js';
+					} else {
+
+						// load from Google CDN
+						$jssettings['gwf'][] = $this->cdn_url;
+					}
+
+					// WebFontConfig variable
+					$inlineJS .= $this->webfont_replacement_string; //this->webfontconfig();
+
+				} else if ($this->CTRL->options['gwfo_loadmethod'] === 'wordpress') {
+
+					/**
+					 * WordPress include, just add the WebFontConfig variable
+					 */
+					$inlineJS .= $this->webfont_replacement_string; //$this->webfontconfig();
+				}
+			}
+
+		}
+
 	}
 
 }

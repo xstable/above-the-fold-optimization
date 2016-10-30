@@ -58,6 +58,19 @@ class Abovethefold_Admin_Settings {
 
 		check_admin_referer('abovethefold');
 
+		/**
+		 * Clear page cache
+		 */
+		if (isset($_POST['clear_pagecache'])) {
+
+			check_admin_referer('abovethefold');
+
+			$this->CTRL->admin->clear_pagecache();
+
+			wp_redirect(admin_url('admin.php?page=abovethefold&tab=settings'));
+			exit;
+		}
+
 		// stripslashes should always be called
 		// @link https://codex.wordpress.org/Function_Reference/stripslashes_deep
 		$_POST = array_map( 'stripslashes_deep', $_POST );
