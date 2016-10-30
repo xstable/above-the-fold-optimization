@@ -22,7 +22,7 @@
 
 		<div class="inside" style="margin:0px;float:left;font-style:italic;">
 			<img src="https://optimalisatie.nl/img/websockify-rocket-50.png" title="Websockify" style="float:left;margin-right:5px;margin-top:8px;" width="50" align="absmiddle" />
-			<p>We have developed a prototype plugin that is able to provide instant (&lt;1ms) website load times (also for WooCommerce) and up to 99% document data-transfer saving. 
+			<p>We have developed a prototype plugin that is able to provide instant (&lt;1ms) website load times and up to 99% document data-transfer saving. 
 			<a href="http://websockify.it/" target="_blank">Information</a> / <a href="https://websockify.io/" target="_blank">Demo (WooCommerce)</a>.</p>
 		</div>
 		<!--
