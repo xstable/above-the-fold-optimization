@@ -85,6 +85,9 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 
 == Changelog ==
 
+= 2.5.10 =
+* Bugfix: filters not applied in cache plugin modules.
+
 = 2.5.9 =
 * Bugfix: page related caches not cleared from settings page button.
 * Added: option to disable Google Web Font Loader and remove all fonts.

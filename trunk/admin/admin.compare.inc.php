@@ -62,7 +62,7 @@
 								<div>
 								<select id="comparepages"><option value=""></option><?php print implode('',$options); ?></select>
 
-								<button type="button" id="comparepages_split" rel="<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?>" class="button button-large">Mirror View (Compare)</button>
+								<button type="button" id="comparepages_split" rel="<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?>" class="button button-large">Split View (Compare)</button>
 								<button type="button" id="comparepages_full" rel="<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?>" class="button button-large">Full View (Critical CSS only)</button>
 							</div>
 

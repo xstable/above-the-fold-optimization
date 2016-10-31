@@ -760,7 +760,7 @@ class Abovethefold_Admin {
 			);
 			foreach ($old_options as $opt) {
 				if (isset($options[$opt])) {
-					unset($option[$opt]);
+					unset($options[$opt]);
 					$update_options = true;
 				}
 			}

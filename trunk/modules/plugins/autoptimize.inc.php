@@ -36,12 +36,12 @@ class Abovethefold_OPP_Autoptimize extends Abovethefold_OPP {
 	   /**
 		* Autoptimize: skip Critical Path CSS
 		*/
-		$this->CTRL->loader->add_filter( 'autoptimize_filter_css_exclude', $this, 'skip_css' );
+		$this->CTRL->loader->add_filter( 'autoptimize_filter_css_exclude', $this, 'skip_css', 10, 3 );
 
 	   /**
 		* Autoptimize: skip Critical Path Javascript
 		*/
-		$this->CTRL->loader->add_filter( 'autoptimize_filter_js_exclude', $this, 'skip_js' );
+		$this->CTRL->loader->add_filter( 'autoptimize_filter_js_exclude', $this, 'skip_js', 10, 3 );
 
 	   /**
 		* Autoptimize: process @import (Google fonts etc)

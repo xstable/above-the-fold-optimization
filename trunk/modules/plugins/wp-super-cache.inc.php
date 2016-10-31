@@ -82,11 +82,8 @@ class Abovethefold_OPP_WpSuperCache extends Abovethefold_OPP {
 	 *
 	 * The goal is to apply above the fold optimization after the output of optimization plugins, but before full page cache.
 	 *
-	 * @note The availability of this method will override the Above The Fold output buffer! It will require you to make sure the buffer functions well with any (on/off) settings.
-	 *
 	 * Use the active() -> "html_output_buffer" method above to enable/disable this HTML output buffer hook.
 	 */
-
 	public function html_output_hook($optimization) {
 
 		// hook to wp super cache output buffer

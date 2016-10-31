@@ -46,12 +46,12 @@ class Abovethefold_OPP_W3TotalCache extends Abovethefold_OPP {
 	   /**
 		* Skip CSS minification
 		*/
-		$this->CTRL->loader->add_filter( 'w3tc_minify_css_do_tag_minification', $this, 'skip_css' );
+		$this->CTRL->loader->add_filter( 'w3tc_minify_css_do_tag_minification', $this, 'skip_css', 10, 3 );
 
 	   /**
 		* Skip Javascript minification
 		*/
-		$this->CTRL->loader->add_filter( 'w3tc_minify_js_do_tag_minification', $this, 'skip_js' );
+		$this->CTRL->loader->add_filter( 'w3tc_minify_js_do_tag_minification', $this, 'skip_js', 10, 3 );
 
 	}
 
@@ -293,8 +293,6 @@ class Abovethefold_OPP_W3TotalCache extends Abovethefold_OPP {
 	 * HTML output hook
 	 *
 	 * The goal is to apply above the fold optimization after the output of optimization plugins, but before full page cache.
-	 *
-	 * @note The availability of this method will override the Above The Fold output buffer! It will require you to make sure the buffer functions well with any (on/off) settings.
 	 *
 	 * Use the active() -> "html_output_buffer" method above to enable/disable this HTML output buffer hook.
 	 */
