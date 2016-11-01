@@ -315,6 +315,8 @@ class Abovethefold_Optimization {
 					list($file,$matchedTag) = $stylesheet;
 					if (empty($file)) { continue 1; }
 
+					$originalFile = $file;
+
 					// apply css file filter pre processing
 					$filterResult = apply_filters('abtf_cssfile_pre', $file);
 
@@ -392,9 +394,8 @@ class Abovethefold_Optimization {
 					$async_styles[] = array($media,$file);
 
 					// remove file from HTML
-					//$search_regex[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
-					$search[] = $matchedTag;
-					$replace[] = '';
+					$search_regex[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
+					$replace_regex[] = '';
 				}
 			}
 
@@ -412,6 +413,8 @@ class Abovethefold_Optimization {
 
 						list($file,$matchedTag) = $stylesheet;
 						if (empty($file)) { continue 1; }
+
+						$originalFile = $file;
 
 						// apply filter for css file pre processing
 						$filterResult = apply_filters('abtf_cssfile_pre', $file);
@@ -434,9 +437,8 @@ class Abovethefold_Optimization {
 						// replace url
 						if ($filterResult && $filterResult !== $file) {
 							
-							//$search_regex[] = '|(<link[^>]+)'.preg_quote($originalFile).'([^>]+>)|is';
-							$search[] = $matchedTag;
-							$replace[] = '$1'.$filterResult.'$2';
+							$search_regex[] = '|(<link[^>]+)'.preg_quote($originalFile).'([^>]+>)|is';
+							$replace_regex[] = '$1'.$filterResult.'$2';
 						}
 					}
 				}
@@ -455,6 +457,8 @@ class Abovethefold_Optimization {
 
 					list($file,$matchedTag) = $script;
 					if (empty($file)) { continue 1; }
+
+					$originalFile = $file;
 
 					// apply filter for css file pre processing
 					$filterResult = apply_filters('abtf_jsfile_pre', $file);
@@ -477,9 +481,8 @@ class Abovethefold_Optimization {
 					// replace url
 					if ($filterResult && $filterResult !== $file) {
 						
-						//$search_regex[] = '|(<script[^>]+)'.preg_quote($originalFile).'([^>]+>)|is';
-						$search[] = $matchedTag;
-						$replace[] = '$1'.$filterResult.'$2';
+						$search_regex[] = '|(<script[^>]+)'.preg_quote($originalFile).'([^>]+>)|is';
+						$replace_regex[] = '$1'.$filterResult.'$2';
 					}
 				}
 			}
