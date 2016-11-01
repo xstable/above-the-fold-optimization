@@ -13,10 +13,7 @@
 abstract class Abovethefold_OPP {
 
 	/**
-	 * Above the fold controller.
-	 * 
-	 * @access   public
-	 * @var      object    $CTRL
+	 * Above the fold controller
 	 */
 	public $CTRL;
 

@@ -16,10 +16,6 @@ class Abovethefold_Optimization {
 
 	/**
 	 * Above the fold controller
-	 *
-	 * @since    1.0
-	 * @access   public
-	 * @var      object    $CTRL
 	 */
 	public $CTRL; 
 
@@ -36,13 +32,10 @@ class Abovethefold_Optimization {
 	/**
 	 * Critical CSS replacement string
 	 */
-	public $criticalcss_replacement_string = '++|ABTF_CRITICALCSS|++';
+	public $criticalcss_replacement_string = 'ABTF_CRITICALCSS';
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0
-	 * @var      object    $Optimization       The Optimization class.
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) {
 
@@ -107,8 +100,6 @@ class Abovethefold_Optimization {
 
 	/**
 	 * Init output buffering
-	 *
-	 * @since    2.0
 	 */
 	public function start_output_buffer( ) {
 
@@ -192,10 +183,77 @@ class Abovethefold_Optimization {
 	}
 
 	/**
+	 * Extract stylesheets from HTML
+	 */
+	public function extract_stylesheets($HTML) {
+
+		$stylesheets = array();
+
+		// stylesheet regex
+		$stylesheet_regex = '#(<\!--\[if[^>]+>\s*)?<link[^>]+>#is';
+
+		if (preg_match_all($stylesheet_regex,$HTML,$out)) {
+
+			foreach ($out[0] as $n => $stylesheet) {
+
+				/**
+				 * Conditional, skip
+				 */
+				if (trim($out[1][$n]) != '') {
+					continue 1;
+				}
+
+				/**
+				 * No href or rel="stylesheet", skip
+				 */
+				if (strpos($stylesheet,'href') === false || strpos($stylesheet,'stylesheet') === false || !preg_match( '#href\s*=\s*["\']([^"\']+)["\']#i', $stylesheet, $hrefOut )) {
+					continue 1;
+				}
+
+				$stylesheets[] = array($hrefOut[1],$out[0][$n]);
+			}
+		}
+
+		return $stylesheets;
+	}
+
+	/**
+	 * Extract scripts from HTML
+	 */
+	public function extract_scripts($HTML) {
+
+		$scripts = array();
+
+		// script regex
+		$script_regex = '#(<\!--\[if[^>]+>\s*)?<script[^>]+>#is';
+
+		if (preg_match_all($script_regex,$HTML,$out)) {
+
+			foreach ($out[0] as $n => $script) {
+
+				/**
+				 * Conditional, skip
+				 */
+				if (trim($out[1][$n]) != '') {
+					continue 1;
+				}
+
+				/**
+				 * No src, skip
+				 */
+				if (strpos($script,'src') === false|| !preg_match( '#src\s*=\s*["\']([^"\']+)["\']#i', $script, $srcOut )) {
+					continue 1;
+				}
+
+				$scripts[] = array($srcOut[1],$out[0][$n]);
+			}
+		}
+
+		return $scripts;
+	}
+
+	/**
 	 * Rewrite callback
-	 *
-	 * @since    1.0
-	 * @var      string    $buffer       HTML output
 	 */
 	public function process_output_buffer($buffer) {
 
@@ -204,11 +262,16 @@ class Abovethefold_Optimization {
 			return $buffer;
 		}
 
-		// stylesheet regex
-		$stylesheet_regex = '#(<\!--\[if[^>]+>)?([\s|\n]*)<link([^>]+)href=[\'|"]([^\'|"]+)[\'|"]([^>]*)>#is';
+		// search / replace 
+		$search = array();
+		$replace = array();
 
-		// script regex
-		$script_regex = '#(<\!--\[if[^>]+>)?([\s|\n]*)<script([^>]+)src=[\'|"]([^\'|"]+)[\'|"]([^>]*)>#is';
+		// search / replace regex
+		$search_regex = array();
+		$replace_regex = array();
+
+		// apply pre HTML filters
+		$buffer = apply_filters('abtf_html_pre', $buffer);
 
 		/**
 		 * CSS Delivery Optimization
@@ -220,13 +283,11 @@ class Abovethefold_Optimization {
 			 *
 			 * Matching files will be ignored / left untouched in the HTML
 			 */
-			$rows = explode("\n",$this->CTRL->options['cssdelivery_ignore']);
-			$ignorelist = array();
-			foreach ($rows as $row) {
-				if (trim($row) === '') {
-					continue 1;
+			if (isset($this->CTRL->options['cssdelivery_ignore']) && !empty($this->CTRL->options['cssdelivery_ignore'])) {
+				$ignorelist = array();
+				foreach ($this->CTRL->options['cssdelivery_ignore'] as $row) {
+					$ignorelist[] = $row;
 				}
-				$ignorelist[] = trim($row);
 			}
 
 			/**
@@ -234,33 +295,25 @@ class Abovethefold_Optimization {
 			 *
 			 * Matching files will be deleted from the HTML
 			 */
-			$rows = explode("\n",$this->CTRL->options['cssdelivery_remove']);
-			$deletelist = array();
-			foreach ($rows as $row) {
-				if (trim($row) === '') {
-					continue 1;
+			if (isset($this->CTRL->options['cssdelivery_remove']) && !empty($this->CTRL->options['cssdelivery_remove'])) {
+				$deletelist = array();
+				foreach ($this->CTRL->options['cssdelivery_remove'] as $row) {
+					$deletelist[] = $row;
 				}
-				$deletelist[] = trim($row);
 			}
-
-			// search / replace 
-			$search = array();
-			$replace = array();
 
 			/**
 			 * Parse CSS links
 			 */
 			$async_styles = array();
-			if (preg_match_all($stylesheet_regex,$buffer,$out)) {
 
-				foreach ($out[4] as $n => $file) {
+			$stylesheets = $this->extract_stylesheets($buffer);
+			if (!empty($stylesheets)) {
 
-					$originalFile = $file;
+				foreach ($stylesheets as $stylesheet) {
 
-					// verify if file is valid styleshet
-					if (trim($out[1][$n]) != '' || strpos($out[3][$n] . $out[5][$n],'stylesheet') === false) {
-						continue;
-					}
+					list($file,$matchedTag) = $stylesheet;
+					if (empty($file)) { continue 1; }
 
 					// apply css file filter pre processing
 					$filterResult = apply_filters('abtf_cssfile_pre', $file);
@@ -274,7 +327,8 @@ class Abovethefold_Optimization {
 					if ($filterResult === 'delete') {
 
 						// delete from HTML
-						$search[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
+						//$search_regex[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
+						$search[] = $matchedTag;
 						$replace[] = '';
 						continue;
 					}
@@ -308,7 +362,8 @@ class Abovethefold_Optimization {
 							}
 						}
 						if ($delete) {
-							$search[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
+							//$search_regex[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
+							$search[] = $matchedTag;
 							$replace[] = '';
 							continue;
 						}
@@ -326,7 +381,6 @@ class Abovethefold_Optimization {
 
 					/**
 					 * Convert HTML entities
-					 * @since 2.5.4
 					 */
 					$media = html_entity_decode($media,ENT_COMPAT,'utf-8');
 					$file = html_entity_decode($file,ENT_COMPAT,'utf-8');
@@ -338,7 +392,8 @@ class Abovethefold_Optimization {
 					$async_styles[] = array($media,$file);
 
 					// remove file from HTML
-					$search[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
+					//$search_regex[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
+					$search[] = $matchedTag;
 					$replace[] = '';
 				}
 			}
@@ -348,18 +403,15 @@ class Abovethefold_Optimization {
 			/**
 			 * Filter CSS files
 			 */
-			if ($this->CTRL->options['gwfo'] || $this->CTRL->options['js_proxy'] || $this->CTRL->options['css_proxy']) {
+			if ($this->CTRL->options['gwfo'] || $this->CTRL->options['css_proxy']) {
 
-				if (preg_match_all($stylesheet_regex,$buffer,$out)) {
+				$stylesheets = $this->extract_stylesheets($buffer);
+				if (!empty($stylesheets)) {
 
-					foreach ($out[4] as $n => $file) {
+					foreach ($stylesheets as $file) {
 
-						$originalFile = $file;
-
-						// verify if file is valid styleshet
-						if (trim($out[1][$n]) != '' || strpos($out[3][$n] . $out[5][$n],'stylesheet') === false) {
-							continue;
-						}
+						list($file,$matchedTag) = $stylesheet;
+						if (empty($file)) { continue 1; }
 
 						// apply filter for css file pre processing
 						$filterResult = apply_filters('abtf_cssfile_pre', $file);
@@ -373,7 +425,8 @@ class Abovethefold_Optimization {
 						if ($filterResult === 'delete') {
 
 							// delete from HTML
-							$search[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
+							//$search_regex[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
+							$search[] = $matchedTag;
 							$replace[] = '';
 							continue;
 						}
@@ -381,7 +434,8 @@ class Abovethefold_Optimization {
 						// replace url
 						if ($filterResult && $filterResult !== $file) {
 							
-							$search[] = '|(<link[^>]+)'.preg_quote($originalFile).'([^>]+>)|is';
+							//$search_regex[] = '|(<link[^>]+)'.preg_quote($originalFile).'([^>]+>)|is';
+							$search[] = $matchedTag;
 							$replace[] = '$1'.$filterResult.'$2';
 						}
 					}
@@ -394,16 +448,13 @@ class Abovethefold_Optimization {
 		 */
 		if ($this->CTRL->options['js_proxy']) {
 
-			if (preg_match_all($script_regex,$buffer,$out)) {
+			$scripts = $this->extract_scripts($buffer);
+			if (!empty($scripts)) {
 
-				foreach ($out[4] as $n => $file) {
+				foreach ($scripts as $script) {
 
-					$originalFile = $file;
-
-					// verify if file is valid styleshet
-					if (trim($out[1][$n]) != '') {
-						continue;
-					}
+					list($file,$matchedTag) = $script;
+					if (empty($file)) { continue 1; }
 
 					// apply filter for css file pre processing
 					$filterResult = apply_filters('abtf_jsfile_pre', $file);
@@ -417,7 +468,8 @@ class Abovethefold_Optimization {
 					if ($filterResult === 'delete') {
 
 						// delete from HTML
-						$search[] = '|<script[^>]+'.preg_quote($originalFile).'[^>]+>([^<]+</script>)?|is';
+						//$search_regex[] = '|<script[^>]+'.preg_quote($originalFile).'[^>]+>([^<]+</script>)?|is';
+						$search[] = $matchedTag;
 						$replace[] = '';
 						continue;
 					}
@@ -425,14 +477,13 @@ class Abovethefold_Optimization {
 					// replace url
 					if ($filterResult && $filterResult !== $file) {
 						
-						$search[] = '|(<script[^>]+)'.preg_quote($originalFile).'([^>]+>)|is';
+						//$search_regex[] = '|(<script[^>]+)'.preg_quote($originalFile).'([^>]+>)|is';
+						$search[] = $matchedTag;
 						$replace[] = '$1'.$filterResult.'$2';
 					}
 				}
 			}
 		}
-
-
 
 		/**
 		 * CSS Delivery Optimization
@@ -445,7 +496,7 @@ class Abovethefold_Optimization {
 			if ($this->CTRL->view === 'abtf-critical-only') {
 
 				// do not render the stylesheet files
-				$styles = false;
+				$styles_json = 'false';
 
 			} else {
 
@@ -463,30 +514,34 @@ class Abovethefold_Optimization {
 						$styles[] = $link;
 					}
 				}
+
+				if (defined('JSON_UNESCAPED_SLASHES')) {
+					$styles_json = json_encode($styles, JSON_UNESCAPED_SLASHES);
+				} else {
+					$styles_json = str_replace('\\/','/',json_encode($styles));
+				}
 			}
 		
 			/**
 			 * Update CSS JSON configuration
 			 */
-			$search[] = '#[\'|"]'.preg_quote($this->criticalcss_replacement_string).'[\'|"]#Ui';
-
-			// PHP 5.4+
-			if (defined('JSON_UNESCAPED_SLASHES')) {
-				$replace[] = json_encode($styles, JSON_UNESCAPED_SLASHES);
-			} else {
-				$replace[] = str_replace('\\/','/',json_encode($styles));
-			}
+			//$search_regex[] = '#[\'|"]'.preg_quote($this->criticalcss_replacement_string).'[\'|"]#Ui';
+			$search[] = '"'.$this->criticalcss_replacement_string	.'"';
+			$replace[] = $styles_json;
 		}
 
 		// apply search replace filter
-		$searchreplace = apply_filters('abtf_html_replace', array($search,$replace));
-		if (is_array($searchreplace) && count($searchreplace) === 2) {
-			list($search,$replace) = $searchreplace;
+		$searchreplace = apply_filters('abtf_html_replace', array($search,$replace,$search_regex,$replace_regex));
+		if (is_array($searchreplace) && count($searchreplace) === 4) {
+			list($search,$replace,$search_regex,$replace_regex) = $searchreplace;
 		}
 
 		// update buffer
 		if (!empty($search)) {
-			$buffer = preg_replace($search,$replace,$buffer);
+			$buffer = str_replace($search,$replace,$buffer);
+		}
+		if (!empty($search_regex)) {
+			$buffer = preg_replace($search_regex,$replace_regex,$buffer);
 		}
 
 		// apply HTML filters
@@ -497,8 +552,6 @@ class Abovethefold_Optimization {
 
 	/**
 	 * WordPress Header hook
-	 *
-	 * @since    1.0
 	 */
     public function header() {
 
@@ -863,8 +916,6 @@ class Abovethefold_Optimization {
 
 	/**
 	 * WordPress Footer hook
-	 *
-	 * @since    1.0
 	 */
 	public function footer() {
 		if ($this->CTRL->disabled) { return; }

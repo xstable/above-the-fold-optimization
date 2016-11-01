@@ -13,24 +13,16 @@ class Abovethefold_Admin_CSS {
 
 	/**
 	 * Above the fold controller
-	 *
-	 * @access   public
 	 */
 	public $CTRL;
 
 	/**
 	 * Options
-	 *
-	 * @access   public
 	 */
 	public $options;
 
 	/**
 	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0
-	 * @var      string    $plugin_name       The name of this plugin.
-	 * @var      string    $version    The version of this plugin.
 	 */
 	public function __construct( &$CTRL ) {
 
@@ -58,7 +50,6 @@ class Abovethefold_Admin_CSS {
 
 		check_admin_referer('abovethefold');
 
-		// stripslashes should always be called
 		// @link https://codex.wordpress.org/Function_Reference/stripslashes_deep
 		$_POST = array_map( 'stripslashes_deep', $_POST );
 
@@ -74,8 +65,8 @@ class Abovethefold_Admin_CSS {
 		$options['cssdelivery'] = (isset($input['cssdelivery']) && intval($input['cssdelivery']) === 1) ? true : false;
 		$options['loadcss_enhanced'] = (isset($input['loadcss_enhanced']) && intval($input['loadcss_enhanced']) === 1) ? true : false;
 		$options['cssdelivery_position'] = trim($input['cssdelivery_position']);
-		$options['cssdelivery_ignore'] = trim(sanitize_text_field($input['cssdelivery_ignore']));
-		$options['cssdelivery_remove'] = trim(sanitize_text_field($input['cssdelivery_remove']));
+		$options['cssdelivery_ignore'] = $this->CTRL->admin->newline_array($input['cssdelivery_ignore']);
+		$options['cssdelivery_remove'] = $this->CTRL->admin->newline_array($input['cssdelivery_remove']);
 		$options['cssdelivery_renderdelay'] = (isset($input['cssdelivery_renderdelay']) && is_numeric($input['cssdelivery_renderdelay']) && intval($input['cssdelivery_renderdelay']) > 0) ? intval($input['cssdelivery_renderdelay']) : false;
 
 		/**
@@ -86,58 +77,54 @@ class Abovethefold_Admin_CSS {
 		$options['gwfo_loadposition'] = trim($input['gwfo_loadposition']);
 		$options['gwfo_config'] = trim($input['gwfo_config']);
 
-		// verify WebFontConfig
+		/**
+		 * Google Fonts
+		 */
+		$options['gwfo_googlefonts'] = $this->CTRL->admin->newline_array($input['gwfo_googlefonts']);
+
+		/**
+		 * WebFontConfig
+		 */
 		if ($options['gwfo_config'] !== '') {
 			if (substr($options['gwfo_config'], -1) === '}') {
 				$options['gwfo_config'] .= ';';
 			}
-			if (!preg_match('|^WebFontConfig\s*=\s*\{.*;$|s',$options['gwfo_config'])) {
+
+			if (!$this->CTRL->gwfo->verify_webfontconfig($options['gwfo_config'])) {
 				$error = true;
 				$this->CTRL->admin->set_notice('WebFontConfig variable is not valid. It should consist of <code>WebFontConfig = { ... };</code>.', 'ERROR');
-			}
-		}
+				$options['gwfo_config_valid'] = false;
+			} else {
 
-		/**
-		 * Google Fonts
-		 */
-		$options['gwfo_googlefonts'] = array();
+				// Extract Google Fonts
+				$this->CTRL->gwfo->fonts_from_webfontconfig($options['gwfo_config'],$options['gwfo_googlefonts']);
 
-		$input['gwfo_googlefonts'] = trim($input['gwfo_googlefonts']);
-		if ($input['gwfo_googlefonts'] !== '') {
-			$fonts = explode("\n",$input['gwfo_googlefonts']);
-			if (!empty($fonts)) {
-				foreach ($fonts as $font) {
-					$font = trim($font);
-					if ($font === '') { continue; }
-					$options['gwfo_googlefonts'][] = $font;
-				}
-				$options['gwfo_googlefonts'] = array_unique($options['gwfo_googlefonts']);
+				// modify Google font config in WebFontConfig
+				$googlefonts_regex = '|google\s*:\s*(\{[^\}]+\})|is';
+				if (preg_match($googlefonts_regex,$options['gwfo_config'],$out)) {
+
+					$config = @json_decode($this->CTRL->gwfo->fixJSON($out[1]),true);
+					if (is_array($config) && isset($config['families'])) {
+						$config['families'] = 'GOOGLE-FONTS-FROM-INCLUDE-LIST';
+						$options['gwfo_config'] = preg_replace($googlefonts_regex,'google:' . json_encode($config),$options['gwfo_config']);
+					}
+				}	
+
+				$options['gwfo_config_valid'] = true;
 			}
+		} else {
+			$options['gwfo_config_valid'] = true;
 		}
 
 		/**
 		 * Google Fonts Remove List
 		 */
-		$options['gwfo_googlefonts_remove'] = array();
-
-		$input['gwfo_googlefonts_remove'] = trim($input['gwfo_googlefonts_remove']);
-		if ($input['gwfo_googlefonts_remove'] !== '') {
-			$fonts = explode("\n",$input['gwfo_googlefonts_remove']);
-			if (!empty($fonts)) {
-				foreach ($fonts as $font) {
-					$font = trim($font);
-					if ($font === '') { continue; }
-					$options['gwfo_googlefonts_remove'][] = $font;
-				}
-				$options['gwfo_googlefonts_remove'] = array_unique($options['gwfo_googlefonts_remove']);
-			}
-		}
-
+		$options['gwfo_googlefonts_remove'] = $this->CTRL->admin->newline_array($input['gwfo_googlefonts_remove']);
 
 		// update settings
 		$this->CTRL->admin->save_settings($options, 'CSS optimization settings saved.');
 
-		wp_redirect(admin_url('admin.php?page=abovethefold&tab=css'));
+		wp_redirect( add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'css' ), admin_url( 'admin.php' ) ) );
 		exit;
     }
 

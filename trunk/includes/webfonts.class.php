@@ -16,10 +16,6 @@ class Abovethefold_WebFonts {
 
 	/**
 	 * Above the fold controller
-	 *
-	 * @since    1.0
-	 * @access   public
-	 * @var      object    $CTRL
 	 */
 	public $CTRL;
 
@@ -44,10 +40,7 @@ class Abovethefold_WebFonts {
 	public $webfont_replacement_string = 'var ABTF_WEBFONT_CONFIG;';
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0
-	 * @var      object    $Optimization       The Optimization class.
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) {
 
@@ -82,7 +75,7 @@ class Abovethefold_WebFonts {
 			$this->CTRL->loader->add_filter( 'abtf_cssfile_pre', $this, 'process_cssfile' );
 
 			// add filter for HTML output
-			$this->CTRL->loader->add_filter( 'abtf_html', $this, 'process_html' );
+			$this->CTRL->loader->add_filter( 'abtf_html_pre', $this, 'process_html_pre' );
 
 			// add filter for HTML output
 			$this->CTRL->loader->add_filter( 'abtf_html_replace', $this, 'replace_html' );
@@ -192,15 +185,9 @@ class Abovethefold_WebFonts {
 	}
 
 	/**
-	 * Extract fonts from HTML
+	 * Extract fonts from HTML pre optimization
 	 */
-	public function process_html($HTML) {
-
-		/**
-		 * Regex search replace on CSS
-		 */
-		$search = array();
-		$replace = array();
+	public function process_html_pre($HTML) {
 
 		/**
 		 * Parse Google Fonts in WebFontConfig
@@ -209,20 +196,11 @@ class Abovethefold_WebFonts {
 
 			$googlefonts = array();
 
-			// parse json
-			if (preg_match_all('#WebFontConfig\s*=\s*\{[^;]+\}[;|<]#s',$HTML,$out)) {
+			// Try to parse WebFontConfig variable
+			if (preg_match_all('#WebFontConfig\s*=\s*\{[^;]+\};#s',$HTML,$out)) {
 
 				foreach ($out[0] as $wfc) {
-
-					// Extract Google fonts
-					if (strpos($wfc,'google') !== false) {
-						if (preg_match('#google[\'|"]?\s*:\s*\{[^\}]+families\s*:\s*(\[[^\]]+\])#is',$wfc,$gout)) {
-							$gfonts = @json_decode($this->fixJSON($gout[1]),true);
-							if (is_array($gfonts) && !empty($gfonts)) {
-								$googlefonts = array_unique(array_merge($googlefonts,$gfonts));
-							}
-						}
-					}
+					$this->fonts_from_webfontconfig($wfc,$googlefonts);
 				}
 			}
 
@@ -230,43 +208,6 @@ class Abovethefold_WebFonts {
 			if (!empty($googlefonts)) {
 				$this->update_google_fonts($googlefonts);
 			}
-		}
-
-		/**
-		 * Parse stylesheets
-		 */
-		if (strpos($HTML,'fonts.googleapis.com/css') !== false) {
-
-			$stylesheet_regex = '#(<\!--\[if[^>]+>)?([\s|\n]+)?<link([^>]+)href=[\'|"]([^\'|"]+)[\'|"]([^>]+)?>#is';
-
-			if (preg_match_all($stylesheet_regex,$HTML,$out)) {
-
-				foreach ($out[4] as $n => $file) {
-
-					// verify if file is valid styleshet
-					if (trim($out[1][$n]) != '' || strpos($out[3][$n] . $out[5][$n],'stylesheet') === false) {
-						$i[] = array($out[3][$n] . $out[5][$n],$file);
-						continue;
-					}
-
-					// apply css file  filter pre processing
-					$filterResult = $this->process_cssfile($file);
-
-					// delete file
-					if ($filterResult === 'delete') {
-
-						// delete from HTML
-						$search[] = '|<link[^>]+'.preg_quote($file).'[^>]+>|Ui';
-						$replace[] = '';
-						continue;
-					}
-				}
-			}
-		
-		}
-
-		if (!empty($search)) {
-			$HTML = preg_replace($search,$replace,$HTML);
 		}
 
 		return $HTML;
@@ -277,8 +218,7 @@ class Abovethefold_WebFonts {
 	 */
 	public function replace_html($searchreplace) {
 
-		list($search, $replace) = $searchreplace;
-
+		list($search, $replace, $search_regex, $replace_regex) = $searchreplace;
 
 		/**
 		 * Inline Web Font Loading
@@ -288,11 +228,13 @@ class Abovethefold_WebFonts {
 			/**
 			 * Update Web Font configuration
 			 */
-			$search[] = '#' . preg_quote($this->webfont_replacement_string) . '#Ui';
-			$replace[] = $this->webfontconfig();
+			$webfontconfig = $this->webfontconfig();
+			//$search_regex[] = '#' . preg_quote($this->webfont_replacement_string) . '#Ui';
+			$search[] = $this->webfont_replacement_string;
+			$replace[] = $webfontconfig;
 		}
 
-		return array($search, $replace); 
+		return array($search, $replace, $search_regex, $replace_regex); 
 	}
 
 	/**
@@ -385,45 +327,48 @@ class Abovethefold_WebFonts {
 	}
 
 	/**
+	 * Parse Webfont Fonts from link
+	 */
+	public function fonts_from_webfontconfig($WebFontConfig,&$googlefonts) {
+
+		// Extract Google fonts
+		if (strpos($WebFontConfig,'google') !== false) {
+			if (preg_match('#google[\'|"]?\s*:\s*\{[^\}]+families\s*:\s*(\[[^\]]+\])#is',$WebFontConfig,$gout)) {
+				$gfonts = @json_decode($this->fixJSON($gout[1]),true);
+				if (is_array($gfonts) && !empty($gfonts)) {
+					$googlefonts = array_unique(array_merge($googlefonts,$gfonts));
+				}
+			}
+		}
+	}
+
+	/**
 	 * Return WebFontConfig variable
 	 */
 	public function webfontconfig($json = false) {
 
 		$WebFontConfig = '';
 
-		if (isset($this->CTRL->options['gwfo_config']) && $this->CTRL->options['gwfo_config']) {
-
-			if (!preg_match('|^WebFontConfig\s*=\s*|Ui',$this->CTRL->options['gwfo_config'])) {
-				// not valid
-			} else {
-
-				$WebFontConfig = trim($this->CTRL->options['gwfo_config']);
-			}
+		if (isset($this->CTRL->options['gwfo_config']) && $this->CTRL->options['gwfo_config'] !== '' && isset($this->CTRL->options['gwfo_config_valid']) && $this->CTRL->options['gwfo_config_valid']) {
+			
+			$WebFontConfig = trim($this->CTRL->options['gwfo_config']);
 		}
 
 		/**
 		 * Apply Google Font Remove List
-		 * 
-		 * @since 2.5.6
 		 */
 		if (!empty($this->googlefonts) && isset($this->CTRL->options['gwfo_googlefonts_remove']) && !empty($this->CTRL->options['gwfo_googlefonts_remove'])) {
 
-			$googlefonts = array();
-			foreach ($this->googlefonts as $font) {
-
-				$remove = false;
-				foreach ($this->CTRL->options['gwfo_googlefonts_remove'] as $removeFont) {
+			$removeList = $this->CTRL->options['gwfo_googlefonts_remove'];
+			$this->googlefonts =  array_filter($this->googlefonts, function($font) use ($removeList) {
+				foreach ($removeList as $removeFont) {
 					if (strpos($font,$removeFont) !== false) {
-						// remove
-						$remove = true;
+						// remove font
+						return false;
 					}
 				}
-				if (!$remove) {
-					$googlefonts[] = $font;
-				}
-			}
-
-			$this->googlefonts = $googlefonts;
+				return true;
+			});
 		}
 
 		/**
@@ -431,23 +376,30 @@ class Abovethefold_WebFonts {
 		 */
 		if (!empty($this->googlefonts)) {
 
-			$googlefontconfig = array(
-				'families' => $this->googlefonts
-			);
-
-			if (trim($WebFontConfig) !== '') {
+			if ($WebFontConfig !== '') {
 
 				// WebFontConfig has Google fonts, merge
-				if (preg_match('|google\s*:\s*(\{[^\}]+\})|is',$WebFontConfig,$out)) {
-
-					$config = @json_decode($this->fixJSON($out[1]),true);
-					if (is_array($config) && isset($config['families'])) {
-						$googlefontconfig['families'] = array_unique(array_merge($googlefontconfig['families'],$config['families']));
-					}
-
-					$WebFontConfig = preg_replace('|google\s*:\s*(\{[^\}]+\})|is','google:' . json_encode($googlefontconfig),$WebFontConfig);
+				if (strpos($WebFontConfig,'GOOGLE-FONTS-FROM-INCLUDE-LIST') !== false) {
+					$quote = (strpos($WebFontConfig,'\'GOOGLE-FONTS-FROM-INCLUDE-LIST') !== false) ? '\'' : '"';
+					$WebFontConfig = str_replace($quote . 'GOOGLE-FONTS-FROM-INCLUDE-LIST' . $quote, json_encode($this->googlefonts), $WebFontConfig);
 				}
 			} else {
+
+				/**
+				 * Return JSON
+				 */
+				if ($json) {
+					$googlefontconfig = array(
+						'google' => array(
+							'families' => $this->googlefonts
+						)
+					);
+					return $googlefontconfig;
+				}
+
+				$googlefontconfig = array(
+					'families' => $this->googlefonts
+				);
 				$WebFontConfig = 'WebFontConfig={google:' . json_encode($googlefontconfig) . '};';
 			}
 		}
@@ -457,18 +409,18 @@ class Abovethefold_WebFonts {
 			return null;
 		}
 
-		// return parsed json
+		/**
+		 * Return JSON
+		 */
 		if ($json) {
-			return @json_decode(preg_replace('|;$|Ui','',trim($this->fixJSON(preg_replace('|^WebFontConfig\s*=|Ui','',trim($WebFontConfig))))),true);
+
+			// return original WebFontConfig object string to be converted by the client
+			return rtrim(ltrim(str_replace('WebFontConfig','',$WebFontConfig),'= '),'; ');
 		}
 
-		$WebFontConfig = trim($WebFontConfig);
-		if (!preg_match('|;$|Ui',$WebFontConfig)) {
+		if (substr($WebFontConfig, 0, -1) !== '/') {
 			$WebFontConfig .= ';';
 		}
-
-		// compress code
-		$WebFontConfig = preg_replace(array('|\s*=\s*\{\s*|is','|\s*:\s*\{\s*|is','|\s*\{\s*\{\s*|is','|\s*\}\s*\}\s*|is'),array('={',':{','{{','}}'),$WebFontConfig);
 
 		return $WebFontConfig;
 
@@ -478,10 +430,7 @@ class Abovethefold_WebFonts {
 	 * Fix invalid json (single quotes vs double quotes)
 	 */
 	public function fixJSON($json) {
-
-		$json = preg_replace('#([\s|\{])([a-z\_]+)\s*:\s*([\'|"|\{|\[])#Ui','$1"$2" : $3',$json);
-		$json = preg_replace('#([\s|\{])([a-z\_]+)\s*:\s*(false)#Ui','$1"$2" : $3',$json);
-		$json = preg_replace('#([\s|\{])([a-z\_]+)\s*:\s*(true)#Ui','$1"$2" : $3',$json);
+		$json = preg_replace("/(?<!\"|'|\w)([a-zA-Z0-9_]+?)(?!\"|'|\w)\s?:/", "\"$1\":", $json);
 
 		$regex = <<<'REGEX'
 ~
@@ -490,6 +439,7 @@ class Abovethefold_WebFonts {
   | '([^'\\]*(?:\\.|[^'\\]*)*)'
 ~x
 REGEX;
+
 	    return preg_replace_callback($regex, function($matches) {
 	        return '"' . preg_replace('~\\\\.(*SKIP)(*F)|"~', '\\"', $matches[1]) . '"';
 	    }, $json);
@@ -602,7 +552,24 @@ REGEX;
 			}
 
 		}
+	}
 
+	/**
+	 * Verify WebFontConfig variable
+	 */
+	public function verify_webfontconfig($WebFontConfig) {
+
+		$WebFontConfig = trim($WebFontConfig);
+		if ($WebFontConfig === '') {
+			return false;
+		}
+
+		// verify string
+		if (preg_match('|^WebFontConfig\s*=\s*\{.*;$|s',$WebFontConfig)) {
+			return true;
+		}
+
+		return false;
 	}
 
 }

@@ -53,6 +53,11 @@ window['Abtf'] = (function(window) {
                         
                     } else if (typeof WebFont !== 'undefined') {
 
+                        // Convert WebFontConfig object string
+                        if (typeof cnf.gwf[0] === 'string') {
+                            cnf.gwf[0] = eval('('+cnf.gwf[0]+')');
+                        }
+
                         // load WebFontConfig
                         WebFont.load(cnf.gwf[0]);
 

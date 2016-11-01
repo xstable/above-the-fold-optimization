@@ -16,10 +16,6 @@ class Abovethefold_ExtractFullCss {
 
 	/**
 	 * Above the fold controller
-	 *
-	 * @since    1.0
-	 * @access   public
-	 * @var      object    $CTRL
 	 */
 	public $CTRL;
 
@@ -30,10 +26,7 @@ class Abovethefold_ExtractFullCss {
 
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0
-	 * @var      object    $Optimization       The Optimization class.
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) {
 
@@ -62,8 +55,6 @@ class Abovethefold_ExtractFullCss {
 
 	/**
 	 * Init output buffering
-	 *
-	 * @since    2.5.0
 	 */
 	public function start_output_buffer( ) {
 
@@ -81,8 +72,6 @@ class Abovethefold_ExtractFullCss {
 
 	/**
 	 * End CSS extract output buffer
-	 *
-	 * @since    2.5.0
 	 */
 	public function end_buffering($HTML) {
 
@@ -342,7 +331,7 @@ class Abovethefold_ExtractFullCss {
 
 			require_once(plugin_dir_path( realpath(dirname( __FILE__ ) . '/') ) . 'includes/extract-full-css.inc.php');
 
-			return $cssoutput;
+			return $output;
 		}
 
 		return $output;

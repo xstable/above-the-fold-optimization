@@ -14,10 +14,6 @@ class Abovethefold_Curl {
 
 	/**
 	 * Above the fold controller
-	 *
-	 * @since    1.0
-	 * @access   public
-	 * @var      object    $CTRL
 	 */
 	public $CTRL;
 
@@ -30,10 +26,7 @@ class Abovethefold_Curl {
 	public $transfer_info;
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0
-	 * @var      object    $GO       The Optimization class.
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) {
 		$this->CTRL =& $CTRL;

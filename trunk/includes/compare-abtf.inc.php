@@ -14,7 +14,7 @@ $qs_start = (strpos($url,'?') !== false) ? '&' : '?';
 $critical_url = $url . $qs_start . 'abtft=' . time() . '&abtf-critical-only='.md5(SECURE_AUTH_KEY . AUTH_KEY);
 $full_url = $url . $qs_start . 'abtft=' . time() . '&abtf-critical-verify='.md5(SECURE_AUTH_KEY . AUTH_KEY);
 
-$cssoutput = '<!DOCTYPE html>
+$output = '<!DOCTYPE html>
 <html>
 <head>
 <title>Critical CSS Above The Fold Comparison</title>

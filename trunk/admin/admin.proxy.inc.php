@@ -19,7 +19,7 @@
 		foreach ($options['js_proxy_preload'] as $url) {
 			$jsPreload[] = (is_string($url)) ? $url : json_encode($url);
 		}
-		$jsPreload = implode("\n",$jsPreload);
+		$jsPreload = $this->CTRL->admin->newline_array_string($jsPreload);
 	} else {
 		$jsPreload = '';
 	}
@@ -31,7 +31,7 @@
 		foreach ($options['css_proxy_preload'] as $url) {
 			$cssPreload[] = (is_string($url)) ? $url : json_encode($url);
 		}
-		$cssPreload = implode("\n",$cssPreload);
+		$cssPreload = $this->CTRL->admin->newline_array_string($cssPreload);
 	} else {
 		$cssPreload = '';
 	}
@@ -64,7 +64,7 @@
 									<th scope="row">&nbsp;</th>
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Include List</h5>
-										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[js_proxy_include]" placeholder="Leave blank to proxy all external scripts..."><?php if (isset($options['js_proxy_include'])) { echo htmlentities($options['js_proxy_include'],ENT_COMPAT,'utf-8'); } ?></textarea>
+										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[js_proxy_include]" placeholder="Leave blank to proxy all external scripts..."><?php if (isset($options['js_proxy_include'])) { echo $this->CTRL->admin->newline_array_string($options['js_proxy_include']); } ?></textarea>
 										<p class="description">Enter (parts of) external javascript files to proxy, e.g. <code>google-analytics.com/analytics.js</code> or <code>facebook.net/en_US/sdk.js</code>. One script per line. </p>
 									</td>
 								</tr>
@@ -72,7 +72,7 @@
 									<th scope="row">&nbsp;</th>
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Exclude List</h5>
-										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[js_proxy_exclude]"><?php if (isset($options['js_proxy_exclude'])) { echo htmlentities($options['js_proxy_exclude'],ENT_COMPAT,'utf-8'); } ?></textarea>
+										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[js_proxy_exclude]"><?php if (isset($options['js_proxy_exclude'])) { echo $this->CTRL->admin->newline_array_string($options['js_proxy_exclude']); } ?></textarea>
 										<p class="description">Enter (parts of) external javascript files to exclude from the proxy. One script per line.</p>
 									</td>
 								</tr>
@@ -80,7 +80,7 @@
 									<th scope="row">&nbsp;</th>
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Preload List</h5>
-										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[js_proxy_preload]"><?php if ($jsPreload !== '') { echo htmlentities($jsPreload,ENT_COMPAT,'utf-8'); } ?></textarea>
+										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[js_proxy_preload]"><?php if ($jsPreload !== '') { echo $jsPreload; } ?></textarea>
 										<p class="description">Enter the exact url or JSON config object of external scripts to preload for "script injected" async script capture, e.g. <code>https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url or JSON object per line.</p>
 										<fieldset style="border:solid 1px #efefef;padding:10px;margin:0px;margin-top:7px;background:#f1f1f1;">
 											<p class="description" style="margin-top:0px;">JSON config objects must be placed on one line and contain a target url. Valid parameters are <code>url</code>, <code>regex</code>, <code>regex-flags</code>, <code>cdn</code> and <code>expire</code> (expire time in seconds).</p>
@@ -99,7 +99,7 @@
 									<th scope="row">&nbsp;</th>
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Include List</h5>
-										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_include]" placeholder="Leave blank to proxy all external stylesheets..."><?php if (isset($options['css_proxy_include'])) { echo htmlentities($options['css_proxy_include'],ENT_COMPAT,'utf-8'); } ?></textarea>
+										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_include]" placeholder="Leave blank to proxy all external stylesheets..."><?php if (isset($options['css_proxy_include'])) { echo $this->CTRL->admin->newline_array_string($options['css_proxy_include']); } ?></textarea>
 										<p class="description">Enter (parts of) external stylesheets to proxy, e.g. <code>googleapis.com/jquery-ui.css</code>. One stylesheet per line. </p>
 									</td>
 								</tr>
@@ -107,7 +107,7 @@
 									<th scope="row">&nbsp;</th>
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Exclude List</h5>
-										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_exclude]"><?php if (isset($options['css_proxy_exclude'])) { echo htmlentities($options['css_proxy_exclude'],ENT_COMPAT,'utf-8'); } ?></textarea>
+										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_exclude]"><?php if (isset($options['css_proxy_exclude'])) { echo $this->CTRL->admin->newline_array_string($options['css_proxy_exclude']); } ?></textarea>
 										<p class="description">Enter (parts of) external stylesheets to exclude from the proxy. One stylesheet per line.</p>
 									</td>
 								</tr>
@@ -115,7 +115,7 @@
 									<th scope="row">&nbsp;</th>
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Preload List</h5>
-										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_preload]"><?php if ($cssPreload !== '') { echo htmlentities($cssPreload,ENT_COMPAT,'utf-8'); } ?></textarea>
+										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_preload]"><?php if ($cssPreload !== '') { echo $cssPreload; } ?></textarea>
 										<p class="description">Enter the exact url or JSON config object of external stylesheets to preload for "script injected" async stylesheet capture, e.g. <code>https://fonts.googleapis.com/css?family=Open+Sans:400</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url or JSON object per line.</p>
 										<fieldset style="border:solid 1px #efefef;padding:10px;margin:0px;margin-top:7px;background:#f1f1f1;">
 											<p class="description" style="margin-top:0px;">JSON config objects must be placed on one line and contain a target url. Valid parameters are <code>url</code>, <code>regex</code>, <code>regex-flags</code>, <code>cdn</code> and <code>expire</code> (expire time in seconds).</p>
@@ -146,11 +146,8 @@
 							?>
 						</div>
 					</div>
-
-	<!-- End of #post_form -->
-
 				</div>
-			</div> <!-- End of #post-body -->
-		</div> <!-- End of #poststuff -->
-	</div> <!-- End of .wrap .nginx-wrapper -->
+			</div>
+		</div>
+	</div> 
 </form>

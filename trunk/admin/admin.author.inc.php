@@ -1,18 +1,3 @@
-<?php
- 
-	/**
-	 * lgcode for Google Documentation links
-	 */
-	$lgcode = strtolower(get_locale());
-	if (strpos($lgcode,'_') !== false) {
-		$lgparts = explode('_',$lgcode);
-		$lgcode = $lgparts[0];
-	}
-	if ($lgcode === 'en') {
-		$lgcode = '';
-	}
-	
-?>
 <div id="post-body-content" style="padding-bottom:0px;margin-bottom:0px;margin-left:5px;">
 	<div class="authorbox">
 		<div class="inside" style="width:auto;margin:0px;float:left;position:relative;margin-right:2em;">
@@ -25,8 +10,5 @@
 			<p>We have developed a plugin that is able to provide instant (&lt;1ms) page load times, up to 99% HTML bandwidth saving and realtime HTML (live content). 
 			<a href="http://websockify.it/" target="_blank">Information</a> / <a href="https://websockify.io/" target="_blank">Demo (WooCommerce)</a>.</p>
 		</div>
-		<!--
-			This plugin is not a simple 'on/off' plugin. It is a tool for optimization professionals and advanced WordPress users to achieve a Google PageSpeed <span class="g100">100</span> Score.
-		-->
 	</div>
 </div>

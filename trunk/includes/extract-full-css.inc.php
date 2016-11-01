@@ -9,7 +9,7 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-$cssoutput = '<!DOCTYPE html>
+$output = '<!DOCTYPE html>
 <html>
 <head>
 <title>Full CSS extraction</title>
@@ -24,15 +24,15 @@ $cssoutput = '<!DOCTYPE html>
 
 foreach($cssfiles as $file) {
 	if ($file['inline']) {
-		$cssoutput .= '<textarea style="display:none;" id="inline'.$file['src'].'_display">'.htmlentities(htmlentities($file['code']),ENT_COMPAT,'utf-8').'</textarea>
+		$output .= '<textarea style="display:none;" id="inline'.$file['src'].'_display">'.htmlentities(htmlentities($file['code']),ENT_COMPAT,'utf-8').'</textarea>
 <textarea style="display:none;" id="code'.md5($file['code']).'" title="' . $file['src'] . '" data-size="'.strlen($file['inlinecode']).'">'.htmlentities($file['inlinecode'],ENT_COMPAT,'utf-8').'</textarea><label style="display:block;border-bottom:solid 1px #efefef;padding-bottom:5px;margin-bottom:5px;" title="'.htmlentities(substr(preg_replace(array('|\n+|is','|\s+|is'),array(' ',' '),$file['inlinecode']), 0, 300),ENT_COMPAT,'utf-8').'..."><input type="checkbox" name="cssc" value="'.md5($file['code']).'" checked="true"> Inline <a href="javascript:void(0);" class="showinline" data-id="inline'.$file['src'].'_display" style="cursor:help;">'.htmlentities(substr(preg_replace(array('|\n+|is','|\s+|is'),array(' ',' '),$file['inlinecode']), 0, 100),ENT_COMPAT,'utf-8').'...</a> ('.human_filesize(strlen($file['inlinecode']), 2).') - Media: '.implode(', ',$file['media']).'</label>';
 	} else {
-		$cssoutput .= '<textarea style="display:none;" id="code'.md5($file['src']).'" title="'.$file['src'].'" data-size="'.strlen($file['code']).'">'.htmlentities($file['code'],ENT_COMPAT,'utf-8').'</textarea>
+		$output .= '<textarea style="display:none;" id="code'.md5($file['src']).'" title="'.$file['src'].'" data-size="'.strlen($file['code']).'">'.htmlentities($file['code'],ENT_COMPAT,'utf-8').'</textarea>
 <label style="display:block;border-bottom:solid 1px #efefef;padding-bottom:5px;margin-bottom:5px;"><input type="checkbox" name="cssc" value="'.md5($file['src']).'" checked="true"> <a href="'.$file['src'].'" target="_blank">'.$file['src'].'</a> ('.human_filesize(strlen($file['code']), 2).') - Media: '.implode(', ',$file['media']).'</label>';
 	}
 }
 
-$cssoutput .= '
+$output .= '
 <br /><fieldset><legend>Full CSS (<span id="fullcsssize">&hellip;</span>)</legend>
 <textarea style="width:100%;height:300px;" id="fullcss"></textarea>
 <div style="padding:10px;text-align:left;font-size:20px;line-height:24px;">

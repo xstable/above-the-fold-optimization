@@ -16,15 +16,11 @@ class Abovethefold_LazyScripts {
 
 	/**
 	 * Above the fold controller
-	 * 
-	 * @var      object    $CTRL
 	 */
 	public $CTRL;
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @var      object    $Optimization       The Optimization class.
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) {
 
@@ -66,8 +62,6 @@ class Abovethefold_LazyScripts {
 		 *
 		 * @link https://wordpress.org/plugins/a3-lazy-load/
 		 * @version  1.7.1
-		 * 
-		 * @since  2.5.0
 		 */
 		if (defined('A3_LAZY_VERSION') && isset($a3_lazy_load_global_settings) && $a3_lazy_load_global_settings['a3l_apply_lazyloadxt']) {
 
@@ -93,8 +87,6 @@ class Abovethefold_LazyScripts {
 			 *
 			 * @link https://wordpress.org/plugins/lazy-load-xt/
 			 * @version 0.5.3
-			 *
-			 * @since  2.5.0
 			 */
 			
 			// is libary loaded?

@@ -31,9 +31,7 @@ class Abovethefold_OPP_W3TotalCache extends Abovethefold_OPP {
 	private $pagecache_callback;
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @var      object    $CTRL       The above the fold admin controller..
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) {
 		parent::__construct( $CTRL );

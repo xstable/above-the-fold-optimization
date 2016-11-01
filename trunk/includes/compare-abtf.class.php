@@ -16,10 +16,6 @@ class Abovethefold_CompareABTF {
 
 	/**
 	 * Above the fold controller
-	 *
-	 * @since    1.0
-	 * @access   public
-	 * @var      object    $CTRL
 	 */
 	public $CTRL;
 
@@ -29,10 +25,7 @@ class Abovethefold_CompareABTF {
 	public $buffer_started = false;
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0
-	 * @var      object    $Optimization       The Optimization class.
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) {
 
@@ -44,8 +37,6 @@ class Abovethefold_CompareABTF {
 
 	/**
 	 * Init output buffering
-	 *
-	 * @since    2.5.0
 	 */
 	public function start_output_buffer( ) {
 
@@ -62,8 +53,6 @@ class Abovethefold_CompareABTF {
 
 	/**
 	 * End compare critical CSS output buffer
-	 *
-	 * @since    2.5.0
 	 */
 	public function end_buffering($HTML) {
 		if (is_feed() || is_admin()) {
@@ -90,10 +79,8 @@ class Abovethefold_CompareABTF {
 		/**
 		 * Print compare critical CSS page
 		 */
-
 		require_once(plugin_dir_path( realpath(dirname( __FILE__ ) . '/') ) . 'includes/compare-abtf.inc.php');
-
-		return $cssoutput;
+		return $output;
 	}
 
 }

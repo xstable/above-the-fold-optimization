@@ -13,24 +13,16 @@ class Abovethefold_Admin_Settings {
 
 	/**
 	 * Above the fold controller
-	 *
-	 * @access   public
 	 */
 	public $CTRL;
 
 	/**
 	 * Options
-	 *
-	 * @access   public
 	 */
 	public $options;
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0
-	 * @var      string    $plugin_name       The name of this plugin.
-	 * @var      string    $version    The version of this plugin.
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) {
 
@@ -67,11 +59,10 @@ class Abovethefold_Admin_Settings {
 
 			$this->CTRL->admin->clear_pagecache();
 
-			wp_redirect(admin_url('admin.php?page=abovethefold&tab=settings'));
+			wp_redirect( add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'settings' ), admin_url( 'admin.php' ) ) );
 			exit;
 		}
 
-		// stripslashes should always be called
 		// @link https://codex.wordpress.org/Function_Reference/stripslashes_deep
 		$_POST = array_map( 'stripslashes_deep', $_POST );
 
@@ -91,7 +82,7 @@ class Abovethefold_Admin_Settings {
 		// update settings
 		$this->CTRL->admin->save_settings($options, 'Settings saved.');
 
-		wp_redirect(admin_url('admin.php?page=abovethefold&tab=settings'));
+		wp_redirect( add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'settings' ), admin_url( 'admin.php' ) ) );
 		exit;
     }
 

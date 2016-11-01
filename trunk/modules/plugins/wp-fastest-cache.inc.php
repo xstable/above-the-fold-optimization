@@ -21,9 +21,7 @@ class Abovethefold_OPP_WpFastestCache extends Abovethefold_OPP {
 	public $plugin_file = 'wp-fastest-cache/wpFastestCache.php';
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @var      object    $CTRL       The above the fold admin controller..
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) {
 		parent::__construct( $CTRL );

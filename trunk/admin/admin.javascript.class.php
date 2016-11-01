@@ -13,24 +13,16 @@ class Abovethefold_Admin_Javascript {
 
 	/**
 	 * Above the fold controller
-	 *
-	 * @access   public
 	 */
 	public $CTRL;
 
 	/**
 	 * Options
-	 *
-	 * @access   public
 	 */
 	public $options;
 
 	/**
 	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0
-	 * @var      string    $plugin_name       The name of this plugin.
-	 * @var      string    $version    The version of this plugin.
 	 */
 	public function __construct( &$CTRL ) {
 
@@ -58,7 +50,6 @@ class Abovethefold_Admin_Javascript {
 
 		check_admin_referer('abovethefold');
 
-		// stripslashes should always be called
 		// @link https://codex.wordpress.org/Function_Reference/stripslashes_deep
 		$_POST = array_map( 'stripslashes_deep', $_POST );
 
@@ -74,7 +65,7 @@ class Abovethefold_Admin_Javascript {
 		// update settings
 		$this->CTRL->admin->save_settings($options, 'Javascript optimization settings saved.');
 
-		wp_redirect(admin_url('admin.php?page=abovethefold&tab=javascript'));
+		wp_redirect( add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'javascript' ), admin_url( 'admin.php' ) ) );
 		exit;
     }
 

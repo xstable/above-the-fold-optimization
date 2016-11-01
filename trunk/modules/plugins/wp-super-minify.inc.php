@@ -21,9 +21,7 @@ class Abovethefold_OPP_WpSuperMinify extends Abovethefold_OPP {
 	public $plugin_file = 'wp-super-minify/wp-super-minify.php';
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @var      object    $CTRL       The above the fold admin controller..
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) {
 		parent::__construct( $CTRL );

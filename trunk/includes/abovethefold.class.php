@@ -14,56 +14,32 @@ class Abovethefold {
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
-	 * the plugin.
-	 *
-	 * @since    1.0
-	 * @access   public
-	 * @var      Abovethefold_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 * the plugin
 	 */
 	public $loader;
 
 	/**
-	 * The unique identifier of this plugin.
-	 *
-	 * @since    1.0
-	 * @access   public
-	 * @var      string    $plugin_name    The string used to uniquely identify this plugin.
+	 * The unique identifier of this plugin
 	 */
 	public $plugin_name;
 
 	/**
-	 * The current version of the plugin.
-	 *
-	 * @since    1.0
-	 * @access   protected
-	 * @var      string    $version    The current version of the plugin.
+	 * The current version of the plugin
 	 */
 	protected $version;
 
 	/**
 	 * Disable abovethefold optimization
-	 *
-	 * @since    1.0
-	 * @access   public
-	 * @var      bool
 	 */
 	public $disabled = false;
 
 	/**
 	 * Special view (e.g. full css export and critical css quality tester)
-	 *
-	 * @since    2.5.0
-	 * @access   public
-	 * @var      array
 	 */
 	public $view = false;
 
 	/**
 	 * Options
-	 *
-	 * @since    2.0
-	 * @access   public
-	 * @var      array
 	 */
 
 	public $options;
@@ -75,11 +51,11 @@ class Abovethefold {
 	public $optimization;
 	public $plugins;
 	public $gwfo;
+	public $proxy;
+	public $lazy;
 
 	/**
 	 * cURL controller
-	 *
-	 * @since    2.5.0
 	 */
 	public $curl;
 
@@ -95,9 +71,7 @@ class Abovethefold {
 	public $CHMOD_FILE;
 
 	/**
-	 * Construct and initiated Abovethefold class.
-	 *
-	 * @since    1.0
+	 * Construct and initiated Abovethefold class
 	 */
 	public function __construct() {
 		global $show_admin_bar;
@@ -217,16 +191,11 @@ class Abovethefold {
 
 	/**
 	 * Check if optimization should be applied to output
-	 *
-	 * @since  2.5.0
 	 */
 	public function is_enabled() {
 
 		/**
 		 * Disable for Google AMP pages
-		 *
-		 * @since  2.5.4
-		 * @link https://wordpress.org/support/topic/error-to-validate-amp-posts/
 		 */
 		if (function_exists('is_amp_endpoint') && is_amp_endpoint()) {
 			return false;
@@ -314,27 +283,24 @@ class Abovethefold {
 	}
 
 	/**
-	 * Load the required dependencies.
-	 *
-	 * @since    1.0
-	 * @access   private
+	 * Load the required dependencies
 	 */
 	private function load_dependencies() {
 
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
-		 * core plugin.
+		 * core plugin
 		 */
 		require_once WPABTF_PATH . 'includes/loader.class.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
-		 * of the plugin.
+		 * of the plugin
 		 */
 		require_once WPABTF_PATH . 'includes/i18n.class.php';
 
 		/**
-		 * The class responsible for defining all actions related to Web Font optimization.
+		 * The class responsible for defining all actions related to Web Font optimization
 		 */
 		require_once WPABTF_PATH . 'includes/webfonts.class.php';
 
@@ -343,7 +309,7 @@ class Abovethefold {
 		 */
 		require_once WPABTF_PATH . 'includes/proxy.class.php';
 
-		// do not load rest of plugin for proxy
+		// do not load the rest of the dependencies for proxy
 		if ($this->view === 'abtf-proxy') {
 			return;
 		}
@@ -397,10 +363,7 @@ class Abovethefold {
 	 * Define the locale for this plugin for internationalization.
 	 *
 	 * Uses the Abovethefold_i18n class in order to set the domain and to register the hook
-	 * with WordPress.
-	 *
-	 * @since    1.0
-	 * @access   private
+	 * with WordPress
 	 */
 	private function set_locale() {
 
@@ -412,15 +375,15 @@ class Abovethefold {
 	}
 
 	/**
-	 * Run the loader to execute all of the hooks with WordPress.
-	 *
-	 * @since    1.0
+	 * Run the loader to execute all of the hooks with WordPress
 	 */
 	public function run() {
 
 		$this->loader->run();
 
-		// output data
+		/**
+		 * If proxy, start processing request
+		 */
 		if ($this->view === 'abtf-proxy') {
 			$this->proxy->handle_request();
 		}
@@ -428,30 +391,21 @@ class Abovethefold {
 
 	/**
 	 * The name of the plugin used to uniquely identify it within the context of
-	 * WordPress and to define internationalization functionality.
-	 *
-	 * @since     1.0
-	 * @return    string    The name of the plugin.
+	 * WordPress and to define internationalization functionality
 	 */
 	public function get_plugin_name() {
 		return $this->plugin_name;
 	}
 
 	/**
-	 * The reference to the class that orchestrates the hooks with the plugin.
-	 *
-	 * @since     1.0
-	 * @return    Optimization_Loader    Orchestrates the hooks of the plugin.
+	 * The reference to the class that orchestrates the hooks with the plugin
 	 */
 	public function get_loader() {
 		return $this->loader;
 	}
 
 	/**
-	 * Retrieve the version number of the plugin.
-	 *
-	 * @since     1.0
-	 * @return    string    The version number of the plugin.
+	 * Retrieve the version number of the plugin
 	 */
 	public function get_version() {
 		return $this->version;
@@ -573,25 +527,11 @@ class Abovethefold {
 		$default_options['gwfo_loadposition'] = 'header';
 
 		/**
-		 * Plugin related
-		 */
-		$default_options['clear_pagecache'] = false;
-
-		/**
-		 * Lazy Scripts Loading
-		 */
-		$default_options['lazyscripts_enabled'] = false;
-
-		/**
-		 * Localize javascript
-		 */
-		$default_options['localizejs_enabled'] = false;
-
-		/**
 		 * Other
 		 */
 		$default_options['debug'] = false;
 		$default_options['adminbar'] = true;
+		$default_options['clear_pagecache'] = false;
 
 		// Store default options
 		$options = get_option( 'abovethefold' );

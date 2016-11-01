@@ -17,37 +17,25 @@ class Abovethefold_Admin {
 
 	/**
 	 * Above the fold controller
-	 *
-	 * @since    1.0
-	 * @access   public
-	 * @var      object    $CTRL
 	 */
 	public $CTRL;
 
 	/**
 	 * Options
-	 *
-	 * @since    2.0
-	 * @access   public
-	 * @var      array
 	 */
 	public $options;
 
 	/**
-	 * Critical CSS controller
-	 *
-	 * @since    2.5.4
-	 * @access   public
-	 * @var      object
+	 * Controllers
 	 */
 	public $criticalcss;
+	public $css;
+	public $javascript;
+	public $proxy;
+	public $settings;
 
 	/**
 	 * Tabs
-	 *
-	 * @since    2.5.4
-	 * @access   public
-	 * @var      array
 	 */
 	public $tabs = array(
     	'criticalcss' => 'Critical CSS',
@@ -59,11 +47,7 @@ class Abovethefold_Admin {
     );
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0
-	 * @var      string    $plugin_name       The name of this plugin.
-	 * @var      string    $version    The version of this plugin.
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) {
 
@@ -139,25 +123,16 @@ class Abovethefold_Admin {
 
 	/**
 	 * Set body class
-	 *
-	 * @since    1.0
-	 * @param $links
-	 * @return mixed
 	 */
 	public function admin_body_class( $classes ) {
 	    return "$classes abtf-criticalcss";
-	    //return "$classes nav-menus-php";
 	}
 
 	/**
-	 * Settings link on plugin overview.
-	 *
-	 * @since    1.0
-	 * @param $links
-	 * @return mixed
+	 * Settings link on plugin overview
 	 */
 	public function settings_link( $links ) {
-		$settings_link = '<a href="admin.php?page=abovethefold">'.__('Settings').'</a>';
+		$settings_link = '<a href="' . add_query_arg( array( 'page' => 'abovethefold' ), admin_url( 'admin.php' ) ) . '">'.__('Settings').'</a>';
 		array_unshift($links, $settings_link);
 		return $links;
 	}
@@ -180,9 +155,6 @@ class Abovethefold_Admin {
 
 	/**
 	 * Enqueue scripts and styles
-	 *
-	 * @since	2.3.5
-	 * @param 	string	$hook
 	 */
 	public function enqueue_scripts($hook) {
 
@@ -199,7 +171,7 @@ class Abovethefold_Admin {
 
 			$this->clear_pagecache();
 
-			wp_redirect(admin_url('admin.php?page=abovethefold&tab=settings'));
+			wp_redirect( add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'settings' ), admin_url( 'admin.php' ) ) );
 			exit;
 		}
 
@@ -212,9 +184,7 @@ class Abovethefold_Admin {
 	}
 
 	/**
-	 * Admin menu option.
-	 *
-	 * @since    1.0
+	 * Admin menu option
 	 */
 	public function admin_menu() {
 		global $submenu;
@@ -226,7 +196,7 @@ class Abovethefold_Admin {
 			 */
 			if (is_array($submenu['w3tc_dashboard']) && !empty($submenu['w3tc_dashboard'])) {
 				array_splice( $submenu['w3tc_dashboard'], 2, 0, array(
-					array(__('Above The Fold', 'abovethefold'), 'manage_options',  admin_url('admin.php?page=abovethefold'), __('Above The Fold Optimization', 'abovethefold'))
+					array(__('Above The Fold', 'abovethefold'), 'manage_options',  add_query_arg( array( 'page' => 'abovethefold' ), admin_url( 'admin.php' ) ), __('Above The Fold Optimization', 'abovethefold'))
 				) );
 			}
 
@@ -248,9 +218,7 @@ class Abovethefold_Admin {
 	
 	
 	/**
-	 * Admin bar option.
-	 *
-	 * @since    1.0
+	 * Admin bar option
 	 */
 	public function admin_bar($admin_bar) {
 
@@ -259,7 +227,7 @@ class Abovethefold_Admin {
 			return;
 		}
 
-		$settings_url = add_query_arg( array( 'page' => 'abovethefold' ), '/wp-admin/admin.php' );
+		$settings_url = add_query_arg( array( 'page' => 'abovethefold' ), admin_url( 'admin.php' ) );
 		$nonced_url = wp_nonce_url( $settings_url, 'abovethefold' );
 		$admin_bar->add_menu( array(
 			'id' => 'abovethefold',
@@ -318,7 +286,7 @@ class Abovethefold_Admin {
 		/**
 		 * Page cache clear 
 		 */
-		$clear_url = add_query_arg( array( 'page' => 'abovethefold', 'clear' => 'pagecache' ), '/wp-admin/admin.php' );
+		$clear_url = add_query_arg( array( 'page' => 'abovethefold', 'clear' => 'pagecache' ), admin_url( 'admin.php' ) );
 		$nonced_url = wp_nonce_url( $clear_url, 'abovethefold' );
 		$admin_bar->add_node( array(
 			'parent' => 'abovethefold-tools',
@@ -491,7 +459,7 @@ class Abovethefold_Admin {
 		$options['update_count']++;
 
 		// update settings
-		update_option('abovethefold',$options);
+		update_option('abovethefold', $options, true);
 
 		// add notice
 		$saved_notice = '<div style="font-size:18px;line-height:20px;margin:0px;">'.$notice.'</div>';
@@ -532,6 +500,18 @@ class Abovethefold_Admin {
 			$tab = 'criticalcss';
 		}
 
+		/**
+		 * lgcode for Google Documentation links
+		 */
+		$lgcode = strtolower(get_locale());
+		if (strpos($lgcode,'_') !== false) {
+			$lgparts = explode('_',$lgcode);
+			$lgcode = $lgparts[0];
+		}
+		if ($lgcode === 'en') {
+			$lgcode = '';
+		}
+
 		// print tabs
         echo '<div id="icon-themes" class="icon32"><br></div>';
         echo '<h1 class="nav-tab-wrapper">';
@@ -562,9 +542,6 @@ class Abovethefold_Admin {
 
 	/**
 	 * Show admin notices
-	 *
-	 * @since     1.0
-	 * @return    string    The version number of the plugin.
 	 */
 	public function show_notices() {
 
@@ -611,10 +588,7 @@ class Abovethefold_Admin {
 	}
 
 	/**
-	 * Set notice
-	 *
-	 * @since     1.0
-	 * @return    string    The version number of the plugin.
+	 * Set admin notice
 	 */
 	public function set_notice($notice,$type = 'NOTICE') {
 
@@ -636,8 +610,6 @@ class Abovethefold_Admin {
 
     /**
 	 * Upgrade plugin
-	 *
-	 * @since     2.3.10
 	 */
 	public function upgrade() {
 
@@ -697,9 +669,6 @@ class Abovethefold_Admin {
 				 */
 				if ($options['localizejs_enabled']) {
 
-					unset($options['localizejs_enabled']);
-					unset($options['localizejs']);
-
 					$options['js_proxy'] = true;
 					$options['css_proxy'] = true;
 					$update_options = true;
@@ -707,43 +676,59 @@ class Abovethefold_Admin {
 			}
 
 			/**
-			 * Pre 2.5.4 update
+			 * Pre 2.5.10 update
 			 */
-			if (version_compare($current_version, '2.5.4', '<=')) {
+			if (version_compare($current_version, '2.5.10', '<=')) {
+
+				// convert url list to array
+				$newline_conversion = array(
+					'gwfo_googlefonts',
+					'cssdelivery_ignore',
+					'cssdelivery_remove',
+					'css_proxy_preload',
+					'js_proxy_preload',
+					'css_proxy_include',
+					'js_proxy_include',
+					'css_proxy_exclude',
+					'js_proxy_exclude'
+
+				);
+				foreach ($newline_conversion as $field) {
+					if (isset($options[$field]) && is_string($options[$field])) {
+						$options[$field] = $this->newline_array($options[$field]);
+						$update_options = true;
+					}
+				}
 
 				/**
-				 * Convert preload list strings to array
+				 * Verify Google WebFontConfig variable
 				 */
-				if (isset($options['css_proxy_preload']) && is_string($options['css_proxy_preload']) && $options['css_proxy_preload'] !== '') {
-					$options['css_proxy_preload'] = explode("\n",$options['css_proxy_preload']);
+				if (isset($options['gwfo_config']) && $options['gwfo_config'] !== '') {
+
+					if ($this->CTRL->gwfo->verify_webfontconfig($options['gwfo_config'])) {
+						$options['gwfo_config_valid'] = true;
+					} else {
+						$options['gwfo_config_valid'] = false;
+					}
+
 					$update_options = true;
-				}
-				if (isset($options['js_proxy_preload']) && is_string($options['js_proxy_preload']) && $options['js_proxy_preload'] !== '') {
-					$options['js_proxy_preload'] = explode("\n",$options['js_proxy_preload']);
-					$update_options = true;
-				}
-			}
+					
+					// Extract Google Fonts
+					$this->CTRL->gwfo->fonts_from_webfontconfig($options['gwfo_config'],$options['gwfo_googlefonts']);
 
-			/**
-			 * Pre 2.5.5 update
-			 */
-			if (version_compare($current_version, '2.5.5', '<=')) {
+					// modify Google font config in WebFontConfig
+					$googlefonts_regex = '|google\s*:\s*(\{[^\}]+\})|is';
+					if (preg_match($googlefonts_regex,$options['gwfo_config'],$out)) {
 
-				/**
-				 * Convert Google Web Font list string to array
-				 */
-				if (isset($options['gwfo_googlefonts']) && is_string($options['gwfo_googlefonts']) && $options['gwfo_googlefonts'] !== '') {
-
-					// convert url list to array
-					$fonts = explode("\n",$options['gwfo_googlefonts']);
-					$options['gwfo_googlefonts'] = array();
-					if (!empty($fonts)) {
-						foreach ($fonts as $font) {
-							$font = trim($font);
-							if ($font === '') { continue; }
-							$options['gwfo_googlefonts'][] = $font;
+						$config = @json_decode($this->CTRL->gwfo->fixJSON($out[1]),true);
+						if (is_array($config) && isset($config['families'])) {
+							$config['families'] = 'GOOGLE-FONTS-FROM-INCLUDE-LIST';
+							$options['gwfo_config'] = preg_replace($googlefonts_regex,'google:' . json_encode($config),$options['gwfo_config']);
 						}
 					}
+				} else {
+					$options['gwfo_config_valid'] = true;
+
 					$update_options = true;
 				}
 			}
@@ -766,7 +751,7 @@ class Abovethefold_Admin {
 			}
 
 			if ($update_options) {
-				update_option('abovethefold',$options);
+				update_option('abovethefold', $options, true);
 			}
 
 			/**
@@ -777,6 +762,33 @@ class Abovethefold_Admin {
 		}
     }
 
+    /**
+     * Return newline array from string
+     */
+    public function newline_array($string,$data=array()) {
 
+    	if (!is_array($data)) {
+    		$data = array();
+    	}
+
+    	$lines = array_filter(array_map('trim',explode("\n",trim($string))));
+		if (!empty($lines)) {
+			foreach ($lines as $line) {
+				if ($line === '') { continue; }
+				$data[] = $line;
+			}
+			$data = array_unique($data);
+		}
+
+		return $data;
+    }
+
+    /**
+     * Return string from newline array
+     */
+    public function newline_array_string($array) {
+    	if (!is_array($array) || empty($array)) { return ''; }
+    	return htmlentities(implode("\n",$array),ENT_COMPAT,'utf-8');
+    }
 
 }

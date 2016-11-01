@@ -16,9 +16,6 @@ class Abovethefold_Plugins {
 
 	/**
 	 * Above the fold controller
-	 * 
-	 * @access   public
-	 * @var      object    $CTRL
 	 */
 	public $CTRL;
 

@@ -43,172 +43,172 @@
 	}
 
 ?>
-						<table class="form-table">
-							<tr valign="top">
-								<th scope="row">Optimize CSS Delivery</th>
-								<td>
-									<label><input type="checkbox" name="abovethefold[cssdelivery]" value="1"<?php if (!isset($options['cssdelivery']) || intval($options['cssdelivery']) === 1) { print ' checked'; } ?> onchange="if (jQuery(this).is(':checked')) { jQuery('.cssdeliveryoptions').show(); } else { jQuery('.cssdeliveryoptions').hide(); }"> Enabled</label>
-									<p class="description">When enabled, CSS files are loaded asynchronously via <a href="https://github.com/filamentgroup/loadCSS" target="_blank">loadCSS</a> (v<?php print $loadcss_version;?>).  <a href="https://developers.google.com/speed/docs/insights/OptimizeCSSDelivery?hl=<?php print $lgcode;?>" target="_blank">Click here</a> for the recommendations by Google.</p>
-								</td>
-							</tr>
-							<tr valign="top" class="cssdeliveryoptions" style="<?php if (isset($options['cssdelivery']) && intval($options['cssdelivery']) !== 1) { print 'display:none;'; } ?>">
-								<td colspan="2" style="padding-top:0px;">
+							<table class="form-table">
+								<tr valign="top">
+									<th scope="row">Optimize CSS Delivery</th>
+									<td>
+										<label><input type="checkbox" name="abovethefold[cssdelivery]" value="1"<?php if (!isset($options['cssdelivery']) || intval($options['cssdelivery']) === 1) { print ' checked'; } ?> onchange="if (jQuery(this).is(':checked')) { jQuery('.cssdeliveryoptions').show(); } else { jQuery('.cssdeliveryoptions').hide(); }"> Enabled</label>
+										<p class="description">When enabled, CSS files are loaded asynchronously via <a href="https://github.com/filamentgroup/loadCSS" target="_blank">loadCSS</a> (v<?php print $loadcss_version;?>).  <a href="https://developers.google.com/speed/docs/insights/OptimizeCSSDelivery?hl=<?php print $lgcode;?>" target="_blank">Click here</a> for the recommendations by Google.</p>
+									</td>
+								</tr>
+								<tr valign="top" class="cssdeliveryoptions" style="<?php if (isset($options['cssdelivery']) && intval($options['cssdelivery']) !== 1) { print 'display:none;'; } ?>">
+									<td colspan="2" style="padding-top:0px;">
 
-									<div class="abtf-inner-table">
+										<div class="abtf-inner-table">
 
-										<h3 class="h"><span>CSS Delivery Optimization</span></h3>
-										<div class="inside">
-											<table class="form-table">
-												<tr valign="top">
-													<th scope="row">Enhanced loadCSS</th>
-													<td>
-														<label><input type="checkbox" name="abovethefold[loadcss_enhanced]" value="1" onchange="if (jQuery(this).is(':checked')) { jQuery('.enhancedloadcssoptions').show(); } else { jQuery('.enhancedloadcssoptions').hide(); }"<?php if (!isset($options['loadcss_enhanced']) || intval($options['loadcss_enhanced']) === 1) { print ' checked'; } ?>> Enabled</label>
-														<p class="description">When enabled, a customized version of loadCSS is used to make use of the <code>requestAnimationFrame</code> API following the <a href="https://developers.google.com/speed/docs/insights/OptimizeCSSDelivery?hl=<?php print $lgcode;?>" target="_blank">recommendations by Google</a>.</p>
-													</td>
-												</tr>
-												<tr valign="top" class="enhancedloadcssoptions" style="<?php if (isset($options['loadcss_enhanced']) && intval($options['loadcss_enhanced']) !== 1) { print 'display:none;'; } ?>">
-													<th scope="row">CSS render delay</th>
-													<td>
-														<table cellpadding="0" cellspacing="0" border="0">
-															<tr>
-																<td valign="top" style="padding:0px;vertical-align:top;"><input type="number" min="0" max="3000" step="1" name="abovethefold[cssdelivery_renderdelay]" size="10" value="<?php print ((empty($options['cssdelivery_renderdelay']) || $options['cssdelivery_renderdelay'] === 0) ? '' : htmlentities($options['cssdelivery_renderdelay'],ENT_COMPAT,'utf-8')); ?>" onkeyup="if (jQuery(this).val() !== '' && jQuery(this).val() !== '0') { jQuery('#warnrenderdelay').show(); } else { jQuery('#warnrenderdelay').hide(); }" onchange="if (jQuery(this).val() === '0') { jQuery(this).val(''); } if (jQuery(this).val() !== '' && jQuery(this).val() !== '0') { jQuery('#warnrenderdelay').show(); } else { jQuery('#warnrenderdelay').hide(); }" placeholder="0 ms" /></td>
-																<td valign="top" style="padding:0px;vertical-align:top;padding-left:10px;font-size:11px;"><div id="warnrenderdelay" style="padding:0px;margin:0px;<?php print ((empty($options['cssdelivery_renderdelay']) || $options['cssdelivery_renderdelay'] === 0 || trim($options['cssdelivery_renderdelay']) === '') ? 'display:none;' : ''); ?>"><span style="color:red;font-weight:bold;">Warning:</span> A higher Google PageSpeed score may sometimes be achieved using this option but it may not be beneficial to the page rendering experience of your users. Often it is best to seek an alternative solution.</div></td>
-															</tr>
-														</table>
-														<p class="description" style="clear:both;">Optionally, enter a time in milliseconds to delay the rendering of CSS files.</p>
+											<h3 class="h"><span>CSS Delivery Optimization</span></h3>
+											<div class="inside">
+												<table class="form-table">
+													<tr valign="top">
+														<th scope="row">Enhanced loadCSS</th>
+														<td>
+															<label><input type="checkbox" name="abovethefold[loadcss_enhanced]" value="1" onchange="if (jQuery(this).is(':checked')) { jQuery('.enhancedloadcssoptions').show(); } else { jQuery('.enhancedloadcssoptions').hide(); }"<?php if (!isset($options['loadcss_enhanced']) || intval($options['loadcss_enhanced']) === 1) { print ' checked'; } ?>> Enabled</label>
+															<p class="description">When enabled, a customized version of loadCSS is used to make use of the <code>requestAnimationFrame</code> API following the <a href="https://developers.google.com/speed/docs/insights/OptimizeCSSDelivery?hl=<?php print $lgcode;?>" target="_blank">recommendations by Google</a>.</p>
+														</td>
+													</tr>
+													<tr valign="top" class="enhancedloadcssoptions" style="<?php if (isset($options['loadcss_enhanced']) && intval($options['loadcss_enhanced']) !== 1) { print 'display:none;'; } ?>">
+														<th scope="row">CSS render delay</th>
+														<td>
+															<table cellpadding="0" cellspacing="0" border="0">
+																<tr>
+																	<td valign="top" style="padding:0px;vertical-align:top;"><input type="number" min="0" max="3000" step="1" name="abovethefold[cssdelivery_renderdelay]" size="10" value="<?php print ((empty($options['cssdelivery_renderdelay']) || $options['cssdelivery_renderdelay'] === 0) ? '' : htmlentities($options['cssdelivery_renderdelay'],ENT_COMPAT,'utf-8')); ?>" onkeyup="if (jQuery(this).val() !== '' && jQuery(this).val() !== '0') { jQuery('#warnrenderdelay').show(); } else { jQuery('#warnrenderdelay').hide(); }" onchange="if (jQuery(this).val() === '0') { jQuery(this).val(''); } if (jQuery(this).val() !== '' && jQuery(this).val() !== '0') { jQuery('#warnrenderdelay').show(); } else { jQuery('#warnrenderdelay').hide(); }" placeholder="0 ms" /></td>
+																	<td valign="top" style="padding:0px;vertical-align:top;padding-left:10px;font-size:11px;"><div id="warnrenderdelay" style="padding:0px;margin:0px;<?php print ((empty($options['cssdelivery_renderdelay']) || $options['cssdelivery_renderdelay'] === 0 || trim($options['cssdelivery_renderdelay']) === '') ? 'display:none;' : ''); ?>"><span style="color:red;font-weight:bold;">Warning:</span> A higher Google PageSpeed score may sometimes be achieved using this option but it may not be beneficial to the page rendering experience of your users. Often it is best to seek an alternative solution.</div></td>
+																</tr>
+															</table>
+															<p class="description" style="clear:both;">Optionally, enter a time in milliseconds to delay the rendering of CSS files.</p>
 
-													</td>
-												</tr>
-												<tr valign="top">
-													<th scope="row">Position</th>
-													<td>
-														<select name="abovethefold[cssdelivery_position]">
-															<option value="header"<?php if (isset($options['cssdelivery_position']) && $options['cssdelivery_position'] === 'header') { print ' selected'; } ?>>Header</option>
-															<option value="footer"<?php if (!isset($options['cssdelivery_position']) || empty($options['cssdelivery_position']) || $options['cssdelivery_position'] === 'footer') { print ' selected'; } ?>>Footer</option>
-														</select>
-														<p class="description">Select the position where the async loading of CSS will start.</p>
-													</td>
-												</tr>
-												<tr valign="top">
-													<th scope="row">Ignore List</th>
-													<td>
-														<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[cssdelivery_ignore]"><?php if (isset($options['cssdelivery_ignore'])) { echo htmlentities($options['cssdelivery_ignore'],ENT_COMPAT,'utf-8'); } ?></textarea>
-														<p class="description">Stylesheets to ignore in CSS delivery optimization. One stylesheet per line. The files will be left untouched in the HTML.</p>
-													</td>
-												</tr>
-												<tr valign="top">
-													<th scope="row">Remove List</th>
-													<td>
-														<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[cssdelivery_remove]"><?php if (isset($options['cssdelivery_remove'])) { echo htmlentities($options['cssdelivery_remove'],ENT_COMPAT,'utf-8'); } ?></textarea>
-														<p class="description">Stylesheets to remove from HTML. One stylesheet per line. This feature enables to include small plugin related CSS files inline.</p>
-													</td>
-												</tr>
-											</table>
+														</td>
+													</tr>
+													<tr valign="top">
+														<th scope="row">Position</th>
+														<td>
+															<select name="abovethefold[cssdelivery_position]">
+																<option value="header"<?php if (isset($options['cssdelivery_position']) && $options['cssdelivery_position'] === 'header') { print ' selected'; } ?>>Header</option>
+																<option value="footer"<?php if (!isset($options['cssdelivery_position']) || empty($options['cssdelivery_position']) || $options['cssdelivery_position'] === 'footer') { print ' selected'; } ?>>Footer</option>
+															</select>
+															<p class="description">Select the position where the async loading of CSS will start.</p>
+														</td>
+													</tr>
+													<tr valign="top">
+														<th scope="row">Ignore List</th>
+														<td>
+															<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[cssdelivery_ignore]"><?php if (isset($options['cssdelivery_ignore'])) { echo $this->CTRL->admin->newline_array_string($options['cssdelivery_ignore']); } ?></textarea>
+															<p class="description">Stylesheets to ignore in CSS delivery optimization. One stylesheet per line. The files will be left untouched in the HTML.</p>
+														</td>
+													</tr>
+													<tr valign="top">
+														<th scope="row">Remove List</th>
+														<td>
+															<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[cssdelivery_remove]"><?php if (isset($options['cssdelivery_remove'])) { echo $this->CTRL->admin->newline_array_string($options['cssdelivery_remove']); } ?></textarea>
+															<p class="description">Stylesheets to remove from HTML. One stylesheet per line. This feature enables to include small plugin related CSS files inline.</p>
+														</td>
+													</tr>
+												</table>
+											</div>
+
 										</div>
 
-									</div>
+									</td>
+								</tr>
+	<?php
 
-								</td>
-							</tr>
-<?php
+		/**
+		 * Get version of local webfont.js
+		 */
+		$webfont_version = $this->CTRL->gwfo->package_version(true);
+		if (empty($webfont_version)) {
+			$webfont_version = '(unknown)';
+		}
 
-	/**
-	 * Get version of local webfont.js
-	 */
-	$webfont_version = $this->CTRL->gwfo->package_version(true);
-	if (empty($webfont_version)) {
-		$webfont_version = '(unknown)';
-	}
+	?>
+								<tr valign="top">
+									<th scope="row">Optimize Web Fonts</th>
+									<td>
+										<label><input type="checkbox" name="abovethefold[gwfo]" value="1"<?php if (!isset($options['gwfo']) || intval($options['gwfo']) === 1) { print ' checked'; } ?> onchange="if (jQuery(this).is(':checked')) { jQuery('.gwfooptions').show(); } else { jQuery('.gwfooptions').hide(); }"> Enabled
+										</label>
+										<p class="description">When enabled, web fonts are optimized using <a href="https://github.com/typekit/webfontloader" target="_blank">Google Web Font Loader</a>.</p>
+									</td>
+								</tr>
+								<tr valign="top" class="gwfooptions" style="<?php if (isset($options['gwfo']) && intval($options['gwfo']) !== 1) { print 'display:none;'; } ?>">
+									<td colspan="2" style="padding-top:0px;">
 
-?>
-							<tr valign="top">
-								<th scope="row">Optimize Web Fonts</th>
-								<td>
-									<label><input type="checkbox" name="abovethefold[gwfo]" value="1"<?php if (!isset($options['gwfo']) || intval($options['gwfo']) === 1) { print ' checked'; } ?> onchange="if (jQuery(this).is(':checked')) { jQuery('.gwfooptions').show(); } else { jQuery('.gwfooptions').hide(); }"> Enabled
-									</label>
-									<p class="description">When enabled, web fonts are optimized using <a href="https://github.com/typekit/webfontloader" target="_blank">Google Web Font Loader</a>.</p>
-								</td>
-							</tr>
-							<tr valign="top" class="gwfooptions" style="<?php if (isset($options['gwfo']) && intval($options['gwfo']) !== 1) { print 'display:none;'; } ?>">
-								<td colspan="2" style="padding-top:0px;">
+										<div class="abtf-inner-table">
 
-									<div class="abtf-inner-table">
+											<h3 class="h"><span>Web Font Optimization</span></h3>
 
-										<h3 class="h"><span>Web Font Optimization</span></h3>
+											<div class="inside">
+												<table class="form-table">
+													<tr valign="top">
+														<th scope="row">webfont.js Load Method</th>
+														<td>
+															<select name="abovethefold[gwfo_loadmethod]" onchange="if (jQuery(this).val() === 'disabled') { jQuery('.gwfloadoptions').hide(); } else { jQuery('.gwfloadoptions').show(); } ">
+																<option value="inline"<?php if (!isset($options['gwfo_loadmethod']) || $options['gwfo_loadmethod'] === 'inline') { print ' selected'; } ?>>Inline</option>
+																<option value="async"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'async') { print ' selected'; } ?>>Async</option>
+																<option value="async_cdn"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'async_cdn') { print ' selected'; } ?>>Async from Google CDN (v<?php print $this->CTRL->gwfo->cdn_version; ?>)</option>
+																<option value="wordpress"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'wordpress') { print ' selected'; } ?>>WordPress include</option>
+																<option value="disabled"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print ' selected'; } ?>>Disabled (remove all fonts)</option>
+															</select>
+															<p class="description">Select the method to load <a href="https://developers.google.com/speed/libraries/?hl=<?php print $lgcode;?>#web-font-loader" target="_blank">webfont.js</a> (v<?php print $webfont_version; ?>).</p>
+														</td>
+													</tr>
+													<tr valign="top" class="gwfloadoptions" style="<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print 'display:none;'; } ?>">
+														<th scope="row">Load Position</th>
+														<td>
+															<select name="abovethefold[gwfo_loadposition]">
+																<option value="header"<?php if (!isset($options['gwfo_loadposition']) || $options['gwfo_loadposition'] === 'header') { print ' selected'; } ?>>Header</option>
+																<option value="footer"<?php if (isset($options['gwfo_loadposition']) && $options['gwfo_loadposition'] === 'footer') { print ' selected'; } ?>>Footer</option>
+															</select>
+															<p class="description">Select the position where the loading of web fonts will start.</p>
+														</td>
+													</tr>
+													<tr valign="top" class="gwfloadoptions" style="<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print 'display:none;'; } ?>">
+														<th scope="row">WebFontConfig</th>
+														<td>
+															<?php
+																if (isset($options['gwfo_config_valid']) && $options['gwfo_config_valid'] === false) {
+																	print '<p style="color:red;margin-bottom:2px;">WebFontConfig variable not recognized.</p>';
+																}
+															?>
+															<textarea style="width: 100%;height:100px;font-size:11px;<?php if (isset($options['gwfo_config_valid']) && $options['gwfo_config_valid'] === false) { print 'border-color:red;'; } ?>" name="abovethefold[gwfo_config]" placeholder="WebFontConfig = { classes: false, typekit: { id: 'xxxxxx' }, loading: function() {}, google: { families: ['Droid Sans', 'Droid Serif'] } };"><?php if (isset($options['gwfo_config'])) { echo htmlentities($options['gwfo_config']); } ?></textarea>
+															<p class="description">Enter the <code>WebFontConfig</code> variable for Google Web Font Loader. Leave blank for the default configuration. (<a href="https://github.com/typekit/webfontloader#configuration" target="_blank">more information</a>)</p>
+														</td>
+													</tr>
+													<tr valign="top">
+														<th scope="row">Google Web Fonts</th>
+														<td>
+															<div class="gwfloadoptions" style="<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print 'display:none;'; } ?>">
+																<h5 class="h">&nbsp;Include List</h5>
+																<textarea style="width: 100%;height:<?php if (count($options['gwfo_googlefonts']) > 3) { print '100px'; } else { print '50px'; } ?>;font-size:11px;" name="abovethefold[gwfo_googlefonts]" placeholder="Droid Sans"><?php if (isset($options['gwfo_googlefonts'])) { echo $this->CTRL->admin->newline_array_string($options['gwfo_googlefonts']); } ?></textarea>
+																<p class="description">Enter the <a href="https://developers.google.com/fonts/docs/getting_started?hl=<?php print $lgcode;?>&csw=1" target="_blank">Google Font API</a> definitions of <a href="https://fonts.google.com/?hl=<?php print $lgcode;?>" target="_blank">Google Web Fonts</a> to load. One font per line. (<a href="https://github.com/typekit/webfontloader#google" target="_blank">documentation</a>)</p>
+																<br />
+																<h5 class="h">&nbsp;Exclude List</h5>
+																<textarea style="width: 100%;height:<?php if (count($options['gwfo_googlefonts_remove']) > 3) { print '100px'; } else { print '50px'; } ?>;font-size:11px;" name="abovethefold[gwfo_googlefonts_remove]"><?php if (isset($options['gwfo_googlefonts_remove'])) { echo $this->CTRL->admin->newline_array_string($options['gwfo_googlefonts_remove']); } ?></textarea>
+																<p class="description">Enter (parts of) Google Web Font definitions to remove, e.g. <code>Open Sans</code>. This feature is useful when loading fonts locally. One font per line.</p>
+																<br />
+															</div>
 
-										<div class="inside">
-											<table class="form-table">
-												<tr valign="top">
-													<th scope="row">webfont.js Load Method</th>
-													<td>
-														<select name="abovethefold[gwfo_loadmethod]" onchange="if (jQuery(this).val() === 'disabled') { jQuery('.gwfloadoptions').hide(); } else { jQuery('.gwfloadoptions').show(); } ">
-															<option value="inline"<?php if (!isset($options['gwfo_loadmethod']) || $options['gwfo_loadmethod'] === 'inline') { print ' selected'; } ?>>Inline</option>
-															<option value="async"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'async') { print ' selected'; } ?>>Async</option>
-															<option value="async_cdn"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'async_cdn') { print ' selected'; } ?>>Async from Google CDN (v<?php print $this->CTRL->gwfo->cdn_version; ?>)</option>
-															<option value="wordpress"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'wordpress') { print ' selected'; } ?>>WordPress include</option>
-															<option value="disabled"<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print ' selected'; } ?>>Disabled (remove all fonts)</option>
-														</select>
-														<p class="description">Select the method to load <a href="https://developers.google.com/speed/libraries/?hl=<?php print $lgcode;?>#web-font-loader" target="_blank">webfont.js</a> (v<?php print $webfont_version; ?>).</p>
-													</td>
-												</tr>
-												<tr valign="top" class="gwfloadoptions" style="<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print 'display:none;'; } ?>">
-													<th scope="row">Load Position</th>
-													<td>
-														<select name="abovethefold[gwfo_loadposition]">
-															<option value="header"<?php if (!isset($options['gwfo_loadposition']) || $options['gwfo_loadposition'] === 'header') { print ' selected'; } ?>>Header</option>
-															<option value="footer"<?php if (isset($options['gwfo_loadposition']) && $options['gwfo_loadposition'] === 'footer') { print ' selected'; } ?>>Footer</option>
-														</select>
-														<p class="description">Select the position where the loading of web fonts will start.</p>
-													</td>
-												</tr>
-												<tr valign="top" class="gwfloadoptions" style="<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print 'display:none;'; } ?>">
-													<th scope="row">WebFontConfig</th>
-													<td>
-														<textarea style="width: 100%;height:100px;font-size:11px;" name="abovethefold[gwfo_config]" placeholder="WebFontConfig = { classes: false, typekit: { id: 'xxxxxx' }, loading: function() {}, google: { families: ['Droid Sans', 'Droid Serif'] } };"><?php if (isset($options['gwfo_config'])) { echo htmlentities($options['gwfo_config']); } ?></textarea>
-														<p class="description">Enter the <code>WebFontConfig</code> variable for Google Web Font Loader. Leave blank for the default configuration. (<a href="https://github.com/typekit/webfontloader#configuration" target="_blank">more information</a>)</p>
-													</td>
-												</tr>
-												<tr valign="top">
-													<th scope="row">Google Web Fonts</th>
-													<td>
-														<div class="gwfloadoptions" style="<?php if (isset($options['gwfo_loadmethod']) && $options['gwfo_loadmethod'] === 'disabled') { print 'display:none;'; } ?>">
-															<h5 class="h">&nbsp;Include List</h5>
-															<textarea style="width: 100%;height:<?php if (count($options['gwfo_googlefonts']) > 3) { print '100px'; } else { print '50px'; } ?>;font-size:11px;" name="abovethefold[gwfo_googlefonts]" placeholder="Droid Sans
-								Open Sans Condensed:300,700:latin,greek"><?php if (isset($options['gwfo_googlefonts']) && !empty($options['gwfo_googlefonts'])) { echo htmlentities(implode("\n",$options['gwfo_googlefonts'])); } ?></textarea>
-															<p class="description">Enter the <a href="https://developers.google.com/fonts/docs/getting_started?hl=<?php print $lgcode;?>&csw=1" target="_blank">Google Font API</a> definitions of <a href="https://fonts.google.com/?hl=<?php print $lgcode;?>" target="_blank">Google Web Fonts</a> to load. One font per line. (<a href="https://github.com/typekit/webfontloader#google" target="_blank">documentation</a>)</p>
-															<br />
-															<h5 class="h">&nbsp;Exclude List</h5>
-															<textarea style="width: 100%;height:<?php if (count($options['gwfo_googlefonts_remove']) > 3) { print '100px'; } else { print '50px'; } ?>;font-size:11px;" name="abovethefold[gwfo_googlefonts_remove]"><?php if (isset($options['gwfo_googlefonts_remove']) && !empty($options['gwfo_googlefonts_remove'])) { echo htmlentities(implode("\n",$options['gwfo_googlefonts_remove'])); } ?></textarea>
-															<p class="description">Enter (parts of) Google Web Font definitions to remove, e.g. <code>Open Sans</code>. This feature is useful when loading fonts locally. One font per line.</p>
-															<br />
-														</div>
-
-														<h4 class="h" style="margin-bottom:10px;margin-top:0px;">Local Font Loading</h4>
-														<p class="description">Google Fonts are served from <code>fonts.googleapis.com</code> that is causing a render-blocking warning in the Google PageSpeed test. The Google fonts stylesheet cannot be cached by the <em>external resource proxy</em> because it serves different content based on the client.</p>
-														<p class="description" style="margin-top:7px;">To solve the PageSpeed Score issue while also achieving the best font render performance, it is possible to download the Google fonts and load them locally (from the critical CSS). Loading Google fonts locally enables to achieve a Google PageSpeed 100 Score while also preventing a font flicker effect during navigation.</p>
-														<p class="description" style="margin-top:7px;">Check out <a href="https://google-webfonts-helper.herokuapp.com/fonts#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=PageSpeed.pro%3A%20Above%20The%20Fold%20Optimization" target="_blank">Google Webfonts Helper</a> for a solution to download Google fonts.</p>
-													</td>
-												</tr>
-											</table>
+															<h4 class="h" style="margin-bottom:10px;margin-top:0px;">Local Font Loading</h4>
+															<p class="description">Google Fonts are served from <code>fonts.googleapis.com</code> that is causing a render-blocking warning in the Google PageSpeed test. The Google fonts stylesheet cannot be cached by the <em>external resource proxy</em> because it serves different content based on the client.</p>
+															<p class="description" style="margin-top:7px;">To solve the PageSpeed Score issue while also achieving the best font render performance, it is possible to download the Google fonts and load them locally (from the critical CSS). Loading Google fonts locally enables to achieve a Google PageSpeed 100 Score while also preventing a font flicker effect during navigation.</p>
+															<p class="description" style="margin-top:7px;">Check out <a href="https://google-webfonts-helper.herokuapp.com/fonts#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=PageSpeed.pro%3A%20Above%20The%20Fold%20Optimization" target="_blank">Google Webfonts Helper</a> for a solution to download Google fonts.</p>
+														</td>
+													</tr>
+												</table>
+											</div>
 										</div>
-									</div>
 
-								</td>
-							</tr>
-						</table>
-						<hr />
-						<?php
-							submit_button( __( 'Save' ), 'primary large', 'is_submit', false );
-						?>
-
+									</td>
+								</tr>
+							</table>
+							<hr />
+							<?php
+								submit_button( __( 'Save' ), 'primary large', 'is_submit', false );
+							?>
 						</div>
 					</div>
 
-
-	<!-- End of #post_form -->
-
 				</div>
-			</div> <!-- End of #post-body -->
-		</div> <!-- End of #poststuff -->
-	</div> <!-- End of .wrap .nginx-wrapper -->
+			</div>
+		</div>
+	</div>
 </form>

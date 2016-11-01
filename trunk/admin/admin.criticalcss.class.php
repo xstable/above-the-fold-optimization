@@ -13,24 +13,16 @@ class Abovethefold_Admin_CriticalCSS {
 
 	/**
 	 * Above the fold controller
-	 *
-	 * @access   public
 	 */
 	public $CTRL;
 
 	/**
 	 * Options
-	 *
-	 * @access   public
 	 */
 	public $options;
 
 	/**
 	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0
-	 * @var      string    $plugin_name       The name of this plugin.
-	 * @var      string    $version    The version of this plugin.
 	 */
 	public function __construct( &$CTRL ) {
 
@@ -58,8 +50,6 @@ class Abovethefold_Admin_CriticalCSS {
 
 	/**
 	 * Enqueue scripts and styles
-	 *
-	 * @param 	string	$hook
 	 */
 	public function enqueue_scripts($hook) {
 
@@ -186,7 +176,7 @@ class Abovethefold_Admin_CriticalCSS {
 		// update settings
 		$this->CTRL->admin->save_settings($options, 'Critical CSS saved.');
 
-		wp_redirect(admin_url('admin.php?page=abovethefold&tab=criticalcss'));
+		wp_redirect( add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'criticalcss' ), admin_url( 'admin.php' ) ) );
 		exit;
     }
 
@@ -198,7 +188,6 @@ class Abovethefold_Admin_CriticalCSS {
 
 		check_admin_referer('abovethefold');
 
-		// stripslashes should always be called
 		// @link https://codex.wordpress.org/Function_Reference/stripslashes_deep
 		$_POST = array_map( 'stripslashes_deep', $_POST );
 
@@ -214,14 +203,14 @@ class Abovethefold_Admin_CriticalCSS {
 		$name = (isset($_POST['name'])) ? trim($_POST['name']) : '';
 		if ($name === '') {
 			$this->CTRL->admin->set_notice('You did not enter a name.', 'ERROR');
-			wp_redirect(admin_url('admin.php?page=abovethefold&tab=criticalcss') );
+			wp_redirect( add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'criticalcss' ), admin_url( 'admin.php' ) ) );
 			exit;
 		}
 
 		$id = md5($name);
 		if (isset($options['conditional_css'][$id])) {
 			$this->CTRL->admin->set_notice('A conditional critical CSS configuration with the name <strong>'.htmlentities($name,ENT_COMPAT,'utf-8').'</strong> already exists.', 'ERROR');
-			wp_redirect(admin_url('admin.php?page=abovethefold&tab=criticalcss') );
+			wp_redirect( add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'criticalcss' ), admin_url( 'admin.php' ) ) );
 			exit;
 		}
 
@@ -234,7 +223,7 @@ class Abovethefold_Admin_CriticalCSS {
 		}
 		if (empty($conditions)) {
 			$this->CTRL->admin->set_notice('You did not select conditions.', 'ERROR');
-			wp_redirect(admin_url('admin.php?page=abovethefold&tab=criticalcss') );
+			wp_redirect( add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'criticalcss' ), admin_url( 'admin.php' ) ) );
 			exit;
 		}
 
@@ -245,11 +234,9 @@ class Abovethefold_Admin_CriticalCSS {
 		);
 
 		// update settings
-		update_option('abovethefold',$options);
+		$this->CTRL->admin->save_settings($options, 'Conditional Critical CSS created.');
 
-		$this->CTRL->admin->set_notice('Conditional Critical CSS created.', 'NOTICE');
-
-		wp_redirect(admin_url('admin.php?page=abovethefold&tab=criticalcss') . '#conditional' );
+		wp_redirect( add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'criticalcss' ), admin_url( 'admin.php' ) )  . '#conditional' );
 		exit;
     }
 
@@ -260,7 +247,6 @@ class Abovethefold_Admin_CriticalCSS {
 
 		check_admin_referer('abovethefold');
 
-		// stripslashes should always be called
 		// @link https://codex.wordpress.org/Function_Reference/stripslashes_deep
 		$_POST = array_map( 'stripslashes_deep', $_POST );
 
@@ -301,11 +287,9 @@ class Abovethefold_Admin_CriticalCSS {
 		}
 
 		// update settings
-		update_option('abovethefold',$options);
+		$this->CTRL->admin->save_settings($options, 'Conditional Critical CSS deleted.');
 
-		$this->CTRL->admin->set_notice('Conditional Critical CSS deleted.', 'NOTICE');
-
-		wp_redirect(admin_url('admin.php?page=abovethefold&tab=criticalcss') . '#conditional' );
+		wp_redirect( add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'criticalcss' ), admin_url( 'admin.php' ) ) . '#conditional' );
 		exit;
     }
 

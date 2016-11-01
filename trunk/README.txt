@@ -85,6 +85,10 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 
 == Changelog ==
 
+= 2.5.11 =
+* Improved: WebFontConfig fully loaded when using inline webfont.js.
+* Bugfix: CSS file ignore/remove list CRLF issue. (@masoudsafi)
+
 = 2.5.10 =
 * Bugfix: filters not applied in cache plugin modules.
 

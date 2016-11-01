@@ -21,6 +21,13 @@
         var m;
         var files = this.cnf.css;
 
+        if (files === 'ABTF_CRITICALCSS') {
+            if (ABTFDEBUG) {
+                console.error('Abtf.css()','output buffer failed to apply CSS optimization');
+            }
+            return;
+        }
+
         if (ABTFDEBUG) {
             if (!files) {
                 return;

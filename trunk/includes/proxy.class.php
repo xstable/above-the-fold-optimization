@@ -109,10 +109,7 @@ class Abovethefold_Proxy {
 	public $default_cache_expire = 2592000; // 30 days
 
 	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0
-	 * @var      object    $Optimization       The Optimization class.
+	 * Initialize the class and set its properties
 	 */
 	public function __construct( &$CTRL ) { 
 
@@ -136,14 +133,22 @@ class Abovethefold_Proxy {
 		}
 
 		// set include/exclude list
-		$keys = array('js_include','css_include','css_include','css_exclude');
+		$keys = array('js_include','css_include','js_exclude','css_exclude');
 		foreach ($keys as $key) {
+
 			$params = explode('_',$key);
+
+			if (empty($this->$key)) {
+				if (isset($this->CTRL->options[$params[0] . '_proxy_' . $params[1]]) && is_array($this->CTRL->options[$params[0] . '_proxy_' . $params[1]])) {
+					$this->$key = $this->CTRL->options[$params[0] . '_proxy_' . $params[1]];
+					continue 1;
+				}
+			}
 
 			// merge default include / exclude list with settings
 			$this->$key = array_unique(
 				array_filter(
-					array_merge($this->$key,((isset($this->CTRL->options['js_proxy_' . $params[1]]) && trim($this->CTRL->options['js_proxy_' . $params[1]]) !== '') ? explode("\n",$this->CTRL->options[$key[0] . '_proxy_' . $params[1]]) : array())),
+					array_merge($this->$key,((isset($this->CTRL->options[$params[0] . '_proxy_' . $params[1]]) && is_array($this->CTRL->options[$params[0] . '_proxy_' . $params[1]])) ? $this->CTRL->options[$params[0] . '_proxy_' . $params[1]] : array())),
 					create_function('$value', 'return trim($value) !== "";')
 				));
 		}
@@ -977,7 +982,7 @@ class Abovethefold_Proxy {
 			$jssettings['proxy']['base'] = $this->CTRL->cache_dir( $this->cdn ) . 'proxy/';
 		}
 
-		$keys = array('js_include','css_include','css_include','css_exclude');
+		$keys = array('js_include','css_include','js_exclude','css_exclude');
 		foreach ($keys as $key) {
 			$params = explode('_',$key);
 			if ($this->CTRL->options[$params[0] . '_proxy'] && !empty($this->CTRL->proxy->$key)) {
