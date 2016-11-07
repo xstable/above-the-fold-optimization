@@ -252,7 +252,7 @@ class Abovethefold_Admin_BuildTool {
 		$gulp_installed = is_dir($gulpdir . 'node_modules/');
 
 		// add notice
-		$this->CTRL->admin->set_notice('<div style="font-size:18px;line-height:20px;margin:0px;">The package has been installed in <strong>'.str_replace(home_url(),'',get_stylesheet_directory_uri()).'abovethefold/</strong>
+		$this->CTRL->admin->set_notice('<div style="font-size:18px;line-height:20px;margin:0px;">The package has been installed in <strong>'.trailingslashit(str_replace(home_url(),'',get_stylesheet_directory_uri())).'abovethefold/</strong>
 		<br /><br />
 		Run <code>gulp '.$taskname.'</code> to generate critical CSS.
 		<br /><br />
