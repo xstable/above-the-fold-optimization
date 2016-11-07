@@ -38,8 +38,8 @@
 													<tr valign="top">
 														<th scope="row" style="padding-bottom:0px;">Task Name</th>
 														<td style="padding-bottom:0px;">
-						                                    <input type="text" name="taskname" size="50" value="<?php if ($taskname) { print htmlentities($taskname,ENT_COMPAT,'utf-8'); } ?>" pattern="^[a-z\d-]*$" placeholder="Enter the Gulp.js task name (no spaces)." />
-						                                    <p class="description">Enter a Gulp.js task name (no spaces or special characters). The name is used as task name and as subdirectory name (/theme/abovethefold/<strong>task-name</strong>/).</p>
+						                                    <input type="text" name="taskname" size="50" value="<?php if ($taskname) { print htmlentities($taskname,ENT_COMPAT,'utf-8'); } ?>" pattern="^[a-z\d-]*$" placeholder="Enter a Gulp.js task name (no spaces)." />
+						                                    <p class="description">The task name is used as task command and as subdirectory (/theme/abovethefold/<strong>task-name</strong>/).</p>
 														</td>
 													</tr>
 													<tr valign="top">
