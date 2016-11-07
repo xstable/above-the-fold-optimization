@@ -40,7 +40,7 @@
 		<a href="http://csslint.net/#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=PageSpeed.pro%3A%20Above%20The%20Fold%20Optimization" target="_blank" class="button button-secondary button-small">CSS<span style="color:#768c1c;font-weight:bold;margin-left:1px;">LINT</span></a>
 		</div>
 		<div class="criticalcss-editorswitch">
-			<label><input type="checkbox" name="abovethefold[csseditor]" value="1"<?php if (!isset($options['csseditor']) || intval($options['csseditor']) === 1) { print ' checked=""'; } ?>> Use a CSS editor with error reporting (<a href="http://csslint.net/" target="_blank">CSS Lint</a> using <a href="https://codemirror.net/" target="_blank">CodeMirror</a>).</label>
+			<label><input type="checkbox" name="abovethefold[csseditor]" value="1"<?php if (!isset($options['csseditor']) || intval($options['csseditor']) === 1) { print ' checked=""'; } ?>> Use a CSS editor with error reporting (<a href="http://csslint.net/#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=PageSpeed.pro%3A%20Above%20The%20Fold%20Optimization" target="_blank">CSS Lint</a> using <a href="https://codemirror.net/#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=PageSpeed.pro%3A%20Above%20The%20Fold%20Optimization" target="_blank">CodeMirror</a>).</label>
 		</div>
 
 		<div style="clear:both;height:1px;overflow:hidden;font-size:1px;">&nbsp;</div>

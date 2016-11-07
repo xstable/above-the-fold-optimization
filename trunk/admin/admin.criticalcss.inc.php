@@ -1,50 +1,3 @@
-<?php 
-
-/**
- * Paths
- */
-$pageoptions = array(
-	'<option value="/">/ - Root</option>'
-);
-
-
-// Get random post
-$args = array( 'post_type' => 'post', 'posts_per_page' => -1 );
-query_posts($args);
-if (have_posts()) {
-	$pageoptions[] = '<optgroup label="'.__('Posts').'">';
-	while (have_posts()) {
-		the_post();
-		$pageoptions[] = '<option value="'.str_replace(get_option('siteurl'),'',get_permalink($wp_query->post->ID)).'">' . str_replace(get_option('siteurl'),'',get_permalink($wp_query->post->ID)) . '</option>';
-	}
-	$pageoptions[] = '</optgroup>';
-}
-
-// Get random page
-$args = array( 'post_type' => 'page', 'posts_per_page' => -1 );
-query_posts($args);
-if (have_posts()) {
-	$pageoptions[] = '<optgroup label="'.__('Pages').'">';
-	while (have_posts()) {
-		the_post();
-		$pageoptions[] = '<option value="'.str_replace(get_option('siteurl'),'',get_permalink($wp_query->post->ID)).'">' . str_replace(get_option('siteurl'),'',get_permalink($wp_query->post->ID)) . '</option>';
-	}
-	$pageoptions[] = '</optgroup>';
-}
-
-// Random category
-$taxonomy = 'category';
-$terms = get_terms($taxonomy);
-shuffle ($terms);
-if ($terms) {
-	$pageoptions[] = '<optgroup label="'.__('Categories').'">';
-	foreach($terms as $term) {
-		$pageoptions[] = '<option value="'.str_replace(get_option('siteurl'),'',get_category_link( $term->term_id )).'">' . str_replace(get_option('siteurl'),'',get_category_link( $term->term_id )) . '</option>';
-	}
-	$pageoptions[] = '</optgroup>';
-}
-
-?>
 <form method="post" action="<?php echo admin_url('admin-post.php?action=abtf_criticalcss_update'); ?>" data-addccss="<?php echo admin_url('admin-post.php?action=abtf_add_ccss'); ?>" data-delccss="<?php echo admin_url('admin-post.php?action=abtf_delete_ccss'); ?>" id="abtf_settings_form" class="clearfix" style="margin-top:0px;">
 	<?php wp_nonce_field('abovethefold'); ?>
 	<div class="wrap abovethefold-wrapper">
@@ -93,8 +46,7 @@ if ($terms) {
 										<p class="description">For the creation of Critical Path CSS you need the full CSS of a page. This tool allows you to extract the full CSS from any url and optionally to select the specific CSS files you want to extract.</p>
 										<p class="description" style="margin-bottom:1em;">You can quickly output the full CSS of any url by adding the query string <code><strong>?extract-css=<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?>&amp;output=print</strong></code>.</p>
 
-											<select id="fullcsspages"><option value=""></option><?php print implode('',$pageoptions); ?></select>
-
+											<select id="fullcsspages" class="wp-pageselect"><option value=""></option><option value="<?php print home_url(); ?>">Home Page (index)</option></select>
 											<div style="margin-top:10px;">
 											<button type="button" id="fullcsspages_dl" rel="<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?>" class="button button-large">Download</button>
 											<button type="button" id="fullcsspages_print" rel="<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?>" class="button button-large">Print</button>
@@ -106,10 +58,8 @@ if ($terms) {
 						</div>
 					</div>
 
-					<!-- End of #post_form -->
-
 				</div>
-			</div> <!-- End of #post-body -->
-		</div> <!-- End of #poststuff -->
-	</div> <!-- End of .wrap -->
+			</div>
+		</div>
+	</div>
 </form>

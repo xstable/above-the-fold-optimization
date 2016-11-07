@@ -85,8 +85,17 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 
 == Changelog ==
 
+= 2.6.0 =
+* Bugfix: Critical CSS Quality Test not accessible without CSS delivery optimization enabled.
+* Bugfix: Permissions for newly created files not correctly set to WordPress default file permissions.
+* Improved: Page selection menu uses AJAX search instead of preloading all options.
+* Improved: cURL replaced by [wp_remote_get()](https://codex.wordpress.org/Function_Reference/wp_remote_get).
+* Improved: full CSS extraction CSS relative url conversion to match path of CSS file.
+* Added: Build Tool Builder for [critical](https://github.com/addyosmani/critical) to create professional quality critical path CSS.
+
 = 2.5.11 =
 * Improved: WebFontConfig fully loaded when using inline webfont.js.
+* Improved: external resource proxy debug notices for ignored resources.
 * Bugfix: CSS file ignore/remove list CRLF issue. (@masoudsafi)
 
 = 2.5.10 =

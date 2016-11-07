@@ -74,6 +74,7 @@ module.exports = function(grunt) {
 					'admin/js/admincp.min.js' : [
 						'admin/js/jquery.debounce.js',
 						'admin/js/admincp.js',
+						'admin/js/admincp.build-tool.js',
 						'admin/js/admincp.add-conditional.js',
 						'admin/js/admincp.criticalcss-editor.js',
 						'bower_components/selectize/dist/js/standalone/selectize.min.js'

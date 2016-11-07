@@ -53,7 +53,7 @@ class Abovethefold_Optimization {
 		/**
 		 * Extract Full CSS view
 		 */
-		if ($this->CTRL->view === 'extract-css') {
+		if (in_array($this->CTRL->view,array('extract-css','abtf-buildtool-css'))) {
 
 			// load optimization controller
 			$this->CTRL->extractcss = new Abovethefold_ExtractFullCss( $this->CTRL );
@@ -262,6 +262,10 @@ class Abovethefold_Optimization {
 			return $buffer;
 		}
 
+		if ($this->CTRL->view === 'abtf-buildtool-html') {
+			return $buffer;
+		}
+
 		// search / replace 
 		$search = array();
 		$replace = array();
@@ -316,6 +320,7 @@ class Abovethefold_Optimization {
 					if (empty($file)) { continue 1; }
 
 					$originalFile = $file;
+					$originalTag = $matchedTag;
 
 					// apply css file filter pre processing
 					$filterResult = apply_filters('abtf_cssfile_pre', $file);
@@ -364,7 +369,6 @@ class Abovethefold_Optimization {
 							}
 						}
 						if ($delete) {
-							//$search_regex[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
 							$search[] = $matchedTag;
 							$replace[] = '';
 							continue;
@@ -392,10 +396,9 @@ class Abovethefold_Optimization {
 
 					// add file to style array to be processed
 					$async_styles[] = array($media,$file);
-
-					// remove file from HTML
-					$search_regex[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
-					$replace_regex[] = '';
+					
+					$search[] = $originalTag;
+					$replace[] = '';
 				}
 			}
 
@@ -404,17 +407,18 @@ class Abovethefold_Optimization {
 			/**
 			 * Filter CSS files
 			 */
-			if ($this->CTRL->options['gwfo'] || $this->CTRL->options['css_proxy']) {
+			if ($this->CTRL->options['gwfo'] || $this->CTRL->options['css_proxy'] || $this->CTRL->view === 'abtf-critical-only') {
 
 				$stylesheets = $this->extract_stylesheets($buffer);
 				if (!empty($stylesheets)) {
 
-					foreach ($stylesheets as $file) {
+					foreach ($stylesheets as $stylesheet) {
 
 						list($file,$matchedTag) = $stylesheet;
 						if (empty($file)) { continue 1; }
 
 						$originalFile = $file;
+						$originalTag = $matchedTag;
 
 						// apply filter for css file pre processing
 						$filterResult = apply_filters('abtf_cssfile_pre', $file);
@@ -425,10 +429,9 @@ class Abovethefold_Optimization {
 						}
 
 						// delete file
-						if ($filterResult === 'delete') {
+						if ($filterResult === 'delete' || $this->CTRL->view === 'abtf-critical-only') {
 
 							// delete from HTML
-							//$search_regex[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
 							$search[] = $matchedTag;
 							$replace[] = '';
 							continue;
@@ -436,9 +439,12 @@ class Abovethefold_Optimization {
 
 						// replace url
 						if ($filterResult && $filterResult !== $file) {
+
+							// change file in original tag
+							$newTag = str_replace($originalFile,$filterResult,$originalTag);
 							
-							$search_regex[] = '|(<link[^>]+)'.preg_quote($originalFile).'([^>]+>)|is';
-							$replace_regex[] = '$1'.$filterResult.'$2';
+							$search[] = $originalTag;
+							$replace[] = $newTag;
 						}
 					}
 				}
@@ -459,6 +465,7 @@ class Abovethefold_Optimization {
 					if (empty($file)) { continue 1; }
 
 					$originalFile = $file;
+					$originalTag = $matchedTag;
 
 					// apply filter for css file pre processing
 					$filterResult = apply_filters('abtf_jsfile_pre', $file);
@@ -472,7 +479,6 @@ class Abovethefold_Optimization {
 					if ($filterResult === 'delete') {
 
 						// delete from HTML
-						//$search_regex[] = '|<script[^>]+'.preg_quote($originalFile).'[^>]+>([^<]+</script>)?|is';
 						$search[] = $matchedTag;
 						$replace[] = '';
 						continue;
@@ -481,8 +487,11 @@ class Abovethefold_Optimization {
 					// replace url
 					if ($filterResult && $filterResult !== $file) {
 						
-						$search_regex[] = '|(<script[^>]+)'.preg_quote($originalFile).'([^>]+>)|is';
-						$replace_regex[] = '$1'.$filterResult.'$2';
+						// change file in original tag
+						$newTag = str_replace($originalFile,$filterResult,$originalTag);
+						
+						$search[] = $originalTag;
+						$replace[] = $newTag;
 					}
 				}
 			}
@@ -496,7 +505,7 @@ class Abovethefold_Optimization {
 			/**
 			 * Remove full CSS and show critical CSS only
 			 */
-			if ($this->CTRL->view === 'abtf-critical-only') {
+			if ($this->CTRL->view === 'abtf-critical-only') { // , 'abtf-buildtool-html'
 
 				// do not render the stylesheet files
 				$styles_json = 'false';
@@ -528,7 +537,6 @@ class Abovethefold_Optimization {
 			/**
 			 * Update CSS JSON configuration
 			 */
-			//$search_regex[] = '#[\'|"]'.preg_quote($this->criticalcss_replacement_string).'[\'|"]#Ui';
 			$search[] = '"'.$this->criticalcss_replacement_string	.'"';
 			$replace[] = $styles_json;
 		}
@@ -563,7 +571,7 @@ class Abovethefold_Optimization {
 		/**
 		 * Add noindex meta to prevent indexing in Google
 		 */
-		if ($this->CTRL->view === 'abtf-critical-only' || $this->CTRL->view === 'abtf-critical-verify') {
+		if ($this->CTRL->view) {
 			print '<meta name="robots" content="noindex, nofollow" />';
 		}
 
@@ -751,7 +759,7 @@ class Abovethefold_Optimization {
 		$inlineCSS = trim((file_exists($criticalcss_file)) ? file_get_contents($criticalcss_file) : '');
 
 		// debug enabled?
-		$debug = (current_user_can( 'manage_options' ) && intval($this->CTRL->options['debug']) === 1) ? true : false;
+		$debug = (current_user_can('administrator') && intval($this->CTRL->options['debug']) === 1) ? true : false;
 
 		// javascript debug extension
 		$jsdebug = ($debug) ? '.debug' : '';
@@ -769,7 +777,7 @@ class Abovethefold_Optimization {
 		/**
 		 * Google Web Font Loader Inline
 		 */
-		if (isset($this->CTRL->options['gwfo']) && $this->CTRL->options['gwfo']) {
+		if ($this->CTRL->options['gwfo']) {
 
 			// get web font loader client
 			$this->CTRL->gwfo->client_jssettings($jssettings, $jsfiles, $inlineJS, $jsdebug);
@@ -780,7 +788,7 @@ class Abovethefold_Optimization {
 		$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold'.$jsdebug.'.min.js';
 
 		// Proxy external files
-		if ((isset($this->CTRL->options['js_proxy']) && $this->CTRL->options['js_proxy']) || (isset($this->CTRL->options['css_proxy']) && $this->CTRL->options['css_proxy'])) {
+		if ($this->CTRL->options['js_proxy'] || $this->CTRL->options['css_proxy']) {
 
 			// get proxy client
 			$this->CTRL->proxy->client_jssettings($jssettings, $jsfiles, $jsdebug);
@@ -846,7 +854,7 @@ class Abovethefold_Optimization {
 		/**
 		 * Hide Critical CSS for verification view
 		 */
-		if ($this->CTRL->view === 'abtf-critical-verify') {
+		if ($this->CTRL->view === 'abtf-critical-verify' || $this->CTRL->view === 'abtf-buildtool-html') {
 			if ($debug) {
 				print '
 /*!
@@ -883,7 +891,7 @@ class Abovethefold_Optimization {
 			/**
 			 * Print warning for admin users that critical CSS is empty
 			 */
-			if (current_user_can( 'manage_options' )) {
+			if (current_user_can('administrator') || current_user_can('editor')) {
 				print '
 /*!
  * Above The Fold Optimization ' . $this->CTRL->get_version() . '
@@ -923,10 +931,12 @@ class Abovethefold_Optimization {
 	public function footer() {
 		if ($this->CTRL->disabled) { return; }
 
+		// CSS delivery in footer
+		$footCSS = ($this->optimize_css_delivery && (empty($this->CTRL->options['cssdelivery_position']) || $this->CTRL->options['cssdelivery_position'] === 'footer')) ? true : false;
+
 		if (
 
-			// CSS delivery in footer
-			($this->optimize_css_delivery && (empty($this->CTRL->options['cssdelivery_position']) || $this->CTRL->options['cssdelivery_position'] === 'footer'))
+			$footCSS
 
 			// google web font loader in footer
 			|| ($this->CTRL->options['gwfo'] && $this->CTRL->options['gwfo_loadposition'] === 'footer')
@@ -934,7 +944,7 @@ class Abovethefold_Optimization {
 		) {
 
 			// start loading CSS from footer position
-			$footCSS = ($this->optimize_css_delivery && (empty($this->CTRL->options['cssdelivery_position']) || $this->CTRL->options['cssdelivery_position'] === 'footer')) ? true : false;
+			
 			print "<script rel=\"abtf\">Abtf.f(".json_encode($footCSS).");</script>";
 		}
 

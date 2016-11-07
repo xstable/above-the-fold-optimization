@@ -317,6 +317,11 @@
 
 						// not in include list
 						if (!match) {
+
+							if (ABTFDEBUG) {
+								console.log('Abtf.proxy()', 'ignore', parser.href, 'not on include list');
+					        }
+
 							return false;
 						}
 					}
@@ -327,6 +332,10 @@
 						var l = PROXY_JS_EXCLUDE.length;
 						for (var i = 0; i < l; i++) {
 							if (parser.href.indexOf(PROXY_JS_EXCLUDE[i]) !== -1) {
+
+								if (ABTFDEBUG) {
+									console.log('Abtf.proxy()', 'ignore', parser.href, 'on exclude list:',PROXY_JS_EXCLUDE[i]);
+						        }
 
 								// ignore file
 								return false;

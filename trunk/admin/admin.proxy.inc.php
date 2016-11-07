@@ -116,7 +116,7 @@
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Preload List</h5>
 										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_preload]"><?php if ($cssPreload !== '') { echo $cssPreload; } ?></textarea>
-										<p class="description">Enter the exact url or JSON config object of external stylesheets to preload for "script injected" async stylesheet capture, e.g. <code>https://fonts.googleapis.com/css?family=Open+Sans:400</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url or JSON object per line.</p>
+										<p class="description">Enter the exact url or JSON config object of external stylesheets to preload for "script injected" async stylesheet capture, e.g. <code>http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url or JSON object per line.</p>
 										<fieldset style="border:solid 1px #efefef;padding:10px;margin:0px;margin-top:7px;background:#f1f1f1;">
 											<p class="description" style="margin-top:0px;">JSON config objects must be placed on one line and contain a target url. Valid parameters are <code>url</code>, <code>regex</code>, <code>regex-flags</code>, <code>cdn</code> and <code>expire</code> (expire time in seconds).</p>
 										<p class="description" style="margin-bottom:0px;">Example: <code>{"regex": "^https://app\\.analytics\\.com/file\\.css\\?\\d+$", "regex-flags":"i", "url": "https://app.analytics.com/file.css", "expire": "2592000"}</code></p></fieldset>

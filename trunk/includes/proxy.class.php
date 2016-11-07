@@ -552,14 +552,6 @@ class Abovethefold_Proxy {
 			wp_die('Proxy is disabled');
 		}
 
-		if (!$this->CTRL->curl_support()) {
-			
-			/**
-			 * cURL or file_get_contents not available
-			 */
-			trigger_error('PHP <a href="http://php.net/manual/en/book.curl.php" target="_blank">lib cURL</a> should be installed or <a href="http://php.net/manual/en/filesystem.configuration.php" target="_blank">allow_url_fopen</a> should be enabled for external resource proxy.',E_USER_ERROR);
-		}
-
 		$url = (isset($_REQUEST['url'])) ? trim($_REQUEST['url']) : '';
 		$type = (isset($_REQUEST['type'])) ? trim($_REQUEST['type']) : '';
 
@@ -728,7 +720,7 @@ class Abovethefold_Proxy {
 		if ($local_file) {
 			$file_data = file_get_contents($local_file);
 		} else {
-			$file_data = $this->CTRL->curl_get($url);
+			$file_data = $this->CTRL->remote_get($url);
 		}
 
 		/**

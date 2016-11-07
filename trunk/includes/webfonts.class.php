@@ -50,6 +50,11 @@ class Abovethefold_WebFonts {
 			return; // above the fold optimization disabled for area / page
 		}
 
+		// set default state
+		if (!isset($this->CTRL->options['gwfo'])) {
+			$this->CTRL->options['gwfo'] = false;
+		}
+
 		// load google fonts from settings
 		if (isset($this->CTRL->options['gwfo_googlefonts']) && is_array($this->CTRL->options['gwfo_googlefonts'])) {
 			$this->googlefonts = $this->CTRL->options['gwfo_googlefonts'];
@@ -66,7 +71,7 @@ class Abovethefold_WebFonts {
 		/**
 		 * Google Web Font Optimizer enabled
 		 */
-		if (isset($this->CTRL->options['gwfo']) && $this->CTRL->options['gwfo']) {
+		if ($this->CTRL->options['gwfo']) {
 
 			// add filter for CSS minificaiton output
 			$this->CTRL->loader->add_filter( 'abtf_css', $this, 'process_css' );

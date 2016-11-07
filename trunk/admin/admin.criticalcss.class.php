@@ -142,7 +142,7 @@ class Abovethefold_Admin_CriticalCSS {
 						$this->CTRL->admin->set_notice('You did not select conditions for <strong>'.htmlentities($options['conditional_css'][$hashkey]['name'],ENT_COMPAT,'utf-8').'</strong>.', 'ERROR');
 					} else {
 						$options['conditional_css'][$hashkey]['conditions'] = $data['conditions'];
-						$options['conditional_css'][$hashkey]['weight'] = $data['weight'];
+						$options['conditional_css'][$hashkey]['weight'] = (isset($data['weight']) && intval($data['weight']) > 0) ? intval($data['weight']) : 1;
 
 						$css = trim($data['css']);
 						$cssfile = $this->CTRL->cache_path() . 'criticalcss_'.$hashkey.'.css';
@@ -230,7 +230,8 @@ class Abovethefold_Admin_CriticalCSS {
 		$options['conditional_css'][$id] = array(
 			'name' => $name,
 			'conditions' => $conditions,
-			'css' => ''
+			'css' => '',
+			'weight' => '1'
 		);
 
 		// update settings

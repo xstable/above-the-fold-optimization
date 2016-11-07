@@ -1,50 +1,3 @@
-<?php
-
-	/**
-	 * Paths
-	 */
-	$options = array(
-		'<option value="/">/ - Root</option>'
-	);
-
-
-	// Get random post
-	$args = array( 'post_type' => 'post', 'posts_per_page' => -1 );
-	query_posts($args);
-	if (have_posts()) {
-		$options[] = '<optgroup label="'.__('Posts').'">';
-		while (have_posts()) {
-			the_post();
-			$options[] = '<option value="'.str_replace(get_option('siteurl'),'',get_permalink($wp_query->post->ID)).'">' . str_replace(get_option('siteurl'),'',get_permalink($wp_query->post->ID)) . '</option>';
-		}
-		$options[] = '</optgroup>';
-	}
-
-	// Get random page
-	$args = array( 'post_type' => 'page', 'posts_per_page' => -1 );
-	query_posts($args);
-	if (have_posts()) {
-		$options[] = '<optgroup label="'.__('Pages').'">';
-		while (have_posts()) {
-			the_post();
-			$options[] = '<option value="'.str_replace(get_option('siteurl'),'',get_permalink($wp_query->post->ID)).'">' . str_replace(get_option('siteurl'),'',get_permalink($wp_query->post->ID)) . '</option>';
-		}
-		$options[] = '</optgroup>';
-	}
-
-	// Random category
-	$taxonomy = 'category';
-	$terms = get_terms($taxonomy);
-	shuffle ($terms);
-	if ($terms) {
-		$options[] = '<optgroup label="'.__('Categories').'">';
-		foreach($terms as $term) {
-			$options[] = '<option value="'.str_replace(get_option('siteurl'),'',get_category_link( $term->term_id )).'">' . str_replace(get_option('siteurl'),'',get_category_link( $term->term_id )) . '</option>';
-		}
-		$options[] = '</optgroup>';
-	}
-
-?>
 <form method="post" action="<?php echo admin_url('admin-post.php?action=abovethefold_compare'); ?>" class="clearfix">
 	<?php wp_nonce_field('abovethefold'); ?>
 	<div class="wrap abovethefold-wrapper">
@@ -60,7 +13,7 @@
 						<p>This test enables to compare the critical CSS display with the full CSS display to test for differences that could cause a <a href="https://en.wikipedia.org/wiki/Flash_of_unstyled_content" target="_blank">Flash of unstyled content (FOUC)</a>. Good quality critical CSS will provide a near perfect match between the critical CSS and full CSS display. </p>
 							<p>You can quickly open the critical CSS quality test for any url by adding the query string <code><strong>?compare-abtf=<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?></strong></code>.</p>
 								<div>
-								<select id="comparepages"><option value=""></option><?php print implode('',$options); ?></select>
+								<select id="comparepages" class="wp-pageselect"><option value=""></option><option value="<?php print home_url(); ?>">Home Page (index)</option></select>
 
 								<button type="button" id="comparepages_split" rel="<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?>" class="button button-large">Split View (Compare)</button>
 								<button type="button" id="comparepages_full" rel="<?php print md5(SECURE_AUTH_KEY . AUTH_KEY); ?>" class="button button-large">Full View (Critical CSS only)</button>

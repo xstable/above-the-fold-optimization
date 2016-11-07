@@ -7,8 +7,9 @@
 
 		<div class="inside" style="margin:0px;float:left;font-style:italic;">
 			<img src="https://optimalisatie.nl/img/websockify-rocket-50.png" title="Websockify" style="float:left;margin-right:5px;margin-top:8px;" width="50" align="absmiddle" />
-			<p>We have developed a plugin that is able to provide instant (&lt;1ms) page load times, up to 99% HTML bandwidth saving and realtime HTML (live content). 
-			<a href="http://websockify.it/" target="_blank">Information</a> / <a href="https://websockify.io/" target="_blank">Demo (WooCommerce)</a>.</p>
+			<p>We have developed a plugin that is able to provide instant (&lt;1ms) page load times, up to 99% HTML data transfer saving and realtime HTML (live content). 
+			<a href="http://websockify.it/" class="ws-info" target="_blank">Information</a> / <a href="https://websockify.io/" class="ws-info" target="_blank">Demo (WooCommerce)</a>
+			<span id="livehtml" style="display:none;"></span></p>
 		</div>
 	</div>
 </div>

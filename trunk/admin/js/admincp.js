@@ -2,34 +2,55 @@
  * Request animation frame
  */
 if ( !window.requestAnimationFrame ) {
-
     window.requestAnimationFrame = ( function() {
-
         return window.webkitRequestAnimationFrame ||
         window.mozRequestAnimationFrame ||
         window.oRequestAnimationFrame ||
         window.msRequestAnimationFrame ||
         function( /* function FrameRequestCallback */ callback, /* DOMElement Element */ element ) {
-
             window.setTimeout( callback, 1000 / 60 );
-
         };
-
     } )();
-
 }
 
 jQuery(function($) {
 
     /**
+     * Page selection menu
+     */
+    if (jQuery('select.wp-pageselect').length > 0 && typeof jQuery('select.wp-pageselect').selectize !== 'undefined') {
+        jQuery('select.wp-pageselect').selectize({
+            placeholder: "Search a post/page/category ID or name...",
+            optgroupField: 'class',
+            labelField: 'name',
+            searchField: ['name'],
+            optgroups: window.abtf_pagesearch_optgroups,
+            load: function (query, callback) {
+                if (!query.length) return callback();
+                jQuery.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action: 'abtf_page_search',
+                        query: query,
+                        maxresults: 10
+                    },
+                    error: function () {
+                        callback();
+                    },
+                    success: function (res) {
+                        callback(res);
+                    }
+                });
+            }
+        });
+    }
+
+    /**
      * Extract CSS menu
      */
     if (jQuery('#fullcsspages').length > 0 && typeof jQuery('#fullcsspages').selectize !== 'undefined') {
-        jQuery('#fullcsspages').selectize({
-            persist         : true,
-            placeholder     : "Select a page...",
-            plugins         : ['remove_button']
-        });
 
         // download button
         jQuery('#fullcsspages_dl').on('click',function() {
@@ -73,11 +94,6 @@ jQuery(function($) {
      * Compare Critical CSS menu
      */
     if (jQuery('#comparepages').length > 0 && typeof jQuery('#comparepages').selectize !== 'undefined') {
-        jQuery('#comparepages').selectize({
-            persist         : true,
-            placeholder     : "Select a page...",
-            plugins         : ['remove_button']
-        });
 
         // download button
         jQuery('#comparepages_split').on('click',function() {
@@ -118,95 +134,37 @@ jQuery(function($) {
     }
 
     /**
-     * Review animation
-     * / 
-    if (jQuery('#reviewanim').data('count')) {
+     * Real Time Text example
+     */
+    if (jQuery('#livehtml').length > 0) {
 
-        window.inputChange = false;
-        jQuery('input,select,textarea').on('change', function() {
-            window.inputChange = true;
-        });
-        var prevPos = false;
-        var isUp = true;
-        jQuery(window).scroll(jQuery.debounce( 250, function() {
-            var pos = jQuery(window).scrollTop();
-
-            if (!prevPos) {
-                prevPos = pos;
+        var scrollHandler = function() {
+            if (jQuery(window).scrollTop() > 100) {
+                jQuery('#livehtml').html('');
+                jQuery('#livehtml').hide();
+                jQuery( window ).off('scroll', scrollHandler)
             }
-            if (pos < prevPos) {
-
-                // up scroll
-                if (!isUp && pos < 50) {
-
-                    isUp = true; // entered top of page
-
-                    // anything changed?
-                    if (window.inputChange) {
-
-                        showReviewAnimation();
-                        window.inputChange = false;
-                        
-                    } 
-                }
-            }
-            if (pos > 50) {
-                isUp = false;
-            }
-
-            prevPos = pos;
-
-        } ));
-
-        var lastAnim = false;
-        var showReviewAnimation = function() {
-
-            var time = Math.round(new Date().getTime()/1000);
-
-            // shown in last 30 seconds, abort
-            if (lastAnim && lastAnim > (time - 30)) {
-                return;
-            }
-
-            lastAnim = time;
-
-            if (showReviewAnimationTimeout) {
-                clearTimeout(showReviewAnimationTimeout);
-                showReviewAnimationTimeout = false;
-            }
-
-            window.requestAnimationFrame(function() {
-
-                jQuery('#reviewanim').show();
-                setTimeout(function() {
-
-                    // hide svg
-                    jQuery('#reviewanim').hide();
-
-                    // start again in 1 minute
-                    showReviewAnimationTimeout = setTimeout(function() {
-                        showReviewAnimation();
-                    },(1000 * 60));
-
-                },900);
-
-            });
         }
 
-        // start in 1 minute
-        var showReviewAnimationTimeout = setTimeout(function() {
+        jQuery('.ws-info').on('mouseover touchstart', function() {
 
-            var pos = jQuery(window).scrollTop();
-            if (pos > 50) {
-                window.inputChange = true;
-            } else {
-                if (window.inputChange) {
-                    showReviewAnimation();
-                }
+            /**
+             * Hide on scroll
+             */
+            jQuery( window ).scroll(scrollHandler);
+
+            jQuery('#livehtml').show();
+            jQuery('#livehtml').html('<span class="live wp-exclude-emoji"><span class="tag">&lt;div <span class="ws">⚡</span>&gt</span><span class="text">realtime writing for 10.000 viewers, as simple as a HTML attribute</span><span class="tag">&lt;/div&gt</span></span>');
+            if ( !jQuery('#livehtml').data('realtimetext') ) {
+                jQuery('#livehtml').data('realtimetext',1);
+                var color = jQuery('#livehtml .live span.text').css("color").replace(')', ', 0.7)').replace('rgb', 'rgba');
+                var lcolor = jQuery('.ws-info').css("color");
+                var width = jQuery('#livehtml .live span.text').css("width");
+                jQuery('body').append('<style>.live span.tag .ws {color: '+lcolor+';}.live span.text { border-right-color:'+color+'; } @keyframes typing { from { width: 0px } to { width: '+width+'; } }@keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: '+color+'; } }</style>');
             }
-        },(1000 * 60));
+        });
+
+
 
     }
-    */
-
 });

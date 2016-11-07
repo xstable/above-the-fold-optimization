@@ -11,7 +11,6 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-
 class Abovethefold_CompareABTF {
 
 	/**

@@ -10,6 +10,7 @@
  * @subpackage abovethefold/includes
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
+
 class Abovethefold {
 
 	/**
@@ -88,8 +89,8 @@ class Abovethefold {
 		}
 
 		// set permissions
-		$this->CHMOD_DIR = ( ! defined('FS_CHMOD_DIR') ) ? ( fileperms( ABSPATH ) & 0777 | 0755 ) : FS_CHMOD_DIR;
-		$this->CHMOD_FILE = ( ! defined('FS_CHMOD_FILE') ) ? ( fileperms( ABSPATH . 'index.php' ) & 0777 | 0644 ) : FS_CHMOD_FILE;
+		$this->CHMOD_DIR = ( ! defined('FS_CHMOD_DIR') ) ? intval( substr(sprintf('%o', fileperms( ABSPATH )),-4), 8 ) : FS_CHMOD_DIR;
+		$this->CHMOD_FILE = ( ! defined('FS_CHMOD_FILE') ) ? intval( substr(sprintf('%o', fileperms( ABSPATH . 'index.php' )),-4), 8 ) : FS_CHMOD_FILE;
 
 		/**
 		 * Register Activate / Deactivate hooks.
@@ -114,10 +115,16 @@ class Abovethefold {
 			'compare-abtf' => array( 'admin_bar' => false ), 
 
 			// view website with just the critical CSS
-			'abtf-critical-only' => array( 'admin_bar' => false ), 
+			'abtf-critical-only' => array( 'admin_bar' => false ),
 
 			// view website regularly, but without the admin toolbar for comparison view
 			'abtf-critical-verify' => array( 'admin_bar' => false ),
+
+			// build tool HTML export for Gulp.js critical task
+			'abtf-buildtool-html' => array( 'admin_bar' => false ),
+
+			// build tool full css export for Gulp.js critical task
+			'abtf-buildtool-css' => array( 'admin_bar' => false ),
 
 			// external resource proxy
 			'abtf-proxy' => array( )
@@ -176,9 +183,6 @@ class Abovethefold {
 
 		// load optimization controller
 		$this->optimization = new Abovethefold_Optimization( $this );
-
-		// load webfont optimization controller
-		$this->gwfo = new Abovethefold_WebFonts($this);
 
 		// load lazy script loading module
 		$this->lazy = new Abovethefold_LazyScripts($this);
@@ -327,7 +331,7 @@ class Abovethefold {
 		/**
 		 * Extract Full CSS view
 		 */
-		if ($this->view === 'extract-css') {
+		if (in_array($this->view,array('extract-css','abtf-buildtool-css'))) {
 
 			/**
 			 * The class responsible for defining all actions related to full css extraction
@@ -357,6 +361,28 @@ class Abovethefold {
 		 */
 		require_once WPABTF_PATH . 'admin/admin.class.php';
 
+	}
+	
+	/**
+	 * Return url with view query string
+	 */
+	public function view_url($view, $query = array(), $currenturl = false) {
+
+		if (!$currenturl) {
+			if (is_admin()
+				|| ( defined( 'DOING_AJAX' ) && DOING_AJAX )
+				|| in_array($GLOBALS['pagenow'], array('wp-login.php', 'wp-register.php'))
+			) {
+				$currenturl = home_url();
+			} else {
+				$currenturl = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+			}
+		}
+
+		/**
+		 * Return url with view query string
+		 */
+		return preg_replace('|\#.*$|Ui','',$currenturl) . ((strpos($currenturl,'?') !== false) ? '&' : '?') . $view . '=' . md5(SECURE_AUTH_KEY . AUTH_KEY) . (!empty($query) ? '&' . http_build_query($query) : '');
 	}
 
 	/**
@@ -441,60 +467,22 @@ class Abovethefold {
 	}
 
 	/**
-	 * Check for cURL / url request support
+	 * Remote get (previously cURL)
 	 */
-	public function curl_support() {
-		if (function_exists('curl_version') || ini_get('allow_url_fopen')) {
-			return true;
-		}
-		return false;
-	}
+	public function remote_get($url, $args = array() ) {
 
-	/**
-	 * cURL requests with file_get_contents fallback
-	 */
-	public function curl_get($url) {
+		$args = array_merge(array(
+			'timeout'     => 60,
+    		'sslverify'   => false,
 
-		// load cURL
-		if (!$this->curl) {
-	
-			/**
-			 * PHP cURL library
-			 */
-			if (function_exists('curl_version')) {
+			// Chrome Generic Win10
+			// @link https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
+			'user-agent'  => 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36',
+		),$args);
 
-				// load cURL contorller
-				require_once(WPABTF_PATH . 'includes/curl.class.php');
-				$this->curl = new Abovethefold_Curl( $this );
+		$res = wp_remote_get($url, $args);
 
-			} else if (ini_get('allow_url_fopen')) {
-
-				/**
-				 * file_get_contents fallback
-				 */
-				$this->curl = 'file_get_contents';
-			} else {
-				
-				/**
-				 * URL requests not supported
-				 */
-				$this->CTRL->admin->set_notice('PHP <a href="http://php.net/manual/en/book.curl.php" target="_blank">lib cURL</a> should be installed or <a href="http://php.net/manual/en/filesystem.configuration.php" target="_blank">allow_url_fopen</a> should be enabled.<br /><strong>Request failed:</strong> '.$url, 'ERROR');
-				$this->curl = 'disabled';
-			}
-		}
-
-		// disabled
-		if ($this->curl === 'disabled') {
-			return false;
-		}
-
-		// file_get_contents request
-		if ($this->curl === 'file_get_contents') {
-			return file_get_contents($url);
-		}
-
-		// cURL request
-		return $this->curl->get($url);
+		return trim($res['body']);
 	}
 
 	/**
@@ -536,7 +524,7 @@ class Abovethefold {
 		// Store default options
 		$options = get_option( 'abovethefold' );
 		if ( empty( $options ) ) {
-			update_option( "abovethefold", $default_options );
+			update_option( "abovethefold", $default_options, true );
 		}
 
 	}

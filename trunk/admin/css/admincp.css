@@ -147,6 +147,22 @@
     color:#000;
 }
 
+.wp-core-ui .button-green{
+    background:#079c2d;
+    border-color:#068827 #056F21 #056F21;
+    -webkit-box-shadow:0 1px 0 #056F21;
+    box-shadow:0 1px 0 #056F21;
+    color:#fff;
+    text-decoration:none;
+    text-shadow:none;
+}
+
+.wp-core-ui .button-green:focus,
+.wp-core-ui .button-green:hover{
+    background:#079c2d;
+    border-color:#056F21;
+    color:#fff;
+}
 
 .wp-core-ui .button-del {
     color:#FF0000;
@@ -159,26 +175,62 @@
     color:#fff;
 }
 
-#reviewanim {
-    position:absolute;
-    top:25px;
-    z-index:999;
-    left:150px;
+textarea.abtfcmd {
+    width:100%;
+    height: 48px;
+    font-size: 14px;
+    line-height: 18px;
+    padding: 5px;
+    padding-left: 8px;
+    font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
 }
 
-.glittering {
-     animation: glitter 0.9s linear 0s normal forwards;
-    -webkit-animation: glitter 0.9s linear 0s normal forwards;
-    -moz-animation: glitter 0.9s linear 0s normal forwards;
-    -ms-animation: glitter 0.9s linear 0s normal forwards;
-    -o-animation: glitter 0.9s linear 0s normal forwards;
+
+#livehtml {
+    display:inline-block;
+    clear:both;
+    float:left;
+    margin-bottom:10px;
+    font-size:120%;
+}
+.live {
+    float:left;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.live span.tag {
+    font-family: Consolas,monospace;
+  white-space: nowrap;
+  overflow: hidden;
+    color: black;
+    -webkit-animation: pulsate 3s ease-out;
+    -webkit-animation-iteration-count: infinite; 
+    animation: pulsate 3s ease-out;
+    animation-iteration-count: infinite; 
+    opacity: 0.7;
+}
+.live span.text {
+  overflow: hidden; /* Ensures the content is not revealed until the animation */
+  border-right: 1px solid #444; /* The typwriter cursor */
+  white-space: nowrap; /* Keeps the content on a single line */
+  margin: 0 auto; /* Gives that scrolling effect as the typing happens */
+    display:inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    vertical-align:bottom;
+  animation: 
+    typing 3.5s steps(64, end),
+    blink-caret .75s step-end infinite;
 }
 
-@-webkit-keyframes glitter {
-    0% { -webkit-transform: scale(1.0); opacity: 1; }
-    100% { -webkit-transform: scale(0.5); opacity: 0; }
-}
-@-moz-keyframes glitter {
-    0% { -moz-transform: scale(1.0); opacity: 1; }
-    100% { -moz-transform: scale(0.5); opacity: 0; }
+@-webkit-keyframes pulsate {
+    0% { 
+        opacity: 0.5;
+    }
+    50% { 
+        opacity: 1.0;
+    }
+    100% { 
+        opacity: 0.5;
+    }
 }

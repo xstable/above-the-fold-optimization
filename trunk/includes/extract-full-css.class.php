@@ -11,7 +11,6 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-
 class Abovethefold_ExtractFullCss {
 
 	/**
@@ -34,15 +33,6 @@ class Abovethefold_ExtractFullCss {
 
 		if ($this->CTRL->disabled) {
 			return; // above the fold optimization disabled for area / page
-		}
-
-		if (!$this->CTRL->curl_support()) {
-			
-			/**
-			 * cURL or file_get_contents not available
-			 */
-			$this->CTRL->admin->set_notice('PHP <a href="http://php.net/manual/en/book.curl.php" target="_blank">lib cURL</a> should be installed or <a href="http://php.net/manual/en/filesystem.configuration.php" target="_blank">allow_url_fopen</a> should be enabled for full CSS extraction.', 'ERROR');
-			trigger_error('PHP <a href="http://php.net/manual/en/book.curl.php" target="_blank">lib cURL</a> should be installed or <a href="http://php.net/manual/en/filesystem.configuration.php" target="_blank">allow_url_fopen</a> should be enabled for full CSS extraction.',E_USER_ERROR);
 		}
 
 		// output buffer
@@ -93,7 +83,8 @@ class Abovethefold_ExtractFullCss {
         	}
         }
 
-		$siteurl = get_option('siteurl');
+		$siteurl = trailingslashit(home_url());
+		$siteurlhost = parse_url($siteurl,PHP_URL_HOST);
 
 		/**
 		 * Load HTML into DOMDocument
@@ -111,6 +102,7 @@ class Abovethefold_ExtractFullCss {
 		$csscode = array();
 
 		$cssfiles = array();
+		$store_cssfiles = ((isset($_REQUEST['output']) && strtolower($_REQUEST['output']) === 'print') || $this->CTRL->view === 'abtf-buildtool-css');
 		$reflog = array();
 
 		$remove = array();
@@ -157,7 +149,9 @@ class Abovethefold_ExtractFullCss {
 					} else {
 						$url = "http:".$url;
 					}
-				} else if ((strpos($url,'//')===false) && (strpos($url,parse_url($siteurl,PHP_URL_HOST))===false)) {
+				} else if (strpos($url,'/')===0) {
+					$url = rtrim($siteurl,'/') . $url;
+				} else if ((strpos($url,'//')===false) && (strpos($url,$siteurlhost)===false)) {
 					$url = $siteurl.$url;
 				}
 
@@ -169,18 +163,33 @@ class Abovethefold_ExtractFullCss {
 
 				/**
 				 * External URL
-				 *
 				 */
-				if (@parse_url($url,PHP_URL_HOST)!==parse_url($siteurl,PHP_URL_HOST)) {
+				$fileurl = @parse_url($url);
 
-					// cURL request
-					$css = $this->CTRL->curl_get($url);
+				if ($fileurl['host']!==$siteurlhost) {
+
+					// get CSS code
+					$css = $this->CTRL->remote_get($url);
 					if (trim($css) === '') {
 						continue 1;
 					}
 
 					if ($files && !in_array(md5($url),$files)) {
 						continue 1;
+					}
+
+					if (preg_match('|url\s*\(|Ui',$css)) {
+
+						// convert root-relative to absolute urls
+						$css = preg_replace('/url\(\s*[\'"]?\/([^\/][^\)]+)[\'"]?\s*\)/i', 'url(' . $fileurl['scheme'] . '://' . $fileurl['host'] . '/$1)', $css);
+
+						// convert relative to absolute urls
+						$basename = basename($fileurl['path']);
+						$path = str_replace($basename,'',$fileurl['path']);
+						if (!$path || $path === '/') {
+							$path = '/';
+						}
+						$css = preg_replace('/url\(\s*[\'"]?(?!(http|https):)([a-z0-9\.][^\)]+)[\'"]?\s*\)/i', 'url(' . $fileurl['scheme'] . '://' . $fileurl['host'] . $path . '$2)', $css);
 					}
 
 					$csscode[] = array($media,$css);
@@ -196,10 +205,24 @@ class Abovethefold_ExtractFullCss {
 					// read local file
 					$css = file_get_contents($path);
 
+					if (preg_match('|url\s*\(|Ui',$css)) {
+
+						// convert root-relative to absolute urls
+						$css = preg_replace('/url\(\s*[\'"]?\/([^\/][^\)]+)[\'"]?\s*\)/i', 'url(' . $fileurl['scheme'] . '://' . $fileurl['host'] . '/$1)', $css);
+
+						// convert relative to absolute urls
+						$basename = basename($fileurl['path']);
+						$path = str_replace($basename,'',$fileurl['path']);
+						if (!$path || $path === '/') {
+							$path = '/';
+						}
+						$css = preg_replace('/url\(\s*[\'"]?(?!(http|https|data):)([a-z0-9\.][^\)]+)[\'"]?\s*\)/i', 'url(' . $fileurl['scheme'] . '://' . $fileurl['host'] . $path . '$2)', $css);
+					}
+
 					$csscode[] = array($media,$css);
 				}
 
-				if (isset($_REQUEST['output']) && strtolower($_REQUEST['output']) === 'print') {
+				if ($store_cssfiles) {
 
 					$cssfiles[] = array(
 						'src' => $url,
@@ -257,7 +280,7 @@ class Abovethefold_ExtractFullCss {
 
 			$csscode[] = array($media,$code);
 
-            if (isset($_REQUEST['output']) && strtolower($_REQUEST['output']) === 'print') {
+            if ($store_cssfiles) {
 
 				$cssfiles[] = array(
 					'src' => md5($code),
@@ -284,6 +307,13 @@ class Abovethefold_ExtractFullCss {
 
 		foreach($remove as $style) {
 			$style->parentNode->removeChild($style);
+		}
+
+		/**
+		 * Build Tool CSS JSON output
+		 */
+		if ($this->CTRL->view === 'abtf-buildtool-css') {
+			return "--FULL-CSS-JSON--\n" . json_encode($cssfiles) . "\n--FULL-CSS-JSON--";
 		}
 
 		$output = 'EXTRACT-CSS-' . md5(SECURE_AUTH_KEY . AUTH_KEY);

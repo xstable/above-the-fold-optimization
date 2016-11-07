@@ -194,8 +194,8 @@ if ($conditionalcss_enabled) {
 		<div class="menu-item-bar criticalcss-edit-header" rel="<?php print htmlentities($condition_hash,ENT_COMPAT,'utf-8'); ?>">
 			<div class="menu-item-handle" style="width:auto!important;cursor: pointer;">
 				<span class="item-title">
-					<span class="menu-item-title"><?php print $cCSS['name']; ?></span> 
-					<span class="is-submenu" ><?php if (trim($inlinecss) !== '') { print '<span>'.size_format(strlen($inlinecss),2).'</span>'; } else { print '<span style="color:#f1b70a;">empty</span>';} ?> <span style="float:right;">Weight: <?php print $cCSS['weight']; ?></span></span>
+					<span class="menu-item-title"><?php print htmlentities($cCSS['name'],ENT_COMPAT,'utf-8'); ?></span> 
+					<span class="is-submenu" ><?php if (trim($inlinecss) !== '') { print '<span>'.size_format(strlen($inlinecss),2).'</span>'; } else { print '<span style="color:#f1b70a;">empty</span>';} ?> <span style="float:right;">Weight: <?php if (isset($cCSS['weight'])) { print $cCSS['weight']; } else { print '1'; } ?></span></span>
 					<span class="is-submenu loading-editor" style="display:none;">
 						<span style="color:#ea4335;">Loading editor...</span>
 					</span>

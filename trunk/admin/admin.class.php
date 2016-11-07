@@ -35,6 +35,11 @@ class Abovethefold_Admin {
 	public $settings;
 
 	/**
+	 * Google language code
+	 */
+	public $google_lgcode;
+
+	/**
 	 * Tabs
 	 */
 	public $tabs = array(
@@ -43,6 +48,7 @@ class Abovethefold_Admin {
     	'javascript' => 'Javascript',
     	'proxy' => 'Proxy',
     	'settings' => 'Settings',
+    	'build-tool' => 'Build Tool',
 		'compare' => 'Quality Test'
     );
 
@@ -67,6 +73,20 @@ class Abovethefold_Admin {
 		 */
 		if (is_admin()) {
 
+			/**
+			 * lgcode for Google Documentation links
+			 */
+			$lgcode = strtolower(get_locale());
+			if (strpos($lgcode,'_') !== false) {
+				$lgparts = explode('_',$lgcode);
+				$lgcode = $lgparts[0];
+			}
+			if ($lgcode === 'en') {
+				$lgcode = '';
+			}
+
+			$this->google_lgcode = $lgcode;
+
 			// Hook in the admin options page
 			$this->CTRL->loader->add_action('admin_menu', $this, 'admin_menu',30);
 
@@ -83,6 +103,17 @@ class Abovethefold_Admin {
 	        // Update body class
 			$this->CTRL->loader->add_filter( 'admin_body_class', $this, 'admin_body_class' );
 
+			// AJAX page search
+			$this->CTRL->loader->add_action( 'wp_ajax_abtf_page_search', $this, 'ajax_page_search' );
+
+			/**
+			 * Delete page options cache on update
+			 */
+			$this->CTRL->loader->add_action( 'save_post', $this, 'delete_pageoptions_cache' );
+			$this->CTRL->loader->add_action( 'edited_terms', $this, 'delete_pageoptions_cache' );
+			// WooCommerce
+			$this->CTRL->loader->add_action( 'create_product_cat', $this, 'delete_pageoptions_cache' );
+
 			/**
 			 * Load dependencies
 			 */
@@ -91,6 +122,7 @@ class Abovethefold_Admin {
 			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/admin.javascript.class.php';
 			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/admin.proxy.class.php';
 			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/admin.settings.class.php';
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/admin.build-tool.class.php';
 
 			/**
 			 * Load critical CSS management
@@ -116,6 +148,11 @@ class Abovethefold_Admin {
 			 * Load settings management
 			 */
 			$this->settings = new Abovethefold_Admin_Settings( $CTRL );
+
+			/**
+			 * Load settings management
+			 */
+			$this->buildtool = new Abovethefold_Admin_BuildTool( $CTRL );
 
 		}
 
@@ -245,10 +282,21 @@ class Abovethefold_Admin {
 	        )
 	    ) );
 
+		/**
+		 * Compare Critical CSS vs Full CSS
+		 */
+		$admin_bar->add_node( array(
+			'parent' => 'abovethefold-top',
+			'id' => 'abovethefold-tools-compare',
+			'title' => __( 'Critical CSS Quality Test', 'abovethefold' ),
+			'href' => $this->CTRL->view_url('compare-abtf'),
+			'meta' => array( 'title' => __( 'Critical CSS Quality Test', 'abovethefold' ), 'target' => '_blank' )
+		) );
+
 		$admin_bar->add_node( array(
 			'parent' => 'abovethefold-top',
 			'id' => 'abovethefold-tools',
-			'title' => __( 'ABTF Tools', 'abovethefold' )
+			'title' => __( 'Other Tools', 'abovethefold' )
 		) );
 
 		if (is_admin()
@@ -261,26 +309,13 @@ class Abovethefold_Admin {
 		}
 
 		/**
-		 * Compare Critical CSS vs Full CSS
-		 */
-		$compareurl = preg_replace('|\#.*$|Ui','',$currenturl) . ((strpos($currenturl,'?') !== false) ? '&' : '?') . 'compare-abtf=' . md5(SECURE_AUTH_KEY . AUTH_KEY);
-		$admin_bar->add_node( array(
-			'parent' => 'abovethefold-tools',
-			'id' => 'abovethefold-tools-compare',
-			'title' => __( 'Critical CSS Quality Test', 'abovethefold' ),
-			'href' => $compareurl,
-			'meta' => array( 'title' => __( 'Critical CSS Quality Test', 'abovethefold' ), 'target' => '_blank' )
-		) );
-
-		/**
 		 * Extract Full CSS
 		 */
-		$extracturl = preg_replace('|\#.*$|Ui','',$currenturl) . ((strpos($currenturl,'?') !== false) ? '&' : '?') . 'extract-css=' . md5(SECURE_AUTH_KEY . AUTH_KEY) . '&output=print';
 		$admin_bar->add_node( array(
 			'parent' => 'abovethefold-tools',
 			'id' => 'abovethefold-tools-extract',
 			'title' => __( 'Extract Full CSS', 'abovethefold' ),
-			'href' => $extracturl,
+			'href' => $this->CTRL->view_url('extract-css',array('output' => 'print')),
 			'meta' => array( 'title' => __( 'Extract Full CSS', 'abovethefold' ), 'target' => '_blank' )
 		) );
 		/**
@@ -303,7 +338,7 @@ class Abovethefold_Admin {
 			'parent' => 'abovethefold',
 			'id' => 'abovethefold-check-pagespeed-scores',
 			'title' => __( 'Google PageSpeed Scores', 'abovethefold' ),
-			'href' => 'https://testmysite.thinkwithgoogle.com/?url='.urlencode($currenturl).'',
+			'href' => 'https://testmysite.thinkwithgoogle.com/?url='.urlencode($currenturl) . '&hl=' . $this->google_lgcode,
 			'meta' => array( 'title' => __( 'Google PageSpeed Scores', 'abovethefold' ), 'target' => '_blank' )
 		) );
 
@@ -334,21 +369,21 @@ class Abovethefold_Admin {
 			'parent' => 'abovethefold-check-google',
 			'id' => 'abovethefold-check-pagespeed',
 			'title' => __( 'Google PageSpeed Insights', 'abovethefold' ),
-			'href' => 'https://developers.google.com/speed/pagespeed/insights/?url='.urlencode($currenturl).'',
+			'href' => 'https://developers.google.com/speed/pagespeed/insights/?url='.urlencode($currenturl) . '&hl=' . $this->google_lgcode,
 			'meta' => array( 'title' => __( 'Google PageSpeed Insights', 'abovethefold' ), 'target' => '_blank' )
 		) );
 		$admin_bar->add_node( array(
 			'parent' => 'abovethefold-check-google',
 			'id' => 'abovethefold-check-google-mobile',
 			'title' => __( 'Google Mobile Test', 'abovethefold' ),
-			'href' => 'https://www.google.com/webmasters/tools/mobile-friendly/?url='.urlencode($currenturl).'',
+			'href' => 'https://www.google.com/webmasters/tools/mobile-friendly/?url='.urlencode($currenturl) . '&hl=' . $this->google_lgcode,
 			'meta' => array( 'title' => __( 'Google Mobile Test', 'abovethefold' ), 'target' => '_blank' )
 		) );
 		$admin_bar->add_node( array(
 			'parent' => 'abovethefold-check-google',
 			'id' => 'abovethefold-check-google-malware',
 			'title' => __( 'Google Malware & Security', 'abovethefold' ),
-			'href' => 'https://www.google.com/transparencyreport/safebrowsing/diagnostic/index.html#url='.urlencode(str_replace('www.','',parse_url($currenturl, PHP_URL_HOST))),
+			'href' => 'https://www.google.com/transparencyreport/safebrowsing/diagnostic/index.html?hl=' . $this->google_lgcode . '#url='.urlencode(str_replace('www.','',parse_url($currenturl, PHP_URL_HOST))),
 			'meta' => array( 'title' => __( 'Google Malware & Security', 'abovethefold' ), 'target' => '_blank' )
 		) );
 		$admin_bar->add_node( array(
@@ -432,6 +467,195 @@ class Abovethefold_Admin {
 	}
 
 	/**
+	 * Return optgroup json for page search
+	 */
+	public function page_search_optgroups() {
+
+		$optgroups = array();
+
+		$optgroups[] = array(
+			'value' => 'posts',
+			'label' => __('Posts')
+		);
+		$optgroups[] = array(
+			'value' => 'pages',
+			'label' => __('Pages')
+		);
+		$optgroups[] = array(
+			'value' => 'categories',
+			'label' => __('Categories')
+		);
+		if ( class_exists( 'WooCommerce' ) ) {
+			$optgroups[] = array(
+				'value' => 'woocommerce',
+				'label' => __('WooCommerce')
+			);
+		}
+
+		return $optgroups;
+	}
+
+	/**
+	 * Delete page options cache
+	 */
+	public function delete_pageoptions_cache() {
+		update_option('abtf-pageoptions',array( 't' => 0, 'options' => array() ),false);
+		delete_option('abtf-pageoptions');
+	}
+
+	/**
+	 * Return all page options
+	 */
+	public function page_search_options() {
+
+		/**
+		 * Try cache
+		 *
+		 * Options are cleared on page / post / category update
+		 */
+		$refresh_interval = 3600;
+		$pageoptions = get_option('abtf-pageoptions');
+		if ($pageoptions && is_array($pageoptions) && isset($pageoptions['t'])) {
+			if ($pageoptions['t'] > (time() - $refresh_interval)) {
+				return $pageoptions['options'];
+			}
+		}
+
+		/**
+		 * Query database
+		 */
+		/**
+		 * Paths
+		 */
+		$pageoptions = array();
+
+		// root
+		$pageoptions[] = array(
+			'value' => home_url(),
+			'name' => 'Home Page (index)'
+		);
+
+		$post_types = get_post_types();
+		foreach ($post_types as $pt) {
+			if (in_array($pt,array('revision','nav_menu_item'))) {
+				continue 1;
+			}
+
+			// Get random post
+			$args = array( 'post_type' => $pt, 'posts_per_page' => -1 );
+			query_posts($args);
+			if (have_posts()) {
+				while (have_posts()) {
+					the_post();
+					switch($pt) {
+						case "post":
+							$pageoptions[] = array(
+								'class' => 'posts',
+								'value' => get_permalink($wp_query->post->ID),
+								'name' => get_the_ID() . '. ' . str_replace(home_url(),'',get_permalink(get_the_ID())) . ' - ' . get_the_title()
+							);
+						break;
+						case "product":
+							$pageoptions[] = array(
+								'class' => 'woocommerce',
+								'value' => get_permalink(get_the_ID()),
+								'name' => get_the_ID() . '. ' . str_replace(home_url(),'',get_permalink(get_the_ID())) . ' - ' . get_the_title()
+							);
+						break;
+						default:
+							$pageoptions[] = array(
+								'class' => 'pages',
+								'value' => get_permalink(get_the_ID()),
+								'name' => get_the_ID() . '. ' . str_replace(home_url(),'',get_permalink(get_the_ID())) . ' - ' . get_the_title()
+							);
+						break;
+					}
+				}
+			}
+		}
+
+		$taxonomies = get_taxonomies();
+		if (!empty($taxonomies)) {
+			foreach($taxonomies as $taxonomy) {
+				switch($taxonomy) {
+					case "category":
+					case "post_tag":
+					case "product_cat":
+					case "product_brand":
+						$terms = get_terms($taxonomy, array(
+						    'orderby'    => 'title',
+						    'order'      => 'ASC',
+							'hide_empty' => false
+						));
+						if ($terms) {
+							foreach($terms as $term) {
+								switch($taxonomy) {
+									case "product_cat":
+									case "product_brand":
+										$pageoptions[] = array(
+											'class' => 'woocommerce',
+											'value' => get_term_link( $term->slug, $taxonomy ),
+											'name' => $term->term_id.'. ' . str_replace(home_url(),'',get_category_link( $term->term_id )) . ' - ' . $term->name
+										);
+									break;
+									default:
+										$pageoptions[] = array(
+											'class' => 'categories',
+											'value' => get_category_link( $term->term_id ),
+											'name' => $term->term_id.'. ' . str_replace(home_url(),'',get_category_link( $term->term_id )) . ' - ' . $term->name
+										);
+									break;
+								}
+							}
+						}
+					break;
+					default:
+						
+					break;
+				}
+			}
+		}
+
+		update_option('abtf-pageoptions',array( 't' => time(), 'options' => $pageoptions ),false);
+
+		return $pageoptions;
+	}
+
+	/**
+	 * Return options for page selection menu
+	 */
+	public function ajax_page_search() {
+		global $wpdb; // this is how you get access to the database
+
+		$query = (isset($_POST['query'])) ? trim($_POST['query']) : '';
+		$limit = (isset($_POST['maxresults']) && intval($_POST['maxresults']) > 10 && intval($_POST['maxresults']) < 30) ? intval($_POST['maxresults']) : 10;
+
+		// get page options
+		$options = $this->page_search_options();
+
+		$result = array();
+
+		$count = 0;
+		foreach ($options as $option) {
+			if (stripos($option['name'],$query) !== false) {
+				$result[] = $option;
+				$count++;
+				if ($count === $limit) {
+					break;
+				}
+			}
+		}
+
+		$json = json_encode($result);
+
+		header('Content-Type: application/json');
+		header('Content-Length: ' . strlen($json));
+		print $json;
+
+		wp_die(); // this is required to terminate immediately and return a proper response
+	}
+
+	/**
 	 * Clear page cache with notice
 	 */
 	public function clear_pagecache( $notice = true ) {
@@ -487,6 +711,10 @@ class Abovethefold_Admin {
 		if (!is_array($options)) { $options = array(); }
 
 ?>
+<script>
+// pagesearch optgroups
+window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_optgroups()); ?>;
+</script>
 <div class="wrap">
 <h1><?php _e('Above The Fold Optimization', 'abovethefold') ?></h1>
 </div>
@@ -500,17 +728,7 @@ class Abovethefold_Admin {
 			$tab = 'criticalcss';
 		}
 
-		/**
-		 * lgcode for Google Documentation links
-		 */
-		$lgcode = strtolower(get_locale());
-		if (strpos($lgcode,'_') !== false) {
-			$lgparts = explode('_',$lgcode);
-			$lgcode = $lgparts[0];
-		}
-		if ($lgcode === 'en') {
-			$lgcode = '';
-		}
+		$lgcode = $this->google_lgcode;
 
 		// print tabs
         echo '<div id="icon-themes" class="icon32"><br></div>';
@@ -534,6 +752,7 @@ class Abovethefold_Admin {
 			case "settings":
 			case "extract":
 			case "compare":
+			case "build-tool":
 				require_once('admin.'.$tab.'.inc.php');
 			break;
 		}
@@ -582,7 +801,7 @@ class Abovethefold_Admin {
 			</div>
 			<?php
 
-			update_option( 'abovethefold_notices', $persisted_notices );
+			update_option( 'abovethefold_notices', $persisted_notices, false );
 		}
 
 	}
@@ -603,7 +822,7 @@ class Abovethefold_Admin {
 				'text' => $notice,
 				'type' => $type
 			));
-			update_option( 'abovethefold_notices', $notices );
+			update_option( 'abovethefold_notices', $notices, false );
 		}
 
 	}
@@ -619,7 +838,7 @@ class Abovethefold_Admin {
 
 		if (!defined('WPABTF_VERSION') || WPABTF_VERSION !== $current_version) {
 
-			update_option( 'wpabtf_version', WPABTF_VERSION );
+			update_option( 'wpabtf_version', WPABTF_VERSION, false );
 
 			/**
 			 * Pre 2.5.0 update
