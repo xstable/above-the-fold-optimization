@@ -113,7 +113,7 @@
 							<p><strong>Step 2:</strong> create a Critical CSS Task Package</p>
 							<p><strong>Step 3:</strong> start a command line prompt or SSH shell, navigate to <code>/wp-content/themes/THEME_NAME/abovethefold/</code> and run the task, e.g. <code>gulp <strong class="gulp-task-name">task-name</strong></code>.</p>
 
-							<p>Test the quality of the created critical path CSS using the <a href="<?php print add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'compare' ), admin_url( 'admin.php' ) ); ?>">Critical CSS Quality Test</a>.</p>
+							<p>Test the quality of the created critical path CSS using the <a href="<?php print add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'compare' ), admin_url( 'admin.php' ) ); ?>">Critical CSS Quality Test</a> and optionally use the file <code>extra.css</code> to fix problems in the generated Critical Path CSS.</p>
 
 							<h1 style="padding-bottom:0px;">Installation<a name="installation">&nbsp;</a></h1>
 
