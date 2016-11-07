@@ -213,10 +213,10 @@ class Abovethefold_Admin {
 		}
 
 		// add general admin javascript
-		wp_enqueue_script( 'abtf_admincp', plugin_dir_url( __FILE__ ) . 'js/admincp.min.js', array( 'jquery' ) );
+		wp_enqueue_script( 'abtf_admincp', plugin_dir_url( __FILE__ ) . 'js/admincp.min.js', array( 'jquery' ), WPABTF_VERSION );
 
 		// add general admin CSS
-		wp_enqueue_style( 'abtf_admincp', plugin_dir_url( __FILE__ ) . 'css/admincp.min.css' );
+		wp_enqueue_style( 'abtf_admincp', plugin_dir_url( __FILE__ ) . 'css/admincp.min.css', false, WPABTF_VERSION );
 
 	}
 
