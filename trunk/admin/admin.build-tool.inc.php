@@ -105,7 +105,7 @@
 
 							<br /><br />
 							<h1 style="padding-bottom:0px;">How to use<a name="howtouse">&nbsp;</a></h1>
-							<p>This WordPress tool creates <em>Gulp.js Critical Path CSS Cenerator Task Packages</em> that makes it easy to create professional quality critical path CSS for individual pages.</p>
+							<p>This WordPress tool creates <em>Gulp.js Critical Path CSS Cenerator Task Packages</em> that make it easy to create professional quality critical path CSS for individual pages.</p>
 					
 							<strong>Getting started</strong>
 							
