@@ -69,7 +69,7 @@
 													<th scope="row">Async Force List</th>
 													<td>
 														<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[jsdelivery_async]"><?php if (isset($options['jsdelivery_async'])) { echo $this->CTRL->admin->newline_array_string($options['jsdelivery_async']); } ?></textarea>
-														<p class="description">Enter (parts of) scripts to force loading asynchronously. All other scripts are loaded in sequential blocking order if not specifically configured as async in HTML.</p>
+														<p class="description">Enter (parts of) scripts to force to load async. All other scripts are loaded in sequential blocking order if not specifically configured as async in HTML.</p>
 														<p class="description">Example:
 															<ol style="margin:0px;padding:0px;padding-left:2em;margin-top:10px;">
 																<li>Script1: non-async [wait...]</li>
@@ -83,7 +83,7 @@
 													<th scope="row">Async Disabled List</th>
 													<td>
 														<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[jsdelivery_async_disabled]"><?php if (isset($options['jsdelivery_async_disabled'])) { echo $this->CTRL->admin->newline_array_string($options['jsdelivery_async_disabled']); } ?></textarea>
-														<p class="description">Enter (parts of) scripts to force loading blocking (non-async).</p>
+														<p class="description">Enter (parts of) scripts to force to load blocking (non-async).</p>
 													</td>
 												</tr>
 												<th scope="row">
