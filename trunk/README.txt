@@ -80,7 +80,7 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 2. CSS delivery optimization
 3. Google Web Font optimization
 4. Above The Fold Quality Test
-5. Gulp.js Critical CSS Generator Package Manager
+5. Gulp.js Critical CSS Generator Task Manager
 6. Full CSS Extraction
 7. Critical CSS Quality Test
 
