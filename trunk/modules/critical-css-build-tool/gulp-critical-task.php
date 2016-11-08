@@ -29,15 +29,15 @@ if (isset($settings['dimensions']) && !empty($settings['dimensions'])) {
 
 	// single dimension
 	if (count($settings['dimensions']) === 1) {
-		$width = $settings['dimensions'][0][0];
-		$height = $settings['dimensions'][0][1];
+		$width = intval($settings['dimensions'][0][0]);
+		$height = intval($settings['dimensions'][0][1]);
 	} else {
 
 		$dimensions = array();
 		foreach ($settings['dimensions'] as $dim) {
 			$dimensions[] = array(
-				'width' => $dim[0],
-				'height' => $dim[1]
+				'width' => intval($dim[0]),
+				'height' => intval($dim[1])
 			);
 		}
 	}

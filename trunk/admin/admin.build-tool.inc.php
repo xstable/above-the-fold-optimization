@@ -140,7 +140,7 @@
 ?>
 								<button type="submit" name="download_package" class="button button-small">Download package.json &amp; gulpfile.js</button>
 							</p>
-							<p><strong>Step 2:</strong> start a command line prompt (or SSH shell) and navigate to <code>/wp-content/themes/THEME_NAME/abovethefold/</code>.</p>
+							<p><strong>Step 2:</strong> start a command line prompt or SSH shell and navigate to <code>/wp-content/themes/THEME_NAME/abovethefold/</code>.</p>
 							<p><strong>Step 3:</strong> run the command <code><strong>npm install</strong></code>.</p>
 							
 							<p><strong>If there are errors during installation you will not be able to get support via the WordPress support forums.</strong><br />Please seek help in platform or software related support forums, for example Github.</p>

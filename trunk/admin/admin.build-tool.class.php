@@ -38,7 +38,6 @@ class Abovethefold_Admin_BuildTool {
 			 * Handle form submissions
 			 */
 			$this->CTRL->loader->add_action('admin_post_abtf_create_critical_package', $this,  'create_critical_package');
-			//$this->CTRL->loader->add_action('admin_init', $this, 'create_critical_package');
 
 		}
 
@@ -448,9 +447,21 @@ class Abovethefold_Admin_BuildTool {
 		}
 
 		// extract full CSS
-		$css = @json_decode(trim(preg_replace('#^.*--FULL-CSS-JSON--(.*)--FULL-CSS-JSON--.*$#is','$1',$this->CTRL->remote_get($this->CTRL->view_url('abtf-buildtool-css', false, $url)))),true);
-		if (!is_array($css)) {
+		$cssdata = $this->CTRL->remote_get($this->CTRL->view_url('abtf-buildtool-css', false, $url));
+		if ($cssdata === '') {
 
+			// no CSS data
+			return false;
+		}
+
+		// extract JSON from result
+		$cssdata_parsed = explode('--FULL-CSS-JSON--',$cssdata);
+		if (trim($cssdata_parsed[1]) === '') {
+			return false;
+		}
+		
+		$css = @json_decode(trim($cssdata_parsed[1]),true);
+		if (!is_array($css)) {
 			// no CSS
 			return false;
 		}
