@@ -32,6 +32,11 @@ window['Abtf'] = (function(window) {
                 window['Abtf'].proxy_setup(cnf.proxy);
             }
 
+            // load scripts in header
+            if (this.cnf.js && !this.cnf.js[1]) {
+                this.js(this.cnf.js[0]);
+            }
+
             /**
              * Print reference in console
              */
@@ -82,6 +87,16 @@ window['Abtf'] = (function(window) {
                 }
 
                 this.css();
+            }
+
+            // load scripts in footer
+            if (this.cnf.js && this.cnf.js[1]) {
+
+                if (ABTFDEBUG) {
+                    console.log('Abtf.js()', 'footer start');
+                }
+
+                this.js(this.cnf.js[0]);
             }
 
             // Google Web Font Loader

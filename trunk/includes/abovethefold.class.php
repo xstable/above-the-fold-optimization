@@ -508,6 +508,14 @@ class Abovethefold {
 		$default_options['cssdelivery_position'] = 'header';
 
 		/**
+		 * Javascript Delivery Optimization
+		 */
+		$default_options['jsdelivery'] = false;
+		$default_options['jsdelivery_position'] = 'header';
+		$default_options['jsdelivery_jquery'] = true;
+		$default_options['jsdelivery_async_all'] = true;
+
+		/**
 		 * Web Font Optimization
 		 */
 		$default_options['gwfo'] = false;

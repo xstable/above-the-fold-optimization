@@ -120,7 +120,7 @@
 							<h4 style="margin-bottom:5px;margin-top:0px;">Requirements:<a name="requirements">&nbsp;</a></h4>
 							<ul style="list-style:disc;padding-left:2em;margin:0px;">
 								<li style="margin-bottom:2px;">A regular PC (Windows, Mac or Linux) with command line.</li>
-								<li style="margin-bottom:2px;">The installation of <a href="https://nodejs.org/" target="_blank">Node.js</a> (<a href="https://howtonode.org/how-to-install-nodejs" target="_blank">click here</a> for a how-to for all platforms).</li>
+								<li style="margin-bottom:2px;">The installation of <a href="https://nodejs.org/" target="_blank">Node.js</a> (<a href="https://encrypted.google.com/search?q=how+to+install+node.js&amp;hl=<?php print $lgcode; ?>" target="_blank">click here</a> for a how-to).</li>
 								<li style="margin-bottom:2px;">The installation of <a href="https://github.com/gulpjs/gulp/blob/master/docs/getting-started.md" target="_blank">Gulp.js</a> (<code>npm install --global gulp-cli</code>).</li>
 							</ul>
 

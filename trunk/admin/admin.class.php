@@ -895,7 +895,7 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
 			}
 
 			/**
-			 * Pre 2.5.10 update
+			 * Pre 2.5.11 update
 			 */
 			if (version_compare($current_version, '2.5.10', '<=')) {
 
@@ -949,6 +949,25 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
 					$options['gwfo_config_valid'] = true;
 
 					$update_options = true;
+				}
+			}
+
+			/**
+			 * Pre 2.6.1 update
+			 */
+			if (version_compare($current_version, '2.6.0', '<=')) {
+
+				if (!isset($options['jsdelivery'])) {
+					$options['jsdelivery'] = false;
+				}
+				if (!isset($options['jsdelivery_position'])) {
+					$options['jsdelivery_position'] = 'header';
+				}
+				if (!isset($options['jsdelivery_jquery'])) {
+					$options['jsdelivery_jquery'] = true;
+				}
+				if (!isset($options['jsdelivery_async_all'])) {
+					$options['jsdelivery_async_all'] = true;
 				}
 			}
 

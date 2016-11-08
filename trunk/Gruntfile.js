@@ -33,6 +33,17 @@ module.exports = function(grunt) {
 						'public/js/src/abovethefold.proxy.js'
 					],
 
+					// jQuery Stub
+					'public/js/abovethefold-jquery-stub.min.js' : [
+						'public/js/src/abovethefold.jquery-stub.js'
+					],
+
+					// Javascript optimization
+					'public/js/abovethefold-js.min.js' : [
+						'public/js/src/abovethefold.loadscript.js',
+						'public/js/src/abovethefold.js.js'
+					],
+
 					// CSS optimization
 					'public/js/abovethefold-css.min.js' : [
 						'public/js/src/abovethefold.css.js'
@@ -115,6 +126,17 @@ module.exports = function(grunt) {
 					// Proxy
 					'public/js/abovethefold-proxy.debug.min.js' : [
 						'public/js/src/abovethefold.proxy.js'
+					],
+
+					// Javascript optimization
+					'public/js/abovethefold-js.debug.min.js' : [
+						'public/js/src/abovethefold.loadscript.js',
+						'public/js/src/abovethefold.js.js'
+					],
+
+					// jQuery Stub
+					'public/js/abovethefold-jquery-stub.debug.min.js' : [
+						'public/js/src/abovethefold.jquery-stub.js'
 					],
 
 					// CSS optimization

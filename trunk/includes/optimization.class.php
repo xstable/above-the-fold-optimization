@@ -30,6 +30,16 @@ class Abovethefold_Optimization {
 	public $optimize_css_delivery = false;
 
 	/**
+	 * Optimize Javascript delivery
+	 */
+	public $optimize_js_delivery = false;
+
+	/**
+	 * Javascript replacement string
+	 */
+	public $js_replacement_string = 'ABTF_JS';
+
+	/**
 	 * Critical CSS replacement string
 	 */
 	public $criticalcss_replacement_string = 'ABTF_CRITICALCSS';
@@ -49,6 +59,11 @@ class Abovethefold_Optimization {
 		 * Optimize CSS delivery
 		 */
 		$this->optimize_css_delivery = (isset($this->CTRL->options['cssdelivery']) && intval($this->CTRL->options['cssdelivery']) === 1) ? true : false;
+
+		/**
+		 * Optimize Javascript loading
+		 */
+		$this->optimize_js_delivery = (isset($this->CTRL->options['jsdelivery']) && intval($this->CTRL->options['jsdelivery']) === 1) ? true : false;
 
 		/**
 		 * Extract Full CSS view
@@ -245,7 +260,10 @@ class Abovethefold_Optimization {
 					continue 1;
 				}
 
-				$scripts[] = array($srcOut[1],$out[0][$n]);
+				$scripts[] = array(
+					$srcOut[1],  // script
+					$out[0][$n] // tag
+				);
 			}
 		}
 
@@ -287,8 +305,8 @@ class Abovethefold_Optimization {
 			 *
 			 * Matching files will be ignored / left untouched in the HTML
 			 */
+			$ignorelist = array();
 			if (isset($this->CTRL->options['cssdelivery_ignore']) && !empty($this->CTRL->options['cssdelivery_ignore'])) {
-				$ignorelist = array();
 				foreach ($this->CTRL->options['cssdelivery_ignore'] as $row) {
 					$ignorelist[] = $row;
 				}
@@ -297,10 +315,10 @@ class Abovethefold_Optimization {
 			/**
 			 * Delete List
 			 *
-			 * Matching files will be deleted from the HTML
+			 * Matching files will be removed from the HTML
 			 */
+			$deletelist = array();
 			if (isset($this->CTRL->options['cssdelivery_remove']) && !empty($this->CTRL->options['cssdelivery_remove'])) {
-				$deletelist = array();
 				foreach ($this->CTRL->options['cssdelivery_remove'] as $row) {
 					$deletelist[] = $row;
 				}
@@ -334,7 +352,6 @@ class Abovethefold_Optimization {
 					if ($filterResult === 'delete') {
 
 						// delete from HTML
-						//$search_regex[] = '|<link[^>]+'.preg_quote($originalFile).'[^>]+>|is';
 						$search[] = $matchedTag;
 						$replace[] = '';
 						continue;
@@ -348,8 +365,8 @@ class Abovethefold_Optimization {
 					// match file against ignore list
 					if (!empty($ignorelist)) {
 						$ignore = false;
-						foreach ($ignorelist as $_file) {
-							if (strpos($file,$_file) !== false) {
+						foreach ($ignorelist as $ignored_file_string) {
+							if (strpos($file,$ignored_file_string) !== false) {
 								$ignore = true;
 								break 1;
 							}
@@ -362,8 +379,8 @@ class Abovethefold_Optimization {
 					// match file against delete list
 					if (!empty($deletelist)) {
 						$delete = false;
-						foreach ($deletelist as $_file) {
-							if (strpos($file,$_file) !== false) {
+						foreach ($deletelist as $deleted_file_string) {
+							if (strpos($file,$deleted_file_string) !== false) {
 								$delete = true;
 								break 1;
 							}
@@ -451,10 +468,69 @@ class Abovethefold_Optimization {
 			}
 		}
 
+
 		/**
-		 * Filter Javascript files
+		 * Javascript Delivery Optimization
 		 */
-		if ($this->CTRL->options['js_proxy']) {
+		if ($this->optimize_js_delivery) {
+
+			/**
+			 * Ignore List
+			 *
+			 * Matching files will be ignored / left untouched in the HTML
+			 */
+			$ignorelist = array();
+			if (isset($this->CTRL->options['jsdelivery_ignore']) && !empty($this->CTRL->options['jsdelivery_ignore'])) {
+				foreach ($this->CTRL->options['jsdelivery_ignore'] as $row) {
+					$ignorelist[] = $row;
+				}
+			}
+
+			/**
+			 * Delete List
+			 *
+			 * Matching files will be removed from the HTML
+			 */
+			$deletelist = array();
+			if (isset($this->CTRL->options['jsdelivery_remove']) && !empty($this->CTRL->options['jsdelivery_remove'])) {
+				foreach ($this->CTRL->options['jsdelivery_remove'] as $row) {
+					$deletelist[] = $row;
+				}
+			}
+
+			/**
+			 * Force Async for all scripts
+			 */
+			$forceAsync = (isset($this->CTRL->options['jsdelivery_async_all']) && intval($this->CTRL->options['jsdelivery_async_all']) === 1) ? true : false;
+
+			/**
+			 * Async Force List
+			 *
+			 * Matching files will be loaded asynchrounously
+			 */
+			$asynclist = array();
+			if (!$forceAsync && isset($this->CTRL->options['jsdelivery_async']) && !empty($this->CTRL->options['jsdelivery_async'])) {
+				foreach ($this->CTRL->options['jsdelivery_async'] as $row) {
+					$asynclist[] = $row;
+				}
+			}
+
+			/**
+			 * Async Disabled List
+			 *
+			 * Matching files will be loaded non-async (blocking)
+			 */
+			$async_disabledlist = array();
+			if (isset($this->CTRL->options['jsdelivery_async_disabled']) && !empty($this->CTRL->options['jsdelivery_async_disabled'])) {
+				foreach ($this->CTRL->options['jsdelivery_async_disabled'] as $row) {
+					$async_disabledlist[] = $row;
+				}
+			}
+
+			/**
+			 * Parse scripts
+			 */
+			$optimized_scripts = array();
 
 			$scripts = $this->extract_scripts($buffer);
 			if (!empty($scripts)) {
@@ -467,7 +543,7 @@ class Abovethefold_Optimization {
 					$originalFile = $file;
 					$originalTag = $matchedTag;
 
-					// apply filter for css file pre processing
+					// apply css file filter pre processing
 					$filterResult = apply_filters('abtf_jsfile_pre', $file);
 
 					// ignore file
@@ -486,12 +562,123 @@ class Abovethefold_Optimization {
 
 					// replace url
 					if ($filterResult && $filterResult !== $file) {
-						
-						// change file in original tag
-						$newTag = str_replace($originalFile,$filterResult,$originalTag);
-						
-						$search[] = $originalTag;
-						$replace[] = $newTag;
+						$file = $filterResult;
+					}
+
+					// match file against ignore list
+					if (!empty($ignorelist)) {
+						$ignore = false;
+						foreach ($ignorelist as $ignored_file_string) {
+							if (strpos($file,$ignored_file_string) !== false) {
+								$ignore = true;
+								break 1;
+							}
+						}
+						if ($ignore) {
+							continue;
+						}
+					}
+
+					// match file against delete list
+					if (!empty($deletelist)) {
+						$delete = false;
+						foreach ($deletelist as $deleted_file_string) {
+							if (strpos($file,$deleted_file_string) !== false) {
+								$delete = true;
+								break 1;
+							}
+						}
+						if ($delete) {
+							$search[] = $matchedTag;
+							$replace[] = '';
+							continue;
+						}
+					}
+
+					// async loading
+					$async = -1;
+
+					// match file against async disabled list
+					if (!empty($async_disabledlist)) {
+						foreach ($async_disabledlist as $disabled_file_string) {
+							if (strpos($file,$disabled_file_string) !== false) {
+								$async = false;
+								break 1;
+							}
+						}
+					}
+
+					if ($async === -1 && $forceAsync) {
+						$async = true;
+					}
+
+					// match file against async force list
+					if ($async === -1 && !$forceAsync && !empty($asynclist)) {
+						foreach ($asynclist as $async_file_string) {
+							if (strpos($file,$async_file_string) !== false) {
+								$async = true;
+								break 1;
+							}
+						}
+					}
+
+					// async script tag
+					if ($async === -1) {
+						$async = (strpos($matchedTag,' async') !== false || strpos($matchedTag,' defer') !== false);
+					}
+
+					// add file to style array to be processed
+					$optimized_scripts[] = array($file,$async);
+					
+					$search[] = $originalTag;
+					$replace[] = '';
+				}
+			}
+
+		} else {
+
+			/**
+			 * Filter Javascript files
+			 */
+			if ($this->CTRL->options['js_proxy']) {
+
+				$scripts = $this->extract_scripts($buffer);
+				if (!empty($scripts)) {
+
+					foreach ($scripts as $script) {
+
+						list($file,$matchedTag) = $script;
+						if (empty($file)) { continue 1; }
+
+						$originalFile = $file;
+						$originalTag = $matchedTag;
+
+						// apply filter for css file pre processing
+						$filterResult = apply_filters('abtf_jsfile_pre', $file);
+
+						// ignore file
+						if ($filterResult === 'ignore') {
+							continue;
+						}
+
+						// delete file
+						if ($filterResult === 'delete') {
+
+							// delete from HTML
+							$search[] = $matchedTag;
+							$replace[] = '';
+							continue;
+						}
+
+						// replace url
+						if ($filterResult && $filterResult !== $file) {
+							
+							// change file in original tag
+							$newTag = str_replace($originalFile,$filterResult,$originalTag);
+							
+							$search[] = $originalTag;
+							$replace[] = $newTag;
+						}
 					}
 				}
 			}
@@ -539,6 +726,39 @@ class Abovethefold_Optimization {
 			 */
 			$search[] = '"'.$this->criticalcss_replacement_string	.'"';
 			$replace[] = $styles_json;
+		}
+
+		/**
+		 * Javascript Delivery Optimization
+		 */
+		if ($this->optimize_js_delivery) {
+
+			/**
+			 * Remove duplicate Javascript files
+			 */
+			$reflog = array();
+			$scripts = array();
+			if (isset($optimized_scripts) && !empty($optimized_scripts)) {
+				foreach ($optimized_scripts as $script) {
+					if (isset($reflog[$script[0]])) {
+						continue 1;
+					}
+					$reflog[$script[0]] = 1;
+					$scripts[] = $script;
+				}
+			}
+
+			if (defined('JSON_UNESCAPED_SLASHES')) {
+				$scripts_json = json_encode($scripts, JSON_UNESCAPED_SLASHES);
+			} else {
+				$scripts_json = str_replace('\\/','/',json_encode($scripts));
+			}
+
+			/**
+			 * Update Javascript JSON configuration
+			 */
+			$search[] = '"'.$this->js_replacement_string	.'"';
+			$replace[] = $scripts_json;
 		}
 
 		// apply search replace filter
@@ -794,8 +1014,22 @@ class Abovethefold_Optimization {
 			$this->CTRL->proxy->client_jssettings($jssettings, $jsfiles, $jsdebug);
 		}
 
+		// jQuery ready stub
+		if (isset($this->CTRL->options['jsdelivery_jquery']) && $this->CTRL->options['jsdelivery_jquery']) {
+
+			$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-jquery-stub'.$jsdebug.'.min.js';
+		}
+
 		/**
-		 * Javascript for CSS delivery optimization
+		 * Javascript delivery optimization
+		 */
+		if ($this->optimize_js_delivery) {
+
+			$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-js'.$jsdebug.'.min.js';
+		}
+
+		/**
+		 * CSS delivery optimization
 		 */
 		if ($this->optimize_css_delivery) {
 
@@ -821,6 +1055,18 @@ class Abovethefold_Optimization {
 				$js .= ' ';
 			}
 			$inlineJS .= $js;
+		}
+
+		/**
+		 * Optimize Javascript delivery
+		 */
+		if ($this->optimize_js_delivery) {
+
+			$jssettings['js'] = array($this->js_replacement_string,($this->CTRL->options['jsdelivery_position'] === 'footer') ? true : false);
+		} else {
+
+			// do not load CSS
+			$headJS = false;
 		}
 
 		/**
@@ -937,6 +1183,9 @@ class Abovethefold_Optimization {
 		if (
 
 			$footCSS
+
+			// javascript in footer
+			|| ($this->CTRL->options['jsdelivery'] && $this->CTRL->options['jsdelivery_position'] === 'footer')
 
 			// google web font loader in footer
 			|| ($this->CTRL->options['gwfo'] && $this->CTRL->options['gwfo_loadposition'] === 'footer')

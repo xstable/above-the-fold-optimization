@@ -19,6 +19,87 @@
 
 
 						<table class="form-table">
+							<tr valign="top">
+								<th scope="row">Optimize Javascript Delivery</th>
+								<td>
+									<label><input type="checkbox" name="abovethefold[jsdelivery]" value="1"<?php if (!isset($options['jsdelivery']) || intval($options['jsdelivery']) === 1) { print ' checked'; } ?> onchange="if (jQuery(this).is(':checked')) { jQuery('.jsdeliveryoptions').show(); } else { jQuery('.jsdeliveryoptions').hide(); }"> Enabled</label>
+									<p class="description">When enabled, Javascript files are loaded asynchronously.</p>
+								</td>
+							</tr>
+							<tr valign="top" class="jsdeliveryoptions" style="<?php if (isset($options['jsdelivery']) && intval($options['jsdelivery']) !== 1) { print 'display:none;'; } ?>">
+								<td colspan="2" style="padding-top:0px;">
+
+									<div class="abtf-inner-table">
+
+										<h3 class="h"><span>Javascript Delivery Optimization</span></h3>
+										<div class="inside">
+											<table class="form-table">
+												<tr valign="top">
+													<th scope="row">Position</th>
+													<td>
+														<select name="abovethefold[jsdelivery_position]">
+															<option value="header"<?php if (!isset($options['jsdelivery_position']) || empty($options['jsdelivery_position']) || $options['jsdelivery_position'] === 'header') { print ' selected'; } ?>>Header</option>
+															<option value="footer"<?php if (isset($options['jsdelivery_position']) && $options['jsdelivery_position'] === 'footer') { print ' selected'; } ?>>Footer</option>
+														</select>
+														<p class="description">Select the position where the async loading of Javascript will start.</p>
+													</td>
+												</tr>
+												<tr valign="top">
+													<th scope="row">Ignore List</th>
+													<td>
+														<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[jsdelivery_ignore]"><?php if (isset($options['jsdelivery_ignore'])) { echo $this->CTRL->admin->newline_array_string($options['jsdelivery_ignore']); } ?></textarea>
+														<p class="description">Scripts to ignore in Javascript delivery optimization. One script per line. The files will be left untouched in the HTML.</p>
+													</td>
+												</tr>
+												<tr valign="top">
+													<th scope="row">Remove List</th>
+													<td>
+														<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[jsdelivery_remove]"><?php if (isset($options['jsdelivery_remove'])) { echo $this->CTRL->admin->newline_array_string($options['jsdelivery_remove']); } ?></textarea>
+														<p class="description">Scripts to remove from HTML. One script per line. This feature enables to include small plugin related scripts inline.</p>
+													</td>
+												</tr>
+												<th scope="row">
+													Force Async
+												</th>
+												<td>
+													<label><input type="checkbox" name="abovethefold[jsdelivery_async_all]" value="1"<?php if (!isset($options['jsdelivery_async_all']) || intval($options['jsdelivery_async_all']) === 1) { print ' checked'; } ?> onchange="if (!jQuery(this).is(':checked')) { jQuery('.jsdelivery_async_no_options').show(); } else { jQuery('.jsdelivery_async_no_options').hide(); }"> Enabled</label>
+													<p class="description">When enabled, all scripts are loaded asynchronously.</p>
+												</td>
+												<tr valign="top" class="jsdelivery_async_no_options" style="<?php if (!isset($options['jsdelivery_async_all']) || intval($options['jsdelivery_async_all']) === 1) { print 'display:none;'; } ?>">
+													<th scope="row">Async Force List</th>
+													<td>
+														<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[jsdelivery_async]"><?php if (isset($options['jsdelivery_async'])) { echo $this->CTRL->admin->newline_array_string($options['jsdelivery_async']); } ?></textarea>
+														<p class="description">Enter (parts of) scripts to force loading asynchronously. All other scripts are loaded in sequential blocking order if not specifically configured as async in HTML.</p>
+														<p class="description">Example:
+															<ol style="margin:0px;padding:0px;padding-left:2em;margin-top:10px;">
+																<li>Script1: non-async [wait...]</li>
+																<li>Script 2,3,4: async, Script 5: non-async [wait...]</li>
+																<li>Script 6</li>
+															</ol>
+														</p>
+													</td>
+												</tr>
+												<tr valign="top">
+													<th scope="row">Async Disabled List</th>
+													<td>
+														<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[jsdelivery_async_disabled]"><?php if (isset($options['jsdelivery_async_disabled'])) { echo $this->CTRL->admin->newline_array_string($options['jsdelivery_async_disabled']); } ?></textarea>
+														<p class="description">Enter (parts of) scripts to force loading blocking (non-async).</p>
+													</td>
+												</tr>
+												<th scope="row">
+													jQuery.ready Stub
+												</th>
+												<td>
+													<label><input type="checkbox" name="abovethefold[jsdelivery_jquery]" value="1"<?php if (isset($options['jsdelivery_jquery']) && intval($options['jsdelivery_jquery']) === 1) { print ' checked'; } ?>> Enabled</label>
+													<p class="description">When enabled, a jQuery.ready queue captures <code>jQuery(function($){ ... });</code> calls in inline scripts and executes them as soon as jQuery is loaded asynchronously.</p>
+												</td>
+											</table>
+										</div>
+
+									</div>
+
+								</td>
+							</tr>
 							
 							<tr valign="top">
 								<th scope="row">

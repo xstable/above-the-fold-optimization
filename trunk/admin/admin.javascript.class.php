@@ -59,6 +59,18 @@ class Abovethefold_Admin_Javascript {
 		// input
 		$input = (isset($_POST['abovethefold']) && is_array($_POST['abovethefold'])) ? $_POST['abovethefold'] : array();
 
+		/**
+		 * Optimize Javascript delivery
+		 */
+		$options['jsdelivery'] = (isset($input['jsdelivery']) && intval($input['jsdelivery']) === 1) ? true : false;
+		$options['jsdelivery_position'] = trim($input['jsdelivery_position']);
+		$options['jsdelivery_ignore'] = $this->CTRL->admin->newline_array($input['jsdelivery_ignore']);
+		$options['jsdelivery_remove'] = $this->CTRL->admin->newline_array($input['jsdelivery_remove']);
+		$options['jsdelivery_jquery'] = (isset($input['jsdelivery_jquery']) && intval($input['jsdelivery_jquery']) === 1) ? true : false;
+		$options['jsdelivery_async_all'] = (isset($input['jsdelivery_async_all']) && intval($input['jsdelivery_async_all']) === 1) ? true : false;
+		$options['jsdelivery_async'] = $this->CTRL->admin->newline_array($input['jsdelivery_async']);
+		$options['jsdelivery_async_disabled'] = $this->CTRL->admin->newline_array($input['jsdelivery_async_disabled']);
+
 		// Lazy Load Scripts
 		$options['lazyscripts_enabled'] = (isset($input['lazyscripts_enabled']) && intval($input['lazyscripts_enabled']) === 1) ? true : false;
 
