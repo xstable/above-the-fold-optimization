@@ -87,7 +87,7 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 == Changelog ==
 
 = 2.6.1 =
-* Added: javascript load optimization.
+* Added: javascript async load optimization.
 * Added: jQuery stub for async loading jQuery.
 
 = 2.6.0 =
