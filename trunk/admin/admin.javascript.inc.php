@@ -33,6 +33,9 @@
 
 										<h3 class="h"><span>Javascript Delivery Optimization</span></h3>
 										<div class="inside">
+
+										<p style="padding:5px;border:solid #efefef;background:#f1f1f1;"><span style="color:red;font-weight:bold;">Warning:</span> It may require some tweaking of the async settings to prevent javascript problems.</p>
+
 											<table class="form-table">
 												<tr valign="top">
 													<th scope="row">Position</th>
@@ -87,11 +90,11 @@
 													</td>
 												</tr>
 												<th scope="row">
-													jQuery.ready Stub
+													jQuery Stub
 												</th>
 												<td>
 													<label><input type="checkbox" name="abovethefold[jsdelivery_jquery]" value="1"<?php if (isset($options['jsdelivery_jquery']) && intval($options['jsdelivery_jquery']) === 1) { print ' checked'; } ?>> Enabled</label>
-													<p class="description">When enabled, a jQuery.ready queue captures <code>jQuery(function($){ ... });</code> calls in inline scripts and executes them as soon as jQuery is loaded asynchronously.</p>
+													<p class="description">When enabled, a queue captures basic jQuery functionality such as <code>jQuery(function($){ ... });</code> and <code>$(document).bind('ready')</code> in inline scripts. This feature enables to load jQuery async.</p>
 												</td>
 											</table>
 										</div>
