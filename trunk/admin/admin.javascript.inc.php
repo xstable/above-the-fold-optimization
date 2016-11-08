@@ -93,7 +93,7 @@
 													jQuery Stub
 												</th>
 												<td>
-													<label><input type="checkbox" name="abovethefold[jsdelivery_jquery]" value="1"<?php if (isset($options['jsdelivery_jquery']) && intval($options['jsdelivery_jquery']) === 1) { print ' checked'; } ?>> Enabled</label>
+													<label><input type="checkbox" name="abovethefold[jsdelivery_jquery]" value="1"<?php if (!isset($options['jsdelivery_jquery']) || intval($options['jsdelivery_jquery']) === 1) { print ' checked'; } ?>> Enabled</label>
 													<p class="description">When enabled, a queue captures basic jQuery functionality such as <code>jQuery(function($){ ... });</code> and <code>$(document).bind('ready')</code> in inline scripts. This feature enables to load jQuery async.</p>
 												</td>
 											</table>
