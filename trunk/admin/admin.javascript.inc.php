@@ -22,7 +22,7 @@
 							<tr valign="top">
 								<th scope="row">Optimize Javascript Delivery</th>
 								<td>
-									<label><input type="checkbox" name="abovethefold[jsdelivery]" value="1"<?php if (!isset($options['jsdelivery']) || intval($options['jsdelivery']) === 1) { print ' checked'; } ?> onchange="if (jQuery(this).is(':checked')) { jQuery('.jsdeliveryoptions').show(); } else { jQuery('.jsdeliveryoptions').hide(); }"> Enabled</label>
+									<label><input type="checkbox" name="abovethefold[jsdelivery]" value="1"<?php if (isset($options['jsdelivery']) && intval($options['jsdelivery']) === 1) { print ' checked'; } ?> onchange="if (jQuery(this).is(':checked')) { jQuery('.jsdeliveryoptions').show(); } else { jQuery('.jsdeliveryoptions').hide(); }"> Enabled</label>
 									<p class="description">When enabled, Javascript files are loaded asynchronously.</p>
 								</td>
 							</tr>
