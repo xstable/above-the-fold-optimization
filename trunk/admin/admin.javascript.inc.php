@@ -26,7 +26,7 @@
 									<p class="description">When enabled, Javascript files are loaded asynchronously.</p>
 								</td>
 							</tr>
-							<tr valign="top" class="jsdeliveryoptions" style="<?php if (isset($options['jsdelivery']) && intval($options['jsdelivery']) !== 1) { print 'display:none;'; } ?>">
+							<tr valign="top" class="jsdeliveryoptions" style="<?php if (isset($options['jsdelivery']) && intval($options['jsdelivery']) === 1) { print 'display:none;'; } ?>">
 								<td colspan="2" style="padding-top:0px;">
 
 									<div class="abtf-inner-table">
