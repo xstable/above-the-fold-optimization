@@ -21,7 +21,7 @@
 
     // script loaded, process callback queue
     var SCRIPT_LOADED = function() {
-        var queue = ONLOAD_QUEUE.splice(0);
+        var queue = ONLOAD_QUEUE.splice(0,ONLOAD_QUEUE.length);
         var l = queue.length;
         for (var i = 0; i < l; i++) {
             queue[i][0].apply(null, queue[i][1]);
@@ -281,53 +281,5 @@
         // start with first script
         loadScript(0);
     };
-
-    /**
-     * Object Watch Polyfill
-     */
-    // object.watch
-    if (!Object.prototype.watch) {
-        Object.defineProperty(Object.prototype, "watch", {
-              enumerable: false
-            , configurable: true
-            , writable: false
-            , value: function (prop, handler) {
-                var
-                  oldval = this[prop]
-                , newval = oldval
-                , getter = function () {
-                    return newval;
-                }
-                , setter = function (val) {
-                    oldval = newval;
-                    return newval = handler.call(this, prop, oldval, val);
-                }
-                ;
-                
-                if (delete this[prop]) { // can't watch constants
-                    Object.defineProperty(this, prop, {
-                          get: getter
-                        , set: setter
-                        , enumerable: true
-                        , configurable: true
-                    });
-                }
-            }
-        });
-    }
-
-    // object.unwatch
-    if (!Object.prototype.unwatch) {
-        Object.defineProperty(Object.prototype, "unwatch", {
-              enumerable: false
-            , configurable: true
-            , writable: false
-            , value: function (prop) {
-                var val = this[prop];
-                delete this[prop]; // remove accessors
-                this[prop] = val;
-            }
-        });
-    }
 
 })(window, window['Abtf'], Object);
