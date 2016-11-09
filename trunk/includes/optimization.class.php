@@ -271,6 +271,68 @@ class Abovethefold_Optimization {
 	}
 
 	/**
+	 * Get script dependencies
+	 */
+	public function wp_script_dependencies() {
+		global $wp_scripts;
+
+		$scriptdeps = array();
+		$dependencygroupreferences = array();
+		$dependencyreferences = array();
+
+		// load dependency references from WordPress scripts
+		foreach ($wp_scripts->done as $handle) {
+			if (isset($wp_scripts->registered[$handle]) && isset($wp_scripts->registered[$handle]->handle)) {
+
+				// Handle
+				$handle = (string) $wp_scripts->registered[$handle]->handle;
+				if (trim($handle) === '') {
+					continue 1;
+				}
+
+				$handleindex = array_search( $handle, $dependencyreferences );
+				if ($handleindex === false) {
+					$handleindex = count($dependencyreferences);
+					$dependencyreferences[$handleindex] = $handle;
+				}
+
+				$deps = array();
+				if (isset($wp_scripts->registered[$handle]->deps)) {
+					foreach ($wp_scripts->registered[$handle]->deps as $dep) {
+						if (trim($dep) === '') { continue; }
+
+						$depindex = array_search( $dep, $dependencyreferences );
+						if ($depindex === false) {
+							$depindex = count($dependencyreferences);
+							$dependencyreferences[$depindex] = $dep;
+						}
+
+						$deps[] = $depindex;
+
+						$scriptdepsrefs[] = array($depindex,$dep);
+					}
+				}
+
+				if (!isset($wp_scripts->registered[$handle]->src) || trim($wp_scripts->registered[$handle]->src) === '') {
+
+					// group reference
+					if (!empty($deps)) {
+						$dependencygroupreferences[$handleindex] = $deps;
+					}
+				} else {
+
+					$scriptdeps[str_replace(home_url(),'',$wp_scripts->registered[$handle]->src)] = array(
+						$handleindex,
+						$deps
+					);
+				}
+			}
+		}
+
+		return array($scriptdeps,$dependencyreferences,$dependencygroupreferences);
+	}
+
+	/**
 	 * Rewrite callback
 	 */
 	public function process_output_buffer($buffer) {
@@ -527,6 +589,15 @@ class Abovethefold_Optimization {
 				}
 			}
 
+			/** 
+			 * Load WordPRess dependencies
+			 */
+			if (isset($this->CTRL->options['jsdelivery_deps']) && $this->CTRL->options['jsdelivery_deps']) {
+				list($wp_script_deps,$wp_script_deprefs,$wp_script_depgroups) = $this->wp_script_dependencies();
+			} else {
+				$wp_script_deps = false;
+			}
+
 			/**
 			 * Parse scripts
 			 */
@@ -627,8 +698,24 @@ class Abovethefold_Optimization {
 						$async = (strpos($matchedTag,' async') !== false || strpos($matchedTag,' defer') !== false);
 					}
 
+					$handle = false;
+					$deps = false;
+
+					// check for dependencies
+					if ($wp_script_deps) {
+						foreach ($wp_script_deps as $script => $scriptdeps) {
+							if (strpos($file, $script) !== false) {
+
+								// found
+								$handle = $scriptdeps[0];
+								$deps = $scriptdeps[1];
+								break;
+							}
+						}
+					}
+
 					// add file to style array to be processed
-					$optimized_scripts[] = array($file,$async);
+					$optimized_scripts[] = array($file,$async,$handle,$deps);
 					
 					$search[] = $originalTag;
 					$replace[] = '';
@@ -748,10 +835,12 @@ class Abovethefold_Optimization {
 				}
 			}
 
+			$scripts_data = array($scripts,$wp_script_deprefs,$wp_script_depgroups);
+
 			if (defined('JSON_UNESCAPED_SLASHES')) {
-				$scripts_json = json_encode($scripts, JSON_UNESCAPED_SLASHES);
+				$scripts_json = json_encode($scripts_data, JSON_UNESCAPED_SLASHES);
 			} else {
-				$scripts_json = str_replace('\\/','/',json_encode($scripts));
+				$scripts_json = str_replace('\\/','/',json_encode($scripts_data));
 			}
 
 			/**

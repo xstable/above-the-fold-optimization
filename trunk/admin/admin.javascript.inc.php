@@ -23,7 +23,7 @@
 								<th scope="row">Optimize Javascript Delivery</th>
 								<td>
 									<label><input type="checkbox" name="abovethefold[jsdelivery]" value="1"<?php if (isset($options['jsdelivery']) && intval($options['jsdelivery']) === 1) { print ' checked'; } ?> onchange="if (jQuery(this).is(':checked')) { jQuery('.jsdeliveryoptions').show(); } else { jQuery('.jsdeliveryoptions').hide(); }"> Enabled</label>
-									<p class="description">When enabled, Javascript files are loaded asynchronously.</p>
+									<p class="description">When enabled, Javascript files are loaded asynchronously using an enhanced version of <a href="https://github.com/walmartlabs/little-loader" target="_blank">little-loader</a> from Walmart Labs (<a href="https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=Above%20The%20Fold%20Optimization" target="_blank">reference</a>).</p>
 								</td>
 							</tr>
 							<tr valign="top" class="jsdeliveryoptions" style="<?php if (!isset($options['jsdelivery']) || intval($options['jsdelivery']) !== 1) { print 'display:none;'; } ?>">
@@ -34,7 +34,7 @@
 										<h3 class="h"><span>Javascript Delivery Optimization</span></h3>
 										<div class="inside">
 
-										<p style="padding:5px;border:solid #efefef;background:#f1f1f1;"><span style="color:red;font-weight:bold;">Warning:</span> It may require some tweaking of the async settings to prevent javascript problems.</p>
+											<p style="padding:5px;border-bottom:solid #efefef;margin:0px;"><span style="color:red;font-weight:bold;">Warning:</span> It may require some tweaking of the settings to prevent javascript problems.</p>
 
 											<table class="form-table">
 												<tr valign="top">
@@ -61,13 +61,15 @@
 														<p class="description">Scripts to remove from HTML. One script per line. This feature enables to include small plugin related scripts inline.</p>
 													</td>
 												</tr>
-												<th scope="row">
-													Force Async
-												</th>
-												<td>
-													<label><input type="checkbox" name="abovethefold[jsdelivery_async_all]" value="1"<?php if (!isset($options['jsdelivery_async_all']) || intval($options['jsdelivery_async_all']) === 1) { print ' checked'; } ?> onchange="if (!jQuery(this).is(':checked')) { jQuery('.jsdelivery_async_no_options').show(); } else { jQuery('.jsdelivery_async_no_options').hide(); }"> Enabled</label>
-													<p class="description">When enabled, all scripts are loaded asynchronously.</p>
-												</td>
+												<tr valign="top">
+													<th scope="row">
+														Force Async
+													</th>
+													<td>
+														<label><input type="checkbox" name="abovethefold[jsdelivery_async_all]" value="1"<?php if (!isset($options['jsdelivery_async_all']) || intval($options['jsdelivery_async_all']) === 1) { print ' checked'; } ?> onchange="if (!jQuery(this).is(':checked')) { jQuery('.jsdelivery_async_no_options').show(); } else { jQuery('.jsdelivery_async_no_options').hide(); }"> Enabled</label>
+														<p class="description">When enabled, all scripts are loaded asynchronously.</p>
+													</td>
+												</tr>
 												<tr valign="top" class="jsdelivery_async_no_options" style="<?php if (!isset($options['jsdelivery_async_all']) || intval($options['jsdelivery_async_all']) === 1) { print 'display:none;'; } ?>">
 													<th scope="row">Async Force List</th>
 													<td>
@@ -87,6 +89,15 @@
 													<td>
 														<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[jsdelivery_async_disabled]"><?php if (isset($options['jsdelivery_async_disabled'])) { echo $this->CTRL->admin->newline_array_string($options['jsdelivery_async_disabled']); } ?></textarea>
 														<p class="description">Enter (parts of) scripts to force to load blocking (non-async).</p>
+													</td>
+												</tr>
+												<tr valign="top">
+													<th scope="row">
+														Abide Dependencies
+													</th>
+													<td>
+														<label><input type="checkbox" name="abovethefold[jsdelivery_deps]" value="1"<?php if (isset($options['jsdelivery_deps']) && intval($options['jsdelivery_deps']) === 1) { print ' checked'; } ?> > Enabled</label>
+														<p class="description">When enabled, scripts will be loaded sequential abiding the WordPress dependency configuration from <a href="https://developer.wordpress.org/reference/functions/wp_enqueue_script/" target="_blank">wp_enqueue_script()</a>.</p>
 													</td>
 												</tr>
 												<th scope="row">

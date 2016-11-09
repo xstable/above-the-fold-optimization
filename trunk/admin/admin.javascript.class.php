@@ -66,6 +66,7 @@ class Abovethefold_Admin_Javascript {
 		$options['jsdelivery_position'] = trim($input['jsdelivery_position']);
 		$options['jsdelivery_ignore'] = $this->CTRL->admin->newline_array($input['jsdelivery_ignore']);
 		$options['jsdelivery_remove'] = $this->CTRL->admin->newline_array($input['jsdelivery_remove']);
+		$options['jsdelivery_deps'] = (isset($input['jsdelivery_deps']) && intval($input['jsdelivery_deps']) === 1) ? true : false;
 		$options['jsdelivery_jquery'] = (isset($input['jsdelivery_jquery']) && intval($input['jsdelivery_jquery']) === 1) ? true : false;
 		$options['jsdelivery_async_all'] = (isset($input['jsdelivery_async_all']) && intval($input['jsdelivery_async_all']) === 1) ? true : false;
 		$options['jsdelivery_async'] = $this->CTRL->admin->newline_array($input['jsdelivery_async']);

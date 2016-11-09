@@ -44,6 +44,10 @@ The plugin contains several tools to optimize the delivery of CSS in the browser
 
 The plugin offers advanced options such as a render delay in milliseconds, the position to start CSS rendering (header or footer) and the removal of CSS files from the HTML. The plugin enables to capture and proxy external stylesheets for loading the files locally with optimized cache headers (see `External Resource Proxy`).
 
+### Javascript Load Optimization
+
+The plugin contains a tool to optimize loading of javascript via an enhanced version of [little-loader](https://github.com/walmartlabs/little-loader) from Wallart Labs ([reference](https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/)). The tool contains a jQuery Stub and enables async loading of all javascript, optionally abiding WordPress dependency configuration.
+
 ### Above The Fold Quality Tester
 
 The plugin contains a tool to test the quality of the above the fold (critical path CSS) rendering and to detect a flash of unstyled content ([FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content)).
@@ -64,6 +68,9 @@ The plugin contains a tool based on [jQuery Lazy Load XT](https://github.com/res
 
 The plugin contains a tool to optimize web fonts. The plugin automatically parses web font `@import` links in minified CSS files and `<link>` links in the HTML and loads the fonts via [Google Web Font Loader](https://github.com/typekit/webfontloader).
 
+### Gulp.js Critical CSS Generator Task Manager
+
+The plugin contains a tool to manage Critical CSS Generator tasks that optionally automatically updates WordPress Critical CSS. The tool is based on [critical](https://github.com/addyosmani/critical) (by a Google engineer) and makes it possible for designers and less experienced WordPress users to create professional quality Critical CSS in just a few seconds. The tool is intended to make it more efficient to maintain perfect quality Critical CSS.
 
 == Installation ==
 
@@ -85,6 +92,9 @@ The plugin contains a tool to optimize web fonts. The plugin automatically parse
 7. Gulp.js Critical CSS Generator Task Manager
 
 == Changelog ==
+
+= 2.6.2 =
+* Added: option to abide WordPress dependencies in javascript async load optimization.
 
 = 2.6.1 =
 * Added: javascript async load optimization.

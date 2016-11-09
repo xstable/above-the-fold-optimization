@@ -955,7 +955,7 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
 			/**
 			 * Pre 2.6.1 update
 			 */
-			if (version_compare($current_version, '2.6.0', '<=')) {
+			if (version_compare($current_version, '2.6.2', '<=')) {
 
 				if (!isset($options['jsdelivery'])) {
 					$options['jsdelivery'] = false;
@@ -966,9 +966,10 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
 				if (!isset($options['jsdelivery_jquery'])) {
 					$options['jsdelivery_jquery'] = true;
 				}
-				if (!isset($options['jsdelivery_async_all'])) {
-					$options['jsdelivery_async_all'] = true;
+				if (!isset($options['jsdelivery_deps'])) {
+					$options['jsdelivery_deps'] = true;
 				}
+				$update_options = true;
 			}
 
 			// remove old options
