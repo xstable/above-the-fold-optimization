@@ -277,7 +277,7 @@ class Abovethefold_Optimization {
 		global $wp_scripts;
 
 		$scriptdeps = array();
-		$dependencygroupreferences = array();
+		$dependencygroups = array();
 		$dependencyreferences = array();
 
 		// load dependency references from WordPress scripts
@@ -297,8 +297,22 @@ class Abovethefold_Optimization {
 				}
 
 				$deps = array();
-				if (isset($wp_scripts->registered[$handle]->deps)) {
-					foreach ($wp_scripts->registered[$handle]->deps as $dep) {
+				$handledeps = (isset($wp_scripts->registered[$handle]->deps) && is_array($wp_scripts->registered[$handle]->deps)) ? $wp_scripts->registered[$handle]->deps : array();
+
+				// jquery migrate is part of jquery group
+				if ($handle === 'jquery-migrate') {
+					// wait for jquery-core
+					$handledeps[] = 'jquery-core';
+				}
+
+				// admin-bar requires jquery
+				if ($handle === 'admin-bar') {
+					// wait for jquery
+					$handledeps[] = 'jquery';
+				}
+
+				if (!empty($handledeps)) {
+					foreach ($handledeps as $dep) {
 						if (trim($dep) === '') { continue; }
 
 						$depindex = array_search( $dep, $dependencyreferences );
@@ -317,7 +331,7 @@ class Abovethefold_Optimization {
 
 					// group reference
 					if (!empty($deps)) {
-						$dependencygroupreferences[$handleindex] = $deps;
+						$dependencygroups[$handleindex] = $deps;
 					}
 				} else {
 
@@ -329,7 +343,7 @@ class Abovethefold_Optimization {
 			}
 		}
 
-		return array($scriptdeps,$dependencyreferences,$dependencygroupreferences);
+		return array($scriptdeps,$dependencygroups,$dependencyreferences);
 	}
 
 	/**
@@ -593,7 +607,7 @@ class Abovethefold_Optimization {
 			 * Load WordPRess dependencies
 			 */
 			if (isset($this->CTRL->options['jsdelivery_deps']) && $this->CTRL->options['jsdelivery_deps']) {
-				list($wp_script_deps,$wp_script_deprefs,$wp_script_depgroups) = $this->wp_script_dependencies();
+				list($wp_script_deps,$wp_script_depgroups,$wp_script_deprefs) = $this->wp_script_dependencies();
 			} else {
 				$wp_script_deps = false;
 			}
@@ -835,7 +849,13 @@ class Abovethefold_Optimization {
 				}
 			}
 
-			$scripts_data = array($scripts,$wp_script_deprefs,$wp_script_depgroups);
+			$scripts_data = array($scripts);
+			if ($wp_script_deps === false) {
+				$scripts_data[] = false;
+			} else {
+				$scripts_data[] = $wp_script_depgroups;
+				$scripts_data[] = $wp_script_deprefs;
+			}
 
 			if (defined('JSON_UNESCAPED_SLASHES')) {
 				$scripts_json = json_encode($scripts_data, JSON_UNESCAPED_SLASHES);

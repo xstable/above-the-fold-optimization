@@ -44,9 +44,13 @@ The plugin contains several tools to optimize the delivery of CSS in the browser
 
 The plugin offers advanced options such as a render delay in milliseconds, the position to start CSS rendering (header or footer) and the removal of CSS files from the HTML. The plugin enables to capture and proxy external stylesheets for loading the files locally with optimized cache headers (see `External Resource Proxy`).
 
-### Javascript Load Optimization
+### Javascript Optimization
 
-The plugin contains a tool to optimize loading of javascript via an enhanced version of [little-loader](https://github.com/walmartlabs/little-loader) from Wallart Labs ([reference](https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/)). The tool contains a jQuery Stub and enables async loading of all javascript, optionally abiding WordPress dependency configuration.
+The plugin contains a tool to optimize loading of javascript via an enhanced version of [little-loader](https://github.com/walmartlabs/little-loader) from Walart Labs ([reference](https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/)). The tool contains a jQuery Stub and it enables async loading of all javascript files, optionally abiding WordPress dependency configuration.
+
+### Lazy Loading Javascript
+
+The plugin contains a tool based on [jQuery Lazy Load XT](https://github.com/ressio/lazy-load-xt#widgets) to lazy load javascript such as Facebook en Twitter social widgets.
 
 ### Above The Fold Quality Tester
 
@@ -59,10 +63,6 @@ The plugin enables the extraction of full CSS for use in Critical Path CSS gener
 ### External Resource Proxy
 
 The plugin contains a tool to localize (proxy) external javascript and CSS resources such as Google Analytics and Facebook SDK to load the files locally with optimized cache headers to pass the "[Leverage browser caching](https://developers.google.com/speed/docs/insights/LeverageBrowserCaching)" rule from Google PageSpeed Insights. The proxy is able to capture "script-injected" async scripts and stylesheets to solve the problem without further configuration.
-
-### Lazy Loading Javascript
-
-The plugin contains a tool based on [jQuery Lazy Load XT](https://github.com/ressio/lazy-load-xt#widgets) to lazy load scripts such as Facebook en Twitter social widgets.
 
 ### Web Font Optimization
 
@@ -86,12 +86,16 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 1. Critical CSS management
 2. CSS delivery optimization
 3. Google Web Font optimization
-4. Above The Fold Quality Test
-5. Critical CSS Quality Test
-6. Full CSS Extraction
-7. Gulp.js Critical CSS Generator Task Manager
+4. Javascript Optimization
+5. Above The Fold Quality Test
+6. Critical CSS Quality Test
+7. Full CSS Extraction
+8. Gulp.js Critical CSS Generator Task Manager
 
 == Changelog ==
+
+= 2.6.3 =
+* Improved: abide WordPress dependencies in javascript load optimization continues when dependencies are not met (with admin debug notice).
 
 = 2.6.2 =
 * Added: option to abide WordPress dependencies in javascript async load optimization.

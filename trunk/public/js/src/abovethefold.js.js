@@ -8,6 +8,29 @@
 
 (function(window, Abtf, Object) {
 
+    // active loading scripts
+    var LOADING_SCRIPTS_COUNT = 0;
+
+    // onload callback queue
+    var ONLOAD_QUEUE = [];
+
+    // queue callback to process when a script is loaded
+    var ON_SCRIPT_LOAD = function(fn,args) {
+        ONLOAD_QUEUE.push([fn,args]);
+    };
+
+    // script loaded, process callback queue
+    var SCRIPT_LOADED = function() {
+        var queue = ONLOAD_QUEUE.splice(0);
+        var l = queue.length;
+        for (var i = 0; i < l; i++) {
+            queue[i][0].apply(null, queue[i][1]);
+        }
+    };
+
+    // abide WordPress dependencies
+    var ABIDE_DEPENDENCIES = false;
+
     // dependency references
     var DEPENDENCIES = [];
 
@@ -80,9 +103,11 @@
 
         if (dependencies_ready === false) {
 
-            if (ABTFDEBUG) {
-                if (typeof DEPENDENCY_WAIT_NOTICE[script + ':' + wait_for] === 'undefined') {
-                    DEPENDENCY_WAIT_NOTICE[script + ':' + wait_for] = true;
+            if (LOADING_SCRIPTS_COUNT === 0) {
+
+                // no more loading scripts, presume dependency configuration error and continue loading script
+                
+                if (ABTFDEBUG) {
 
                     var depnames = [];
                     var l = deps.length;
@@ -90,17 +115,39 @@
                         depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
                     }
 
-                    console.info('Abtf.js() > wait for dependency', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' ('+DEPENDENCIES[wait_for_group]+')' : ''), script, depnames);
-               }
-            }
+                    console.error('Abtf.js() > dependency unmet and no more scripts loading', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' ('+DEPENDENCIES[wait_for_group]+')' : ''), script, depnames);
+                }
 
-            // try again
-            setTimeout(WAIT_FOR_DEPENDENCIES,0,script,deps,callback);
+                callback();
+                
+            } else {
+
+                if (ABTFDEBUG) {
+                    if (typeof DEPENDENCY_WAIT_NOTICE[script + ':' + wait_for] === 'undefined') {
+                        DEPENDENCY_WAIT_NOTICE[script + ':' + wait_for] = true;
+
+                        var depnames = [];
+                        var l = deps.length;
+                        for (var i = 0; i < l; i++) {
+                            depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
+                        }
+
+                        console.info('Abtf.js() > wait for dependency', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' ('+DEPENDENCIES[wait_for_group]+')' : ''), script, depnames);
+                   }
+                }
+
+                // try again once a script is loaded
+                ON_SCRIPT_LOAD(WAIT_FOR_DEPENDENCIES,[script,deps,callback]);
+
+            }
         } else {
             callback();
         }
     }
 
+    /**
+     * Javascript processing method
+     */
     window['Abtf'].js = function(config) {
 
         if (config === 'ABTF_JS') {
@@ -116,13 +163,21 @@
 
         var files = config[0];
 
-        // set dependency references
-        DEPENDENCIES = (config[1] && config[1] instanceof Array) ? config[1] : [];
+        // dependencies disabled
+        if (config[1] === false) {
+            ABIDE_DEPENDENCIES = false;
+        } else {
+            ABIDE_DEPENDENCIES = true;
 
-        // set dependency group references
-        DEPENDENCY_GROUPS = (config[2] && typeof config[2] === 'object') ? config[2] : [];
+            // set dependency group references
+            DEPENDENCY_GROUPS = (config[1] && typeof config[1] === 'object') ? config[1] : [];
+        }
 
         if (ABTFDEBUG) {
+
+            // set dependency references
+            DEPENDENCIES = (config[2] && config[2] instanceof Array) ? config[2] : [];
+
             console.log('Abtf.js()', files);
 
             if (DEPENDENCIES) {
@@ -176,6 +231,8 @@
                     }
                 }
 
+                LOADING_SCRIPTS_COUNT++;
+
                 // load script
                 Abtf.loadScript(script, function scriptReady() {
 
@@ -187,10 +244,15 @@
                         }
                     }
 
+                    LOADING_SCRIPTS_COUNT--;
+
                     // register dependency load state
                     if (handle !== false) {
                         DEPENDENCY_LOADED[handle] = true;
                     }
+
+                    // trigger script loaded actions
+                    SCRIPT_LOADED();
 
                     if (!async) {
 
@@ -207,20 +269,7 @@
 
             };
 
-            var handleName = (DEPENDENCIES[handle] || handle);
-
-            // force jquery core dependency for jquery-migrate
-            if (handleName === 'jquery-migrate') {
-                if (!(deps instanceof Array)) { deps = []; }
-                deps.push(DEPENDENCIES.indexOf('jquery-core'));
-            }
-            if (handleName === 'admin-bar') {
-                if (!(deps instanceof Array)) { deps = []; }
-                deps.push(DEPENDENCIES.indexOf('jquery'));
-            }
-
-            if (deps) {
-
+            if (ABIDE_DEPENDENCIES && deps) {
                 WAIT_FOR_DEPENDENCIES(script,deps,function callback() {
                     startLoad(script,async,handle,deps,scriptPos);
                 });
