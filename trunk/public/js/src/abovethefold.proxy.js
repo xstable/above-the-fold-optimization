@@ -234,7 +234,7 @@
 
 				if (ABTFDEBUG) {
 					if (regexmatch) {
-						console.log('Abtf.proxy()', 'capture', originalUrl, 'regex', '➤', 'cache:' + cachehash);
+						console.log('Abtf.proxy()', 'regex capture', originalUrl, '➤', 'cache:' + cachehash);
 					} else {
 		            	console.log('Abtf.proxy()', 'capture', url, '➤', 'cache:' + cachehash);
 		        	}

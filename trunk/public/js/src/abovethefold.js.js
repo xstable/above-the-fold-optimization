@@ -115,7 +115,7 @@
                         depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
                     }
 
-                    console.error('Abtf.js() > dependency unmet and no more scripts loading', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' ('+DEPENDENCIES[wait_for_group]+')' : ''), script, depnames);
+                    console.error('Abtf.js() ➤ dependency unmet and no more scripts loading', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' ('+DEPENDENCIES[wait_for_group]+')' : ''), script, depnames);
                 }
 
                 callback();
@@ -132,7 +132,7 @@
                             depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
                         }
 
-                        console.info('Abtf.js() > wait for dependency', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' ('+DEPENDENCIES[wait_for_group]+')' : ''), script, depnames);
+                        console.info('Abtf.js() ➤ wait for dependency', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' ('+DEPENDENCIES[wait_for_group]+')' : ''), script, depnames);
                    }
                 }
 
@@ -189,7 +189,7 @@
                     }
                 } else { depgroups = false; }
 
-                console.log('Abtf.js() > abide dependencies', DEPENDENCIES, depgroups);
+                console.log('Abtf.js() ➤ abide dependencies', DEPENDENCIES, depgroups);
             }
         }
 
@@ -225,9 +225,9 @@
                         for (var i = 0; i < l; i++) {
                             depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
                         }
-                        console.info('Abtf.js() > '+((async) ? 'async ' : '') + 'download start', script, (DEPENDENCIES[handle] || handle), depnames);
+                        console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', script, (DEPENDENCIES[handle] || handle), depnames);
                     } else {
-                        console.info('Abtf.js() > '+((async) ? 'async ' : '') + 'download start', script);
+                        console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', script);
                     }
                 }
 
@@ -238,9 +238,9 @@
 
                     if (ABTFDEBUG) {
                         if (deps.length > 0) {
-                            console.info('Abtf.js() > loaded', script, (DEPENDENCIES[handle] || handle), depnames);
+                            console.info('Abtf.js() ➤ loaded', script, (DEPENDENCIES[handle] || handle), depnames);
                         } else {
-                            console.info('Abtf.js() > loaded', script);
+                            console.info('Abtf.js() ➤ loaded', script);
                         }
                     }
 

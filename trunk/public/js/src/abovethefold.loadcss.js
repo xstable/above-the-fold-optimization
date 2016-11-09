@@ -13,11 +13,11 @@
     window['Abtf'].loadCSS = (typeof loadCSS !== 'undefined') ? function( href, before, media, callback ) {
 
         if (ABTFDEBUG) {
-            console.info('Abtf.css() > loadCSS() async download start', href);
+            console.info('Abtf.css() ➤ loadCSS() async download start', href);
         }
         loadCSS( href, before, media, function() {
             if (ABTFDEBUG) {
-                console.info('Abtf.css() > loadCSS() render', href);
+                console.info('Abtf.css() ➤ loadCSS() render', href);
             }
             if (callback) {
                 callback();
