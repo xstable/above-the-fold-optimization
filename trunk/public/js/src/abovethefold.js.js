@@ -260,13 +260,6 @@
                         loadScript(++scriptPos);
                     }
                 });
-
-                if (async) {
-
-                    // continue with next script
-                    loadScript(++scriptPos);
-                }
-
             };
 
             if (ABIDE_DEPENDENCIES && deps) {
@@ -275,6 +268,12 @@
                 });
             } else {
                 startLoad(script,async,handle,deps,scriptPos);
+            }
+
+            if (async) {
+
+                // continue with next script
+                loadScript(++scriptPos);
             }
 
         };
