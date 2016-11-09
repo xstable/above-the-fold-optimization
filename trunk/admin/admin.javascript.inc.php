@@ -20,7 +20,7 @@
 
 						<table class="form-table">
 							<tr valign="top">
-								<th scope="row">Optimize Javascript Delivery</th>
+								<th scope="row">Optimize Javascript Loading</th>
 								<td>
 									<label><input type="checkbox" name="abovethefold[jsdelivery]" value="1"<?php if (isset($options['jsdelivery']) && intval($options['jsdelivery']) === 1) { print ' checked'; } ?> onchange="if (jQuery(this).is(':checked')) { jQuery('.jsdeliveryoptions').show(); } else { jQuery('.jsdeliveryoptions').hide(); }"> Enabled</label>
 									<p class="description">When enabled, Javascript files are loaded asynchronously using an enhanced version of <a href="https://github.com/walmartlabs/little-loader" target="_blank">little-loader</a> from Walmart Labs (<a href="https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=Above%20The%20Fold%20Optimization" target="_blank">reference</a>).</p>
@@ -31,7 +31,7 @@
 
 									<div class="abtf-inner-table">
 
-										<h3 class="h"><span>Javascript Delivery Optimization</span></h3>
+										<h3 class="h"><span>Javascript Load Optimization</span></h3>
 										<div class="inside">
 
 											<p style="padding:5px;border-bottom:solid #efefef;margin:0px;"><span style="color:red;font-weight:bold;">Warning:</span> It may require some tweaking of the settings to prevent javascript problems.</p>
