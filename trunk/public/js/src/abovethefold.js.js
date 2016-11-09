@@ -90,7 +90,7 @@
                         depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
                     }
 
-                    console.info('Abtf.js() > wait for dependency', (DEPENDENCIES[wait_for] || wait_for), (DEPENDENCIES[wait_for_group] || wait_for_group), script, depnames);
+                    console.info('Abtf.js() > wait for dependency', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' ('+DEPENDENCIES[wait_for_group]+')' : ''), script, depnames);
                }
             }
 
@@ -164,25 +164,31 @@
             var startLoad = function(script,async,handle,deps,scriptPos) {
 
                 if (ABTFDEBUG) {
-
-                    var depnames = [];
-                    var l = deps.length;
-                    for (var i = 0; i < l; i++) {
-                        depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
+                    if (deps.length > 0) {
+                        var depnames = [];
+                        var l = deps.length;
+                        for (var i = 0; i < l; i++) {
+                            depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
+                        }
+                        console.info('Abtf.js() > '+((async) ? 'async ' : '') + 'download start', script, (DEPENDENCIES[handle] || handle), depnames);
+                    } else {
+                        console.info('Abtf.js() > '+((async) ? 'async ' : '') + 'download start', script);
                     }
-
-                    console.info('Abtf.js() > '+((async) ? 'async ' : '') + 'download start', script, (DEPENDENCIES[handle] || handle), depnames);
                 }
 
                 // load script
                 Abtf.loadScript(script, function scriptReady() {
 
                     if (ABTFDEBUG) {
-                        console.info('Abtf.js() > loaded', script, (DEPENDENCIES[handle] || handle), depnames);
+                        if (deps.length > 0) {
+                            console.info('Abtf.js() > loaded', script, (DEPENDENCIES[handle] || handle), depnames);
+                        } else {
+                            console.info('Abtf.js() > loaded', script);
+                        }
                     }
 
                     // register dependency load state
-                    if (typeof handle !== 'undefined') {
+                    if (handle !== false) {
                         DEPENDENCY_LOADED[handle] = true;
                     }
 
@@ -201,15 +207,19 @@
 
             };
 
+            var handleName = (DEPENDENCIES[handle] || handle);
+
+            // force jquery core dependency for jquery-migrate
+            if (handleName === 'jquery-migrate') {
+                if (!(deps instanceof Array)) { deps = []; }
+                deps.push(DEPENDENCIES.indexOf('jquery-core'));
+            }
+            if (handleName === 'admin-bar') {
+                if (!(deps instanceof Array)) { deps = []; }
+                deps.push(DEPENDENCIES.indexOf('jquery'));
+            }
+
             if (deps) {
-
-                var handleName = (DEPENDENCIES[handle] || handle);
-
-                // force jquery core dependency for jquery-migrate
-                if (handleName === 'jquery-migrate') {
-                    if (!(deps instanceof Array)) { deps = []; }
-                    deps = [DEPENDENCIES.indexOf('jquery-core')];
-                }
 
                 WAIT_FOR_DEPENDENCIES(script,deps,function callback() {
                     startLoad(script,async,handle,deps,scriptPos);
