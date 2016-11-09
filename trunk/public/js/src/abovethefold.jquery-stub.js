@@ -61,6 +61,8 @@
     // noConflict()
     window.$.noConflict = window.jQuery.noConflict = noConflict;
 
+    window.$.isStub = window.jQuery.isStub = true;
+
     /**
      * Object Watch Polyfill
      */
@@ -117,7 +119,7 @@
         /**
          * Verify if valid jQuery
          */
-        if (typeof jQuery !== 'function' || typeof jQuery.fn === 'undefined') {
+        if (typeof jQuery !== 'function' || typeof jQuery.fn === 'undefined' || typeof jQuery.isStub !== 'undefined') {
             return jQuery;
         }
 
