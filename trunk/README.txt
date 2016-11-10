@@ -96,11 +96,12 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 
 = 2.6.4 =
 * Bugfix: async loading in javascript load optimization continues while waiting for WordPress dependencies to be loaded.
-* Added: javascript optimization option to load javascript files in parallel in a HTML5 Web Worker.
-* Added: save scripts in HTML5 localStorage to achieve optimal speed on mobile devices ([reference](https://addyosmani.com/basket.js/))
+* Bugfix: external javascript proxy should ignore blob: uri's.
+* Added: HTML5 Web Worker and Fetch API based script loader with localStorage cache, inspired by [basket.js](https://addyosmani.com/basket.js/) (by a Google engineer).
+* Improved: external javascript proxy will load captured scripts from localStorage cache when using the HTML5 Web Worker script loader.
 
 = 2.6.3 =
-* Improved: abide WordPress dependencies in javascript load optimization continues when dependencies are not met (with admin debug notice).
+* Improved: javascript loading continues when WordPress dependencies are not met (with admin debug notice).
 
 = 2.6.2 =
 * Added: option to abide WordPress dependencies in javascript async load optimization.

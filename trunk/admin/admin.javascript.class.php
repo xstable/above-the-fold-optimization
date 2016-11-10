@@ -71,9 +71,15 @@ class Abovethefold_Admin_Javascript {
 		$options['jsdelivery_async_all'] = (isset($input['jsdelivery_async_all']) && intval($input['jsdelivery_async_all']) === 1) ? true : false;
 		$options['jsdelivery_async'] = $this->CTRL->admin->newline_array($input['jsdelivery_async']);
 		$options['jsdelivery_async_disabled'] = $this->CTRL->admin->newline_array($input['jsdelivery_async_disabled']);
+		$options['jsdelivery_scriptloader'] = trim($input['jsdelivery_scriptloader']);
 
 		// Lazy Load Scripts
 		$options['lazyscripts_enabled'] = (isset($input['lazyscripts_enabled']) && intval($input['lazyscripts_enabled']) === 1) ? true : false;
+
+		if (!in_array($options['jsdelivery_scriptloader'],array('little-loader','html5'))) {
+			$this->CTRL->admin->set_notice('You did not select a valid script loader.', 'ERROR');
+			$options['jsdelivery_scriptloader'] = 'little-loader';
+		}
 
 		// update settings
 		$this->CTRL->admin->save_settings($options, 'Javascript optimization settings saved.');

@@ -32,7 +32,7 @@ class Abovethefold_Admin {
 	public $css;
 	public $javascript;
 	public $proxy;
-	public $settings;
+	public $settings; 
 
 	/**
 	 * Google language code
@@ -955,7 +955,7 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
 			/**
 			 * Pre 2.6.1 update
 			 */
-			if (version_compare($current_version, '2.6.2', '<=')) {
+			if (version_compare($current_version, '2.6.4', '<=')) {
 
 				if (!isset($options['jsdelivery'])) {
 					$options['jsdelivery'] = false;
@@ -969,6 +969,10 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
 				if (!isset($options['jsdelivery_deps'])) {
 					$options['jsdelivery_deps'] = true;
 				}
+				if (!isset($options['jsdelivery_scriptloader'])) {
+					$options['jsdelivery_scriptloader'] = 'little-loader';
+				}
+				
 				$update_options = true;
 			}
 

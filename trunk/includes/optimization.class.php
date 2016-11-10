@@ -1123,16 +1123,25 @@ class Abovethefold_Optimization {
 			$this->CTRL->proxy->client_jssettings($jssettings, $jsfiles, $jsdebug);
 		}
 
-		// jQuery ready stub
-		if (isset($this->CTRL->options['jsdelivery_jquery']) && $this->CTRL->options['jsdelivery_jquery']) {
-
-			$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-jquery-stub'.$jsdebug.'.min.js';
-		}
-
 		/**
 		 * Javascript delivery optimization
 		 */
 		if ($this->optimize_js_delivery) {
+
+			// jQuery ready stub
+			if (isset($this->CTRL->options['jsdelivery_jquery']) && $this->CTRL->options['jsdelivery_jquery']) {
+
+				$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-jquery-stub'.$jsdebug.'.min.js';
+			}
+
+			// jQuery ready stub
+			if (isset($this->CTRL->options['jsdelivery_scriptloader']) && $this->CTRL->options['jsdelivery_scriptloader'] !== 'little-loader') {
+
+				if ($this->CTRL->options['jsdelivery_scriptloader'] === 'html5') {
+
+					$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-js-localstorage'.$jsdebug.'.min.js';
+				}
+			}
 
 			$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-js'.$jsdebug.'.min.js';
 		}

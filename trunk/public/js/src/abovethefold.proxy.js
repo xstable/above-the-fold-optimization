@@ -154,6 +154,26 @@
 	/**
 	 * Return proxy or direct cache url based on preload list
 	 */
+	var GET_PROXY_URL = function(url,type) {
+
+		if (type === 'css') {
+
+        	return PROXY_URL
+				.replace('{PROXY:URL}',escape(url))
+				.replace('{PROXY:TYPE}',escape(type));
+
+        } else if (type === 'js') {
+
+        	return PROXY_URL
+				.replace('{PROXY:URL}',escape(url))
+				.replace('{PROXY:TYPE}',escape(type));
+        }
+
+	}
+
+	/**
+	 * Return proxy or direct cache url based on preload list
+	 */
 	var PROXIFY_URL = function(url,type) {
 
 		if (ABTFDEBUG) {
@@ -226,46 +246,231 @@
 				path += cachehash.substr(8,2) + '/';
 				path += cachehash;
 
+				if (ABTFDEBUG) {
+					var localStorageUrl = false;
+				}
+
 				if (type === 'js') {
 					path += '.js';
+
+					// try Web Worker localStorage cache
+					if (typeof Abtf.cachedScriptUrl !== 'undefined') {
+						var parsedPath = PARSE_URL(path).href;
+						path = Abtf.cachedScriptUrl(parsedPath);
+						if (ABTFDEBUG) {
+							if (path !== parsedPath) {
+								localStorageUrl = path;
+							}
+						}
+					}
+
 				} else if (type === 'css') {
 					path += '.css';
 				}
 
 				if (ABTFDEBUG) {
-					if (regexmatch) {
-						console.log('Abtf.proxy()', 'regex capture', originalUrl, '➤', 'cache:' + cachehash);
+					if (localStorageUrl) {
+						if (regexmatch) {
+							console.log('Abtf.proxy()', 'localStorage regex capture', Abtf.localUrl(originalUrl), '➤', 'cache:' + cachehash, '➤', localStorageUrl);
+						} else {
+			            	console.log('Abtf.proxy()', 'localStorage capture', Abtf.localUrl(url), '➤', 'cache:' + cachehash, '➤', localStorageUrl);
+			        	}
 					} else {
-		            	console.log('Abtf.proxy()', 'capture', url, '➤', 'cache:' + cachehash);
-		        	}
+						if (regexmatch) {
+							console.log('Abtf.proxy()', 'regex capture', Abtf.localUrl(originalUrl), '➤', 'cache:' + cachehash);
+						} else {
+			            	console.log('Abtf.proxy()', 'capture', Abtf.localUrl(url), '➤', 'cache:' + cachehash);
+			        	}
+					}
+					
 		        }
 
 				return path;
 			}
 		}
 
+        if (type === 'js') {
+
+        	// try Web Worker localStorage cache
+			if (typeof Abtf.cachedScriptUrl !== 'undefined') {
+				var parsedUrl = PARSE_URL(url).href;
+				url = Abtf.cachedScriptUrl(parsedUrl);
+				if (url !== parsedUrl) {
+
+					if (ABTFDEBUG) {
+						if (regexmatch) {
+							console.log('Abtf.proxy()', 'localStorage regex capture', Abtf.localUrl(originalUrl), 'regex', '➤', Abtf.localUrl(parsedUrl), '➤', url);
+						} else {
+			            	console.log('Abtf.proxy()', 'localStorage capture', Abtf.localUrl(parsedUrl), '➤', url);
+			        	}
+			        }
+
+					return url;
+				}
+			}
+        }
+
 		if (ABTFDEBUG) {
 			if (regexmatch) {
-				console.log('Abtf.proxy()', 'capture', originalUrl, 'regex', '➤', url);
+				console.log('Abtf.proxy()', 'capture', Abtf.localUrl(originalUrl), 'regex', '➤', url);
 			} else {
-            	console.log('Abtf.proxy()', 'capture', url);
+            	console.log('Abtf.proxy()', 'capture', Abtf.localUrl(url));
         	}
         }
 
-		if (type === 'css') {
+        return GET_PROXY_URL(url, type);
 
-        	return PROXY_URL
-				.replace('{PROXY:URL}',escape(url))
-				.replace('{PROXY:TYPE}',escape(type));
+	};
 
-        } else if (type === 'js') {
+	/**
+	 * Detect if url is external script
+	 */
+	var IS_EXTERNAL_SCRIPT = function(url) {
 
-        	return PROXY_URL
-				.replace('{PROXY:URL}',escape(url))
-				.replace('{PROXY:TYPE}',escape(type));
-        }
+		// parse url
+		var parser = PARSE_URL(url);
 
+		// blob: url
+		if (parser.protocol === 'blob:') {
+			return false;
+		}
+
+		if (CDN_URLS) {
+
+			// test CDN urls
+			var l = CDN_URLS.length;
+			var cdnparser;
+			for (var i = 0; i < l; i++) {
+
+				if (parser.href.indexOf(CDN_URLS[i].href) !== -1) {
+					// resource is on CDN = local url
+					return false;
+				}
+			}
+		}
+
+		// local url
+		if (parser.host === SITE_URL.host) {
+			return false;
+		}
+
+		// verify include list
+		if (PROXY_JS_INCLUDE) {
+
+			var match = false;
+			var l = PROXY_JS_INCLUDE.length;
+			for (var i = 0; i < l; i++) {
+				if (parser.href.indexOf(PROXY_JS_INCLUDE[i]) !== -1) {
+					match = true;
+					break;
+				}
+			}
+
+			// not in include list
+			if (!match) {
+
+				if (ABTFDEBUG) {
+					console.log('Abtf.proxy()', 'ignore', Abtf.localUrl(parser.href), 'not on include list');
+		        }
+
+				return false;
+			}
+		}
+
+		// verify exclude list
+		if (PROXY_JS_EXCLUDE) {
+
+			var l = PROXY_JS_EXCLUDE.length;
+			for (var i = 0; i < l; i++) {
+				if (parser.href.indexOf(PROXY_JS_EXCLUDE[i]) !== -1) {
+
+					if (ABTFDEBUG) {
+						console.log('Abtf.proxy()', 'ignore', Abtf.localUrl(parser.href), 'on exclude list:',PROXY_JS_EXCLUDE[i]);
+			        }
+
+					// ignore file
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
+
+	/**
+	 * Detect if url is external style
+	 */
+	var IS_EXTERNAL_STYLE = function(url) {
+
+		// parse url
+		var parser = PARSE_URL(url);
+
+		// blob: url
+		if (parser.protocol === 'blob:') {
+			return false;
+		}
+
+		if (CDN_URLS) {
+
+			// test CDN urls
+			var l = CDN_URLS.length;
+			var cdnparser;
+			for (var i = 0; i < l; i++) {
+
+				if (parser.href.indexOf(CDN_URLS[i].href) !== -1) {
+					// resource is on CDN = local url
+					return false;
+				}
+			}
+		}
+
+		// local url
+		if (parser.host === SITE_URL.host) {
+			return false;
+		}
+
+		// verify include list
+		if (PROXY_CSS_INCLUDE) {
+
+			var match = false;
+			var l = PROXY_CSS_INCLUDE.length;
+			for (var i = 0; i < l; i++) {
+				if (parser.href.indexOf(PROXY_CSS_INCLUDE[i]) !== -1) {
+					match = true;
+					break;
+				}
+			}
+
+			// not in include list
+			if (!match) {
+
+				if (ABTFDEBUG) {
+					console.log('Abtf.proxy()', 'ignore', Abtf.localUrl(parser.href), 'not on include list');
+		        }
+
+				return false;
+			}
+		}
+
+		// verify exclude list
+		if (PROXY_CSS_EXCLUDE) {
+
+			var l = PROXY_CSS_EXCLUDE.length;
+			for (var i = 0; i < l; i++) {
+				if (parser.href.indexOf(PROXY_CSS_EXCLUDE[i]) !== -1) {
+
+					if (ABTFDEBUG) {
+						console.log('Abtf.proxy()', 'ignore', Abtf.localUrl(parser.href), 'on exclude list:',PROXY_CSS_EXCLUDE[i]);
+			        }
+
+					// ignore file
+					return false;
+				}
+			}
+		}
+
+		return true;
+	};
 
 	/**
 	 * Detect if node is external script or stylesheet
@@ -281,66 +486,8 @@
 
 				if (node.src) {
 
-					// parse url
-					var parser = PARSE_URL(node.src);
-
-					if (CDN_URLS) {
-
-						// test CDN urls
-						var l = CDN_URLS.length;
-						var cdnparser;
-						for (var i = 0; i < l; i++) {
-
-							if (parser.href.indexOf(CDN_URLS[i].href) !== -1) {
-								// resource is on CDN = local url
-								return false;
-							}
-						}
-					}
-
-					// local url
-					if (parser.host === SITE_URL.host) {
+					if (!IS_EXTERNAL_SCRIPT(node.src)) {
 						return false;
-					}
-
-					// verify include list
-					if (PROXY_JS_INCLUDE) {
-
-						var match = false;
-						var l = PROXY_JS_INCLUDE.length;
-						for (var i = 0; i < l; i++) {
-							if (parser.href.indexOf(PROXY_JS_INCLUDE[i]) !== -1) {
-								match = true;
-								break;
-							}
-						}
-
-						// not in include list
-						if (!match) {
-
-							if (ABTFDEBUG) {
-								console.log('Abtf.proxy()', 'ignore', parser.href, 'not on include list');
-					        }
-
-							return false;
-						}
-					}
-
-					// verify exclude list
-					if (PROXY_JS_EXCLUDE) {
-
-						var l = PROXY_JS_EXCLUDE.length;
-						for (var i = 0; i < l; i++) {
-							if (parser.href.indexOf(PROXY_JS_EXCLUDE[i]) !== -1) {
-
-								if (ABTFDEBUG) {
-									console.log('Abtf.proxy()', 'ignore', parser.href, 'on exclude list:',PROXY_JS_EXCLUDE[i]);
-						        }
-
-								// ignore file
-								return false;
-							}
-						}
 					}
 
 					// external url
@@ -353,56 +500,9 @@
 				}
 
 				if (node.href) {
-					var parser = PARSE_URL(node.href);
-
-					if (CDN_URLS) {
-
-						// test CDN urls
-						var l = CDN_URLS.length;
-						var cdnparser;
-						for (var i = 0; i < l; i++) {
-
-							if (parser.href.indexOf(CDN_URLS[i].href) !== -1) {
-								// resource is on CDN = local url
-								return false;
-							}
-						}
-					}
-
-					// local url
-					if (parser.host === SITE_URL.host) {
+					
+					if (!IS_EXTERNAL_STYLE(node.href)) {
 						return false;
-					}
-
-					// verify include list
-					if (PROXY_CSS_INCLUDE) {
-
-						var match = false;
-						var l = PROXY_CSS_INCLUDE.length;
-						for (var i = 0; i < l; i++) {
-							if (parser.href.indexOf(PROXY_CSS_INCLUDE[i]) !== -1) {
-								match = true;
-								break;
-							}
-						}
-
-						// not in include list
-						if (!match) {
-							return false;
-						}
-					}
-
-					// verify exclude list
-					if (PROXY_CSS_EXCLUDE) {
-
-						var l = PROXY_CSS_EXCLUDE.length;
-						for (var i = 0; i < l; i++) {
-							if (parser.href.indexOf(PROXY_CSS_EXCLUDE[i]) !== -1) {
-
-								// ignore file
-								return false;
-							}
-						}
 					}
 
 					// external url
@@ -500,6 +600,16 @@
 	            };
 	        })(type);
 	    }
+	}
+
+	/**
+	 * Proxify script
+	 */
+	window['Abtf'].proxifyScript = function(url) {
+		if (IS_EXTERNAL_SCRIPT(url)) {
+			return GET_PROXY_URL(url,'js');
+		}
+		return url;
 	}
 
 })(window, window['Abtf']);

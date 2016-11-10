@@ -146,6 +146,15 @@
     }
 
     /**
+     * Parse URL (e.g. protocol relative URL)
+     */
+    var PARSE_URL = function(url) {
+        var parser = document.createElement('a');
+        parser.href = url;
+        return parser.href;
+    };
+
+    /**
      * Javascript processing method
      */
     window['Abtf'].js = function(config) {
@@ -159,6 +168,13 @@
 
         if (typeof config !== 'object' || typeof config[0] === 'undefined' || !config[0]) {
             return;
+        }
+
+        // Cached script loader
+        if (typeof window['Abtf'].loadCachedScript !== 'undefined') {
+            LOADSCRIPT = window['Abtf'].loadCachedScript;
+        } else {
+            LOADSCRIPT = window['Abtf'].loadScript;
         }
 
         var files = config[0];
@@ -177,8 +193,6 @@
 
             // set dependency references
             DEPENDENCIES = (config[2] && config[2] instanceof Array) ? config[2] : [];
-
-            console.log('Abtf.js()', files);
 
             if (DEPENDENCIES) {
                 if (DEPENDENCY_GROUPS) {
@@ -218,29 +232,24 @@
             // load script
             var startLoad = function(script,async,handle,deps,scriptPos) {
 
-                if (ABTFDEBUG) {
-                    if (deps.length > 0) {
-                        var depnames = [];
-                        var l = deps.length;
-                        for (var i = 0; i < l; i++) {
-                            depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
-                        }
-                        console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', script, (DEPENDENCIES[handle] || handle), depnames);
-                    } else {
-                        console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', script);
-                    }
-                }
-
                 LOADING_SCRIPTS_COUNT++;
 
                 // load script
-                Abtf.loadScript(script, function scriptReady() {
+                var cached = LOADSCRIPT(PARSE_URL(script), function scriptReady() {
 
                     if (ABTFDEBUG) {
                         if (deps.length > 0) {
-                            console.info('Abtf.js() ➤ loaded', script, (DEPENDENCIES[handle] || handle), depnames);
+                            if (cached) {
+                                console.info('Abtf.js() ➤ localStorage loaded', Abtf.localUrl(script), (DEPENDENCIES[handle] || handle), depnames, '➤', cached);
+                            } else {
+                                console.info('Abtf.js() ➤ loaded', Abtf.localUrl(script), (DEPENDENCIES[handle] || handle), depnames);
+                            }
                         } else {
-                            console.info('Abtf.js() ➤ loaded', script);
+                            if (cached) {
+                                console.info('Abtf.js() ➤ localStorage loaded', Abtf.localUrl(script), '➤', cached);
+                            } else {
+                                console.info('Abtf.js() ➤ loaded', Abtf.localUrl(script));
+                            }
                         }
                     }
 
@@ -260,6 +269,27 @@
                         loadScript(++scriptPos);
                     }
                 });
+
+                if (ABTFDEBUG) {
+                    if (deps.length > 0) {
+                        var depnames = [];
+                        var l = deps.length;
+                        for (var i = 0; i < l; i++) {
+                            depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
+                        }
+                        if (cached) {
+                            console.info('Abtf.js() ➤ localStorage '+((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached, (DEPENDENCIES[handle] || handle), depnames);
+                        } else {
+                            console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script), (DEPENDENCIES[handle] || handle), depnames);
+                        }
+                    } else {
+                        if (cached) {
+                            console.info('Abtf.js() ➤ localStorage '+((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached);
+                        } else {
+                            console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script));
+                        }
+                    }
+                };
             };
 
             if (ABIDE_DEPENDENCIES && deps) {

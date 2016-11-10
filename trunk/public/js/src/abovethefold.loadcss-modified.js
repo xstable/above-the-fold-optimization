@@ -14,7 +14,7 @@
     window['Abtf'].loadCSS = function( href, before, media, callback ) {
 
         if (ABTFDEBUG) {
-            console.info('Abtf.css() ➤ loadCSS()[RAF] async download start', href);
+            console.info('Abtf.css() ➤ loadCSS()[RAF] async download start', Abtf.localUrl(href));
         }
 
         // Arguments explained:
@@ -107,7 +107,7 @@
                 Abtf.raf(function() {
                     ss.media = media || "all";
                     if (ABTFDEBUG) {
-                        console.info('Abtf.css() ➤ loadCSS()[RAF] render', href);
+                        console.info('Abtf.css() ➤ loadCSS()[RAF] render', Abtf.localUrl(href));
                     }
 
                     /**
@@ -122,7 +122,7 @@
             if (typeof Abtf.cnf.delay !== 'undefined' && parseInt(Abtf.cnf.delay) > 0) {
 
                 if (ABTFDEBUG) {
-                    console.info('Abtf.css() ➤ loadCSS()[RAF] render delay', Abtf.cnf.delay, href);
+                    console.info('Abtf.css() ➤ loadCSS()[RAF] render delay', Abtf.cnf.delay, Abtf.localUrl(href));
                 }
 
                 /**

@@ -173,6 +173,20 @@ window['Abtf'] = (function(window) {
         }
     };
 
+    if (ABTFDEBUG) {
+
+        var SITE_URL = document.createElement('a');
+        SITE_URL.href = document.location.href;
+        var BASE_URL_REGEX = new RegExp('^(https?:)?//' + SITE_URL.host.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'),'i');
+        
+        /**
+         * Return local url for debug notices
+         */
+        Abtf.localUrl = function(url) {
+            return url.replace(BASE_URL_REGEX,'');
+        }
+    }
+
     return Abtf;
 
 })(window);
