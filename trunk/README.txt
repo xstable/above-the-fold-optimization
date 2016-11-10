@@ -46,7 +46,7 @@ The plugin offers advanced options such as a render delay in milliseconds, the p
 
 ### Javascript Optimization
 
-The plugin contains a tool to optimize loading of javascript via an enhanced version of [little-loader](https://github.com/walmartlabs/little-loader) from Walart Labs ([reference](https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/)). The tool contains a jQuery Stub and it enables async loading of all javascript files, optionally abiding WordPress dependency configuration.
+The plugin contains a tool to optimize loading of javascript via an enhanced version of [little-loader](https://github.com/walmartlabs/little-loader) from Walmart Labs ([reference](https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/)). The tool contains a jQuery Stub and it enables async loading of all javascript files, optionally abiding WordPress dependency configuration.
 
 ### Lazy Loading Javascript
 
