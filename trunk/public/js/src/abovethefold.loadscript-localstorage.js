@@ -426,55 +426,96 @@
         scriptIndex: 0,
         scriptQueue: [],
 
+        // automaticly terminate web worker when not in use
+        terminateTimeout: 4000,
+        workerTerminateTimeout: false,
+
         // start web worker
         start: function() {
 
             this.worker = new Worker(this.workerUri);
 
             // listen for messages from worker
-            this.worker.addEventListener('message', function(event) {
-
-                var response = event.data;
-
-                var scriptIndex = response[1];
-                if (typeof WEBWORKER.scriptQueue[scriptIndex] === 'undefined') {
-
-                    // script not in queue
-                    if (ABTFDEBUG) {
-                        console.error('Abtf.js() ➤ web worker script loader invalid response',response);
-                    }
-                    return;
-                }
-
-                // data is returned
-                if (parseInt(response[0]) === 1) {
-                    WEBWORKER.scriptQueue[scriptIndex].onData(response[2]);
-                    return;
-                }
-
-                // error
-                if (parseInt(response[0]) === 2) {
-                    if (ABTFDEBUG) {
-                        console.error('Abtf.js() ➤ web worker script loader error',response[2]);
-                    }
-                    return;
-                }
-            });
+            this.worker.addEventListener('message', this.handleMessage);
 
             // listen for errors
-            this.worker.addEventListener('error',function(error) {
-          
-                // output error to console
+            this.worker.addEventListener('error',this.handleError);
+
+        },
+
+        /**
+         * Stop web worker
+         */
+        stop: function() {
+            if (this.worker) {
+
+                // remove listeners
+                this.worker.removeEventListener('message', this.handleMessage);
+
+                // listen for errors
+                this.worker.removeEventListener('error',this.handleError);
+
+                // terminate worker
+                this.worker.terminate();
+
+                this.worker = false;
+
                 if (ABTFDEBUG) {
-                    console.error('Abtf.js() ➤ web worker script loader error',error);
+                    console.warn('Abtf.js() ➤ web worker terminated');
                 }
-            });
+            }
+        },
+
+        /**
+         * Handle response from Web Worker
+         */
+        handleMessage: function(event) {
+            var response = event.data;
+
+            var scriptIndex = response[1];
+            if (typeof WEBWORKER.scriptQueue[scriptIndex] === 'undefined') {
+
+                // script not in queue
+                if (ABTFDEBUG) {
+                    console.error('Abtf.js() ➤ web worker script loader invalid response',response);
+                }
+                return;
+            }
+
+            // data is returned
+            if (parseInt(response[0]) === 1) {
+                WEBWORKER.scriptQueue[scriptIndex].onData(response[2]);
+                return;
+            }
+
+            // error
+            if (parseInt(response[0]) === 2) {
+                if (ABTFDEBUG) {
+                    console.error('Abtf.js() ➤ web worker script loader error',response[2]);
+                }
+                return;
+            }
+        },
+
+        /**
+         * Handle error response
+         */
+        handleError: function(error) {
+
+            // output error to console
+            if (ABTFDEBUG) {
+                console.error('Abtf.js() ➤ web worker script loader error',error);
+            }
         },
 
         /**
          * Load script
          */
         loadScript: function(url,onData) {
+
+            if (!this.worker) {
+                this.start();
+            }
 
             url = window['Abtf'].proxifyScript(url);
 
@@ -497,6 +538,13 @@
 
     // start web worker
     WEBWORKER.start();
+
+    /**
+     * Terminate worker on unload
+     */
+    window.addEventListener("beforeunload", function (e) {
+        WEBWORKER.stop();
+    });
 
     /**
      * Clear expired entries
