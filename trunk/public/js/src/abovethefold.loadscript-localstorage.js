@@ -523,7 +523,7 @@
         Abtf.loadScript(src, function scriptLoaded() {
 
             /**
-             * Load script in to cache in the background
+             * Load script into cache in the background
              */
             WEBWORKER.loadScript(src, function onData(scriptData) {
 
