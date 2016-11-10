@@ -325,7 +325,7 @@
 	/**
 	 * Detect if url is external script
 	 */
-	var IS_EXTERNAL_SCRIPT = function(url) {
+	var IS_EXTERNAL_SCRIPT = function(url,ignoreCDN) {
 
 		// parse url
 		var parser = PARSE_URL(url);
@@ -335,7 +335,7 @@
 			return false;
 		}
 
-		if (CDN_URLS) {
+		if (CDN_URLS && ignoreCDN !== true) {
 
 			// test CDN urls
 			var l = CDN_URLS.length;
@@ -606,7 +606,7 @@
 	 * Proxify script
 	 */
 	window['Abtf'].proxifyScript = function(url) {
-		if (IS_EXTERNAL_SCRIPT(url)) {
+		if (IS_EXTERNAL_SCRIPT(url,true)) {
 			return GET_PROXY_URL(url,'js');
 		}
 		return url;
