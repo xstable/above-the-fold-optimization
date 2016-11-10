@@ -1137,7 +1137,7 @@ class Abovethefold_Optimization {
 			// jQuery ready stub
 			if (isset($this->CTRL->options['jsdelivery_scriptloader']) && $this->CTRL->options['jsdelivery_scriptloader'] !== 'little-loader') {
 
-				if ($this->CTRL->options['jsdelivery_scriptloader'] === 'html5') {
+				if ($this->CTRL->options['jsdelivery_scriptloader'] === 'html5' && $this->CTRL->options['js_proxy']) {
 
 					$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-js-localstorage'.$jsdebug.'.min.js';
 				}
