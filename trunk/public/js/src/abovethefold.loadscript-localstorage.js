@@ -426,10 +426,6 @@
         scriptIndex: 0,
         scriptQueue: [],
 
-        // automaticly terminate web worker when not in use
-        terminateTimeout: 4000,
-        workerTerminateTimeout: false,
-
         // start web worker
         start: function() {
 
@@ -440,7 +436,6 @@
 
             // listen for errors
             this.worker.addEventListener('error',this.handleError);
-
         },
 
         /**
