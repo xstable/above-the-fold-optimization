@@ -44,9 +44,9 @@ The plugin contains several tools to optimize the delivery of CSS in the browser
 
 The plugin offers advanced options such as a render delay in milliseconds, the position to start CSS rendering (header or footer) and the removal of CSS files from the HTML. The plugin enables to capture and proxy external stylesheets for loading the files locally with optimized cache headers (see `External Resource Proxy`).
 
-### Javascript Optimization
+### Javascript Load Optimization
 
-The plugin contains a tool to optimize loading of javascript via an enhanced version of [little-loader](https://github.com/walmartlabs/little-loader) from Walmart Labs ([reference](https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/)). The tool contains a jQuery Stub and it enables async loading of all javascript files, optionally abiding WordPress dependency configuration.
+The plugin contains a tool to optimize loading of javascript via an enhanced version of [little-loader](https://github.com/walmartlabs/little-loader) from Walmart Labs ([reference](https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/)) or a state of the art HTML5 Web Worker and Fetch API based script loader with localStorage cache. The tool contains a jQuery Stub and it enables async loading of all javascript files, optionally abiding WordPress dependency configuration.
 
 ### Lazy Loading Javascript
 

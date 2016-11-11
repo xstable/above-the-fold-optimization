@@ -45,8 +45,8 @@ module.exports = function(grunt) {
 					],
 
 					// Javascript cached script loader
-					'public/js/abovethefold-js-localstorage.min.js' : [
-						'public/js/src/abovethefold.loadscript-localstorage.js'
+					'public/js/abovethefold-js-cached.min.js' : [
+						'public/js/src/abovethefold.loadscript-cached.js'
 					],
 
 					// CSS optimization
@@ -140,8 +140,10 @@ module.exports = function(grunt) {
 					],
 
 					// Javascript cached script loader
-					'public/js/abovethefold-js-localstorage.debug.min.js' : [
-						'public/js/src/abovethefold.loadscript-localstorage.js'
+					'public/js/abovethefold-js-cached.debug.min.js' : [
+						'public/js/src/promise-polyfill.js',
+						'public/js/src/async-local-storage.js',
+						'public/js/src/abovethefold.loadscript-cached.js'
 					],
 					
 					// jQuery Stub
