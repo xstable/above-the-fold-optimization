@@ -140,10 +140,6 @@ class Abovethefold_Plugins {
 	 */
 	public function load_modules( ) {
 
-		if ($this->CTRL->disabled) {
-			return; // above the fold optimization disabled for area / page
-		}
-
 		$modules = $this->get_modules( );
 
 		$this->active_modules = array();

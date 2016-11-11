@@ -53,8 +53,8 @@ class Abovethefold_OPP_NginxHelper extends Abovethefold_OPP {
 	 */
 	public function clear_pagecache() {
 		global $rt_wp_nginx_purger;
-		
 		if (isset($rt_wp_nginx_purger) && method_exists($rt_wp_nginx_purger,'true_purge_all')) {
+
 			$rt_wp_nginx_purger->true_purge_all();
 		}
 	}
