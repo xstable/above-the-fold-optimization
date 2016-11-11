@@ -157,9 +157,22 @@
         /**
          * Add data to localStorage cache
          */
-        add: function( key, storeObj ) {
+        add: function( key, storeObj, retryCount ) {
+
+            // skip retry after 10 removed entries
+            if (typeof retryCount !== 'undefined' && parseInt(retryCount) > 1) {
+
+                if (ABTFDEBUG) {
+                    console.error('Abtf.js() ➤ localStorage quota reached','retry limit reached, abort saving...', key);
+                }
+                return;
+            }
+
+            if (typeof storeObj === 'object') {
+                storeObj = JSON.stringify( storeObj );
+            }
             try {
-                localStorage.setItem( LS.prefix + key, JSON.stringify( storeObj ) );
+                localStorage.setItem( LS.prefix + key, storeObj );
                 return true;
             } catch( e ) {
 
@@ -167,12 +180,16 @@
                  * localStorage quota reached, prune old cache entries
                  */
                 if ( e.name.toUpperCase().indexOf('QUOTA') >= 0 ) {
-                    var item;
+                    var item, entry, entryKey;
                     var tempScripts = [];
 
                     for ( item in localStorage ) {
-                        if ( item.indexOf( LS.prefix ) === 0 ) {
-                            tempScripts.push( JSON.parse( localStorage[ item ] ) );
+                        if ( item.indexOf( LS.prefix ) === 0 && item.indexOf('chunk:') === -1 ) {
+                            entryKey = item.split( LS.prefix )[ 1 ];
+                            entry = LS.get( entryKey );
+                            if (entry) {
+                                tempScripts.push( [entryKey, entry] );
+                            }
                         }
                     }
 
@@ -181,19 +198,22 @@
                             return a.date - b.date;
                         });
 
-                        LS.remove( tempScripts[ 0 ].key );
-
-                        return LS.add( key, storeObj );
-
                         if (ABTFDEBUG) {
-                            console.error('Abtf.js() ➤ localStorage quota','removed',key,e);
+                            console.error('Abtf.js() ➤ localStorage quota reached','removed',tempScripts[0][0],e);
                         }
+
+                        LS.remove( tempScripts[0][0] );
+
+                        if (typeof retryCount === 'undefined') {
+                            retryCount = 0;
+                        }
+                        return LS.add( key, storeObj, ++retryCount );
 
                     } else {
 
 
                         if (ABTFDEBUG) {
-                            console.error('Abtf.js() ➤ localStorage quota','no files to remove');
+                            console.error('Abtf.js() ➤ localStorage quota reached','no files to remove');
                         }
 
                         // no files to remove. Larger than available quota
@@ -216,8 +236,22 @@
          * Remove from localStorage
          */
         remove: function( key ) {
+
+            var entry = LS.get( key );
+            if (!entry) {
+                return;
+            }
+
+            if (entry.chunked) {
+
+                // remove chunks
+                var l = parseInt(entry.chunks);
+                for (var i = 0; i < l; i++) {
+                    localStorage.removeItem( LS.prefix + 'chunk:'+i+':'+key);
+                }
+            }
+
             localStorage.removeItem( LS.prefix + key );
-            return this;
         },
 
         /**
@@ -226,6 +260,11 @@
         get: function( key ) {
             var item = localStorage.getItem( LS.prefix + key );
             try {
+
+                // chunk, return string
+                if (key.indexOf('chunk:') !== -1) {
+                    return item || false;
+                }
                 return JSON.parse( item || 'false' );
             } catch( e ) {
                 return false;
@@ -239,10 +278,27 @@
             var item, key;
             var now = this.now();
 
+            var entry, clear;
             for ( item in localStorage ) {
                 key = item.split( LS.prefix )[ 1 ];
-                if ( key && ( !expired || LS.get( key ).expire <= now ) ) {
-                    LS.remove( key );
+                if (key) {
+                    if (key.indexOf('chunk:') !== -1) {
+                        // chunk, remove by parent object
+                        continue;
+                    }
+
+                    // get entry
+                    entry = LS.get( key );
+                    if (!entry) {
+                        // entry does not exist
+                        continue;
+                    }
+
+                    if (!expired || entry.expire <= now) {
+
+                        // remove entry
+                        LS.remove( key );
+                    }
                 }
             }
         }
@@ -272,6 +328,8 @@
          */
         return URL.createObjectURL(blob);
     };
+
+    LS.add('test',{x:1});
 
     /**
      * Web Worker source code

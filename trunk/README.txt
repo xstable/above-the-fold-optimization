@@ -94,6 +94,11 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 
 == Changelog ==
 
+= 2.6.7 =
+* Bugfix: HTML5 Web Worker and Fetch API based script loader with localStorage cache not clearing chunks.
+* Bugfix: HTML5 Web Worker and Fetch API based script loader with localStorage cache not handling quota exceeded correctly.
+* Modified: HTML5 Web Worker and Fetch API based script loader with localStorage cache chunk size lowered to 100kb ([test](https://jsperf.com/localstorage-10x100kb-vs-2x-500kb-vs-1x-1mb)).
+
 = 2.6.6 =
 * Added: option to disable the plugin using the query string `?noabtf`.
 * Bugfix: HTML entity encoded javascript urls not handled correctly by proxy.
