@@ -40,8 +40,8 @@ module.exports = function(grunt) {
 
 					// Javascript optimization
 					'public/js/abovethefold-js.min.js' : [
-						'public/js/src/abovethefold.loadscript.js',
-						'public/js/src/abovethefold.js.js'
+						'public/js/src/abovethefold.js.js',
+						'public/js/src/abovethefold.loadscript.js'
 					],
 
 					// Javascript localstorage script loader
@@ -140,8 +140,8 @@ module.exports = function(grunt) {
 
 					// Javascript optimization
 					'public/js/abovethefold-js.debug.min.js' : [
-						'public/js/src/abovethefold.loadscript.js',
-						'public/js/src/abovethefold.js.js'
+						'public/js/src/abovethefold.js.js',
+						'public/js/src/abovethefold.loadscript.js'
 					],
 
 					// Javascript localstorage script loader

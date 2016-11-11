@@ -312,4 +312,9 @@
         loadScript(0);
     };
 
+    /**
+     * On script load
+     */
+    window['Abtf'].onScriptLoad = ON_SCRIPT_LOAD;
+
 })(window, window['Abtf'], Object);

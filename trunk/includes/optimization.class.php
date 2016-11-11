@@ -1137,16 +1137,17 @@ class Abovethefold_Optimization {
 				$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-jquery-stub'.$jsdebug.'.min.js';
 			}
 
-			// jQuery ready stub
+			$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-js'.$jsdebug.'.min.js';
+
+			// script loader
 			if (isset($this->CTRL->options['jsdelivery_scriptloader']) && $this->CTRL->options['jsdelivery_scriptloader'] !== 'little-loader') {
 
+				// proxy is required for HTML5 script loader
 				if ($this->CTRL->options['jsdelivery_scriptloader'] === 'html5' && $this->CTRL->options['js_proxy']) {
 
 					$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-js-localstorage'.$jsdebug.'.min.js';
 				}
 			}
-
-			$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-js'.$jsdebug.'.min.js';
 		}
 
 		/**

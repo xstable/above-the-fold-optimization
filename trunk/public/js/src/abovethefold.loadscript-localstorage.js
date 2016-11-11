@@ -12,41 +12,19 @@
 (function(window, Abtf) {
     'use strict';
 
-    /**
-     * Verify if localStorage is available
-     */
-    if (!(function() {
-
-        // test availability of localStorage
-        try {
-            if ('localStorage' in window && window['localStorage'] !== null) {
-                // ok
-            } else {
-                return false;
-            }
-        } catch(e) {
-            return false;
+    // test availability of localStorage
+    try {
+        if ('localStorage' in window && window['localStorage'] !== null) {
+            // ok
+        } else {
+            return;
         }
+    } catch(e) {
+        return;
+    }
 
-        // test access
-        var check = 'abtf';
-        try {
-            localStorage.setItem(check, check);
-            localStorage.removeItem(check);
-        } catch(e) {
-            return false;
-        }
-
-        // test availability Web Workers
-        if (typeof(window.Worker) === "undefined" || !window.Worker) {
-            return false;
-        }
-
-        return true;
-    })()) {
-
-        // localStorage not available
-        // fallback to regular loading
+    // test availability Web Workers
+    if (typeof(window.Worker) === "undefined" || !window.Worker) {
         return;
     }
 
@@ -54,6 +32,13 @@
      * Object urls to revoke on unload
      */
     var OBJECT_URLS = [];
+
+    // requestIdleCallback, run tasks in CPU idle time
+    try {
+        var IDLE = ('requestIdleCallback' in window && window['requestIdleCallback'] !== null) ? window['requestIdleCallback'] : false;
+    } catch (err) {
+        var IDLE = false;
+    }
 
     /**
      * localStorage controller
@@ -75,41 +60,59 @@
             return (+new Date() / 1000);
         },
 
+        // process task when idle
+        execWhenIdle: function(task,timeframe) {
+
+            if (IDLE) {
+
+                // shedule for idle time
+                IDLE(task, { timeout: timeframe });
+
+            } else {
+                task();
+            }
+        },
+
         /**
          * Save script to localStorage cache
          */
         saveScript: function( url, scriptData, expire ) {
 
-            var scriptObj = {};
+            // minimize interference with rendering
+            LS.execWhenIdle(function idleTime() {
 
-            var now = this.now();
-            scriptObj.date = now;
-            scriptObj.expire = now + ( expire || LS.default_expire );
+                var scriptObj = {};
 
-            if (scriptData instanceof Array) {
+                var now = LS.now();
+                scriptObj.date = now;
+                scriptObj.expire = now + ( expire || LS.default_expire );
 
-                // chunked
-                scriptObj.chunked = true;
-                scriptObj.chunks = scriptData.length;
+                if (scriptData instanceof Array) {
 
-                var chunkObjects = [];
-                var l = scriptData.length;
-                for (var i = 0; i < l; i++) {
-                    chunkObjects.push(scriptData[i]);
+                    // chunked
+                    scriptObj.chunked = true;
+                    scriptObj.chunks = scriptData.length;
+
+                    var chunkObjects = [];
+                    var l = scriptData.length;
+                    for (var i = 0; i < l; i++) {
+                        chunkObjects.push(scriptData[i]);
+                    }
+                } else {
+                    var chunkObjects = false;
+                    scriptObj.data = scriptData;
                 }
-            } else {
-                var chunkObjects = false;
-                scriptObj.data = scriptData;
-            }
 
-            this.add( url, scriptObj );
+                LS.add( url, scriptObj );
 
-            if (chunkObjects) {
-                var l = chunkObjects.length;
-                for (var i = 0; i < l; i++) {
-                    this.add( 'chunk:'+i+':'+url, chunkObjects[i] );
+                if (chunkObjects) {
+                    var l = chunkObjects.length;
+                    for (var i = 0; i < l; i++) {
+                        LS.add( 'chunk:'+i+':'+url, chunkObjects[i] );
+                    }
                 }
-            }
+
+            }, 3000);
         },
 
         /**
@@ -278,6 +281,10 @@
             var item, key;
             var now = this.now();
 
+            if (ABTFDEBUG) {
+                var removed = [];
+            }
+
             var entry, clear;
             for ( item in localStorage ) {
                 key = item.split( LS.prefix )[ 1 ];
@@ -298,9 +305,19 @@
 
                         // remove entry
                         LS.remove( key );
+
+                        if (ABTFDEBUG) {
+                            removed.push(key);
+                        }
                     }
                 }
             }
+
+            if (ABTFDEBUG) {
+                if (removed.length > 0) {
+                    console.warn('Abtf.js() ➤ localStorage cleared',removed.length,'expired scripts');
+                }
+            }   
         }
 
     };
@@ -339,7 +356,7 @@
         // Fetch API
         self.FETCH = self.fetch || false;
 
-        // default xhr timeout
+        // default timeout
         self.DEFAULT_TIMEOUT = 5000;
 
         // @todo performance tests
@@ -367,6 +384,7 @@
 
             // resource loaded flag
             var resourceLoaded = false;
+            var request_timeout = false;
 
             // onload callback
             var resourceOnload = function(error,returnData) {
@@ -453,7 +471,7 @@
                 if (isNaN(timeout)) {
                     timeout = DEFAULT_TIMEOUT;
                 }
-                var request_timeout = setTimeout( function requestTimeout() {
+                request_timeout = setTimeout( function requestTimeout() {
                     if (resourceLoaded) {
                         return; // already processed
                     }
@@ -511,7 +529,7 @@
                 if (isNaN(timeout)) {
                     timeout = DEFAULT_TIMEOUT;
                 }
-                var request_timeout = setTimeout( function requestTimeout() {
+                request_timeout = setTimeout( function requestTimeout() {
                     if (resourceLoaded) {
                         return; // already processed
                     }
@@ -730,7 +748,32 @@
     /**
      * Clear expired entries
      */
-    LS.clear( true );
+    if (IDLE) {
+
+        // shedule for idle time
+        IDLE(function() {
+            LS.clear( true );
+        }, { timeout: 3000 });
+
+    } else {
+
+        // fallback to setTimeout
+        var clear_timeout;
+        var initClearTimeout = function() {
+            if (clear_timeout) {
+                clearTimeout(clear_timeout);
+            }
+            clear_timeout = setTimeout(function() {
+                LS.clear( true );
+            },2000);
+        };
+
+        // set timeout
+        initClearTimeout();
+
+        // reset timeout on script load
+        Abtf.onScriptLoad(initClearTimeout);
+    }
 
     /**
      * Load cached script
