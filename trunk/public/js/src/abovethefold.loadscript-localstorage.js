@@ -799,6 +799,8 @@
              */
             WEBWORKER.loadScript(src, function onData(scriptData) {
 
+                callback();
+
                 if (!scriptData) {
                     if (ABTFDEBUG) {
                         console.error('Abtf.js() ➤ web worker script loader no data',Abtf.localUrl(src));
