@@ -281,6 +281,8 @@ class Abovethefold_OPP_W3TotalCache extends Abovethefold_OPP {
 		if ($this->pagecache_callback) {
 			if ( is_callable( $this->pagecache_callback ) ) {
 				$buffer = call_user_func( $this->pagecache_callback, $buffer );
+			} else if (function_exists('wp_get_current_user') && current_user_can('administrator')) {
+				return 'Failed to process W3 Total Cache callback. Please contact the author of the <a href="https://goo.gl/C1gw96" target="_blank">Above The Fold Optimization</a> plugin</a>. This message is only visible to administrators.';
 			}
 		}
 

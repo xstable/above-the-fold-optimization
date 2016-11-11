@@ -268,6 +268,13 @@ class Abovethefold {
         	return false;
         }
 
+        /**
+         * Disable abtf with query string ?noabtf for admin users
+         */
+        if (isset($_GET['noabtf'])) {
+        	return false;
+        }
+
         return true;
 	}
 

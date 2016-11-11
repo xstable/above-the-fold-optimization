@@ -51,6 +51,11 @@
     }
 
     /**
+     * Object urls to revoke on unload
+     */
+    var OBJECT_URLS = [];
+
+    /**
      * localStorage controller
      */
     var LS = {
@@ -142,7 +147,10 @@
             }
 
             // create blob url
-            return createBlobUrl(cacheObject.data,'application/javascript');
+            var bloburl = createBlobUrl(cacheObject.data,'application/javascript');
+            OBJECT_URLS.push(bloburl);
+
+            return bloburl;
 
         },
 
@@ -638,10 +646,26 @@
     WEBWORKER.start();
 
     /**
-     * Terminate worker on unload
+     * Clear memory
      */
     window.addEventListener("beforeunload", function (e) {
+
+        // stop web worker
         WEBWORKER.stop();
+
+        // revoke script object urls
+        if (OBJECT_URLS.length > 0) {
+            var l = OBJECT_URLS.length;
+            for (var i = 0; i < l; i++) {
+                try {
+                    URL.revokeObjectURL(OBJECT_URLS[i]);
+                } catch(err) {
+                    if (ABTFDEBUG) {
+                        console.error('Abtf.js() ➤ failed to revoke script url',OBJECT_URLS[i],err);
+                    }   
+                }
+            }
+        }
     });
 
     /**

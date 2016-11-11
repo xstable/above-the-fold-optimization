@@ -48,6 +48,10 @@ class Abovethefold_Plugins {
 	 */
 	public function html_output_hook($optimization) {
 
+		if ($this->CTRL->disabled) {
+			return false; // above the fold optimization disabled for area / page
+		}
+
 		foreach ($this->active_modules as $module) {
 			if ($module->active('html_output_buffer') && method_exists($module, 'html_output_hook')) {
 
@@ -135,6 +139,10 @@ class Abovethefold_Plugins {
 	 * Load modules
 	 */
 	public function load_modules( ) {
+
+		if ($this->CTRL->disabled) {
+			return; // above the fold optimization disabled for area / page
+		}
 
 		$modules = $this->get_modules( );
 
