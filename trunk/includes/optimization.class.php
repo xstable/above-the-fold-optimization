@@ -1139,7 +1139,7 @@ class Abovethefold_Optimization {
 
 				if ($this->CTRL->options['jsdelivery_scriptloader'] === 'html5' && $this->CTRL->options['js_proxy']) {
 
-					$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-js-cached'.$jsdebug.'.min.js';
+					$jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-js-localstorage'.$jsdebug.'.min.js';
 				}
 			}
 
