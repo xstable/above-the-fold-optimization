@@ -519,18 +519,18 @@ class Abovethefold_Proxy {
 		}
 
 		$urlhost_nowww = $hostname;
-		if (strpos($urlhost_nowww,'www.') === 0) {
+		if (stripos($urlhost_nowww,'www.') === 0) {
 			$urlhost_nowww = substr($urlhost_nowww,4);
 		}
 
 		$host_nowww = $_SERVER['HTTP_HOST'];
-		if (strpos($host_nowww,'www.') === 0) {
+		if (stripos($host_nowww,'www.') === 0) {
 			$host_nowww = substr($host_nowww,4);
 		}
 
 		if ($urlhost_nowww === $host_nowww) {
-			if (strpos($originalUrl,$_SERVER['HTTP_HOST']) === false) {
-				$originalUrl = str_replace($hostname,$_SERVER['HTTP_HOST'],$originalUrl);
+			if (stripos($originalUrl,$_SERVER['HTTP_HOST']) === false) {
+				$originalUrl = str_ireplace($hostname,$_SERVER['HTTP_HOST'],$originalUrl);
 			}
 
 			/**
@@ -842,7 +842,7 @@ class Abovethefold_Proxy {
 			if ($this->is_local($parsed_url,$url)) {
 
 				// local file
-				$url = str_replace( $http_prefix . $parsed_url['host'], '', $url);
+				$url = str_ireplace( $http_prefix . $parsed_url['host'], '', $url);
 			}
 		}
 
