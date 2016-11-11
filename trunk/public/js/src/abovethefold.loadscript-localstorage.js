@@ -794,12 +794,12 @@
          */
         Abtf.loadScript(src, function scriptLoaded() {
 
+            callback();
+
             /**
              * Load script into cache in the background
              */
             WEBWORKER.loadScript(src, function onData(scriptData) {
-
-                callback();
 
                 if (!scriptData) {
                     if (ABTFDEBUG) {
