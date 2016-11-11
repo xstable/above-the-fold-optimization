@@ -102,9 +102,9 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 * Bugfix: external resource proxy fails on local urls with query string.
 
 = 2.6.7 =
-* Bugfix: HTML5 script loader with localStorage cache not clearing chunks.
-* Bugfix: HTML5 script loader with localStorage cache not handling quota exceeded correctly.
-* Modified: HTML5 script loader with localStorage cache chunk size lowered to 100kb ([test](https://jsperf.com/localstorage-10x100kb-vs-2x-500kb-vs-1x-1mb)).
+* Bugfix: HTML5 script loader localStorage cache not clearing chunks.
+* Bugfix: HTML5 script loader localStorage cache not handling quota exceeded correctly.
+* Modified: HTML5 script loader localStorage cache chunk size lowered to 100kb ([test](https://jsperf.com/localstorage-10x100kb-vs-2x-500kb-vs-1x-1mb)).
 
 = 2.6.6 =
 * Added: option to disable the plugin using the query string `?noabtf`.
@@ -113,7 +113,7 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 = 2.6.5 =
 * Bugfix: external resource proxy returns PHP notices in WordPress debug modus.
 * Bugfix: external resource proxy gzip compression removed (gzip now handled by server).
-* Improved: HTML5 script loader with localStorage cache chunks large scripts in parts of 500kb.
+* Improved: HTML5 script loader localStorage cache chunks large scripts in parts of 500kb.
 
 = 2.6.4 =
 * Bugfix: async loading in javascript load optimization blocks while waiting for WordPress dependencies to be loaded.
