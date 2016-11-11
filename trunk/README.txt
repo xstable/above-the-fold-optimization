@@ -99,8 +99,8 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 * Bugfix: HTML entity encoded javascript urls not handled correctly by proxy.
 
 = 2.6.5 =
-* Bugfix: external resource proxy returned PHP notices in WordPress debug modus.
-* Bugfix: external resource proxy zlib compression removed (gzip now handled by server).
+* Bugfix: external resource proxy returns PHP notices in WordPress debug modus.
+* Bugfix: external resource proxy gzip compression removed (gzip now handled by server).
 * Improved: HTML5 Web Worker and Fetch API based script loader with localStorage cache chunks large scripts in parts of 500kb.
 
 = 2.6.4 =
