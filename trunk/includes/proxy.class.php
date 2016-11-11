@@ -311,7 +311,7 @@ class Abovethefold_Proxy {
 				$url = urlencode($url);
 			}
 		}
-
+		
 		// html valid ampersand
 		$amp = ($htmlUrl) ? '&amp;' : '&';
 
@@ -350,10 +350,10 @@ class Abovethefold_Proxy {
 		}
 
 		$parsed_url = parse_url($cssfile);
-		if ($cssfile = $this->is_local($parsed_url,$cssfile)) {
+		if ($localfile = $this->is_local($parsed_url,$cssfile)) {
 
 			// not external
-			return $cssfile;
+			return $localfile;
 		}
 
 		if (!empty($this->cdn_hosts) && in_array($parsed_url['host'],$this->cdn_hosts)) {
@@ -391,10 +391,10 @@ class Abovethefold_Proxy {
 		}
 
 		$parsed_url = parse_url($jsfile);
-		if ($jsfile = $this->is_local($parsed_url,$jsfile)) {
+		if ($localfile = $this->is_local($parsed_url,$jsfile)) {
 
 			// not external
-			return $jsfile;
+			return $localfile;
 		}
 
 		if (!empty($this->cdn_hosts) && in_array($parsed_url['host'],$this->cdn_hosts)) {
