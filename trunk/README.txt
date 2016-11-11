@@ -94,6 +94,10 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 
 == Changelog ==
 
+= 2.6.6 =
+* Added: option to disable the plugin using the query string `?noabtf`.
+* Bugfix: HTML entity encoded javascript urls not handled correctly by proxy.
+
 = 2.6.5 =
 * Bugfix: external resource proxy returned PHP notices in WordPress debug modus.
 * Bugfix: external resource proxy zlib compression removed (gzip now handled by server).

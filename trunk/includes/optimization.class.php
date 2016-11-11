@@ -728,6 +728,9 @@ class Abovethefold_Optimization {
 						}
 					}
 
+					// decode file
+					$file = html_entity_decode($file,ENT_COMPAT,'utf-8');
+
 					// add file to style array to be processed
 					$optimized_scripts[] = array($file,$async,$handle,$deps);
 					

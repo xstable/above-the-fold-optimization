@@ -795,13 +795,11 @@ class Abovethefold_Proxy {
 				return false;
 			}
 
-			if ($http_prefix) {
-				$parsed_url = parse_url($url);
-				if ($parsed_url['host'] === $_SERVER['HTTP_HOST']) {
+			$parsed_url = parse_url($url);
+			if ($parsed_url['host'] === $_SERVER['HTTP_HOST']) {
 
-					// local file
-					$url = str_replace( $http_prefix . $parsed_url['host'], '', $url);
-				}
+				// local file
+				$url = str_replace( $http_prefix . $parsed_url['host'], '', $url);
 			}
 		}
 

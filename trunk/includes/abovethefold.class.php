@@ -191,6 +191,13 @@ class Abovethefold {
 		 * Use Above The Fold Optimization standard output buffer
 		 */
 		$this->loader->add_action('template_redirect', $this, 'template_redirect',-10);
+
+		// add noindex meta
+		if (isset($_GET['noabtf'])) {
+
+			// wordpress header
+			$this->loader->add_action('wp_head', $this, 'header', 1);
+		}
 	}
 
 	/**
@@ -269,7 +276,7 @@ class Abovethefold {
         }
 
         /**
-         * Disable abtf with query string ?noabtf for admin users
+         * Disable plugin with query string ?noabtf
          */
         if (isset($_GET['noabtf'])) {
         	return false;
@@ -408,6 +415,13 @@ class Abovethefold {
 	}
 
 	/**
+	 * WordPress header
+	 */
+	public function header() {
+		print '<meta name="robots" content="noindex, nofollow" />';
+	}
+
+	/**
 	 * Run the loader to execute all of the hooks with WordPress
 	 */
 	public function run() {
@@ -488,8 +502,12 @@ class Abovethefold {
 		),$args);
 
 		$res = wp_remote_get($url, $args);
+		if( is_array($res) ) {
+			return trim($res['body']);
+		}
 
-		return trim($res['body']);
+		return false; // error
+
 	}
 
 	/**
