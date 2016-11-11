@@ -350,7 +350,7 @@ class Abovethefold_Proxy {
 		}
 
 		$parsed_url = parse_url($cssfile);
-		if ($parsed_url['host'] === $_SERVER['HTTP_HOST']) {
+		if ($cssfile = $this->is_local($parsed_url,$cssfile)) {
 
 			// not external
 			return $cssfile;
@@ -391,7 +391,7 @@ class Abovethefold_Proxy {
 		}
 
 		$parsed_url = parse_url($jsfile);
-		if ($parsed_url['host'] === $_SERVER['HTTP_HOST']) {
+		if ($jsfile = $this->is_local($parsed_url,$jsfile)) {
 
 			// not external
 			return $jsfile;
@@ -501,6 +501,48 @@ class Abovethefold_Proxy {
 		// expired
 		if ($last_modified < (time() - $expire_time)) {
 			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Is local url?
+	 */
+	public function is_local($url, $originalUrl) {
+
+		if (is_array($url) && $url['host']) {
+			$hostname = $url['host'];
+		} else {
+			$parsed_url = parse_url($url);
+			$hostname = $parsed_url['host'];
+		}
+
+		$urlhost_nowww = $hostname;
+		if (strpos($urlhost_nowww,'www.') === 0) {
+			$urlhost_nowww = substr($urlhost_nowww,4);
+		}
+
+		$host_nowww = $_SERVER['HTTP_HOST'];
+		if (strpos($host_nowww,'www.') === 0) {
+			$host_nowww = substr($host_nowww,4);
+		}
+
+		if ($urlhost_nowww === $host_nowww) {
+			if (strpos($originalUrl,$_SERVER['HTTP_HOST']) === false) {
+				$originalUrl = str_replace($hostname,$_SERVER['HTTP_HOST'],$originalUrl);
+			}
+
+			/**
+			 * Translate protocol relative url
+			 */
+			if (substr($originalUrl,0,2) === '//') {
+
+				// prefix url with protocol
+				$originalUrl = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https:' : 'http:') . $originalUrl;
+			}
+
+			return $originalUrl;
 		}
 
 		return false;
@@ -653,7 +695,7 @@ class Abovethefold_Proxy {
 		}
 
 		// parse url
-		$parsed = $this->parse_url($url);
+		$parsed = $this->parse_url($url,true);
 		if (!$parsed) { return false; }
 		list($url,$filehash,$local_file) = $parsed;
 
@@ -753,7 +795,7 @@ class Abovethefold_Proxy {
 	/**
 	 * Parse url
 	 */
-	public function parse_url($url) {
+	public function parse_url($url,$x=false) {
 
 		$url = trim($url);
 
@@ -772,7 +814,7 @@ class Abovethefold_Proxy {
 		$local_file = false;
 
 		// http(s):// based file, match host with server host
-		if (stripos($url, '://') !== false) {
+		if (strpos($url, '://') !== false) {
 
 			$http_prefix = false;
 
@@ -796,7 +838,8 @@ class Abovethefold_Proxy {
 			}
 
 			$parsed_url = parse_url($url);
-			if ($parsed_url['host'] === $_SERVER['HTTP_HOST']) {
+
+			if ($this->is_local($parsed_url,$url)) {
 
 				// local file
 				$url = str_replace( $http_prefix . $parsed_url['host'], '', $url);
@@ -804,7 +847,17 @@ class Abovethefold_Proxy {
 		}
 
 		// local file
-		if (stripos($url, '://') === false) {
+		if (strpos($url, '://') === false) {
+
+			// remove query string
+			if (strpos($url,'?') !== false) {
+				$url = substr( $url, 0, strpos( $url, "?"));
+			}
+
+			// remove hash
+			if (strpos($url,'#') !== false) {
+				$url = substr( $url, 0, strpos( $url, "#"));
+			}
 
 			// get real path for url
 			if (substr($url,0,1) === '/') {

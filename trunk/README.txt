@@ -94,6 +94,10 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 
 == Changelog ==
 
+= 2.6.8 =
+* Bugfix: external resource proxy fails on invalid linked local urls with or without www. (301-redirect).
+* Bugfix: external resource proxy fails on local urls with query string.
+
 = 2.6.7 =
 * Bugfix: HTML5 Web Worker and Fetch API based script loader with localStorage cache not clearing chunks.
 * Bugfix: HTML5 Web Worker and Fetch API based script loader with localStorage cache not handling quota exceeded correctly.

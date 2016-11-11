@@ -494,6 +494,7 @@ class Abovethefold {
 
 		$args = array_merge(array(
 			'timeout'     => 60,
+			'redirection' => 5,
     		'sslverify'   => false,
 
 			// Chrome Generic Win10
