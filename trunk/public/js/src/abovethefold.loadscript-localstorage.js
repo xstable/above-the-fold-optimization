@@ -285,7 +285,8 @@
         self.DEFAULT_TIMEOUT = 5000;
 
         // @todo performance tests
-        self.MAX_CHUNK_SIZE = 500000; // 500kb
+        // @link https://jsperf.com/localstorage-10x100kb-vs-2x-500kb-vs-1x-1mb
+        self.MAX_CHUNK_SIZE = 100000; // 100kb
 
         // chunk data for localStorage
         self.CHUNK_DATA = function(data,chunkSize) {
