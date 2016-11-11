@@ -705,7 +705,11 @@
                 }
 
                 if (ABTFDEBUG) {
-                    console.info('Abtf.js() ➤ web worker script loader saved',Abtf.localUrl(src));
+                    if (scriptData instanceof Array) {
+                        console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked','(' + scriptData.length + ' chunks)', Abtf.localUrl(src));
+                    } else {
+                        console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '('+scriptData.length+')', Abtf.localUrl(src));
+                    }
                 }
 
                 // save script to local storage
