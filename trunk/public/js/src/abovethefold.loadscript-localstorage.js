@@ -78,11 +78,33 @@
             var scriptObj = {};
 
             var now = this.now();
-            scriptObj.data = scriptData;
             scriptObj.date = now;
             scriptObj.expire = now + ( expire || LS.default_expire );
 
+            if (scriptData instanceof Array) {
+
+                // chunked
+                scriptObj.chunked = true;
+                scriptObj.chunks = scriptData.length;
+
+                var chunkObjects = [];
+                var l = scriptData.length;
+                for (var i = 0; i < l; i++) {
+                    chunkObjects.push(scriptData[i]);
+                }
+            } else {
+                var chunkObjects = false;
+                scriptObj.data = scriptData;
+            }
+
             this.add( url, scriptObj );
+
+            if (chunkObjects) {
+                var l = chunkObjects.length;
+                for (var i = 0; i < l; i++) {
+                    this.add( 'chunk:'+i+':'+url, chunkObjects[i] );
+                }
+            }
         },
 
         /**
@@ -100,6 +122,23 @@
             // verify expire time
             if (typeof cacheObject.expire !== 'undefined' && (cacheObject.expire - this.now()) < 0) {
                 return false; // expired
+            }
+
+            /**
+             * Chunked data
+             */
+            if (typeof cacheObject.chunked !== 'undefined' && cacheObject.chunked === true) {
+                var data = [], chunkData;
+                for (var i = 0; i < cacheObject.chunks; i++) {
+                    chunkData = this.get('chunk:'+i+':'+url);
+
+                    // chunk is missing
+                    if (chunkData === false) {
+                        return false;
+                    }
+                    data.push(chunkData);
+                }
+                cacheObject.data = data.join('');
             }
 
             // create blob url
@@ -131,19 +170,34 @@
 
                     if ( tempScripts.length ) {
                         tempScripts.sort(function( a, b ) {
-                            return a.stamp - b.stamp;
+                            return a.date - b.date;
                         });
 
                         LS.remove( tempScripts[ 0 ].key );
 
                         return LS.add( key, storeObj );
 
+                        if (ABTFDEBUG) {
+                            console.error('Abtf.js() ➤ localStorage quota','removed',key,e);
+                        }
+
                     } else {
+
+
+                        if (ABTFDEBUG) {
+                            console.error('Abtf.js() ➤ localStorage quota','no files to remove');
+                        }
+
                         // no files to remove. Larger than available quota
                         return;
                     }
 
                 } else {
+
+                    if (ABTFDEBUG) {
+                        console.error('Abtf.js() ➤ localStorage error',e.name,e);
+                    }
+
                     // some other error
                     return;
                 }
@@ -222,6 +276,23 @@
         // default xhr timeout
         self.DEFAULT_TIMEOUT = 5000;
 
+        // @todo performance tests
+        self.MAX_CHUNK_SIZE = 500000; // 500kb
+
+        // chunk data for localStorage
+        self.CHUNK_DATA = function(data,chunkSize) {
+            var chunksCount = Math.ceil(data.length/chunkSize);
+            var chunks  = new Array(chunksCount);
+            var offset;
+
+            for (var i=0; i<chunksCount; i++) {
+                offset = i * chunkSize;
+                chunks[i] = data.substring(offset, offset + chunkSize);
+            }
+
+            return chunks;
+        };
+
         /**
          * Method for loading resource
          */
@@ -243,6 +314,21 @@
                     request_timeout = false;
                 }
 
+                if (!error && returnData) {
+
+                    /**
+                     * localStorage appears to become buggy with large scripts
+                     *
+                     * Split data in chunks.
+                     */
+                    var dataSize = returnData.length;
+
+                    // calculate data size
+                    if (dataSize > MAX_CHUNK_SIZE) {
+                        returnData = CHUNK_DATA(returnData,MAX_CHUNK_SIZE);
+                    }
+                }
+
                 RESOURCE_LOAD_COMPLETED(file,error,returnData);
             };
 
@@ -256,6 +342,19 @@
                     method: 'GET',
                     mode: 'cors',
                     cache: 'default'
+                };
+
+                var handleError = function(error) {
+                    if (resourceLoaded) {
+                        return;  // already processed
+                    }
+
+                    if (typeof error === 'object' && error.status) {
+                        error = [error.status,error.statusText];
+                    }
+
+                    // error
+                    resourceOnload(error);
                 };
 
                 // fetch request
@@ -276,17 +375,10 @@
                         } else {
 
                             // error
-                            resourceOnload(response.error());
+                            resourceOnload([response.status,response.statusText]);
                         }
 
-                    }).catch(function(error) {
-                        if (resourceLoaded) {
-                            return;  // already processed
-                        }
-
-                        // error
-                        resourceOnload(error);
-                    });
+                    }, handleError).catch(handleError);
 
                 // Fetch API does not support abort or cancel or timeout
                 // simply ignore the request on timeout
@@ -375,6 +467,11 @@
         self.RESOURCE_LOAD_COMPLETED = function(file,error,returnData) {
 
             if (error) {
+
+                if (!(error instanceof Array) && typeof error === 'object') {
+                    error = error.toString();
+                }
+
                 // return error
                 self.postMessage([2,file.i,error]);
             } else {
@@ -486,6 +583,12 @@
             // error
             if (parseInt(response[0]) === 2) {
                 if (ABTFDEBUG) {
+                    if (response[2] instanceof Array) {
+                        if (parseInt(response[2][0]) > 200 && parseInt(response[2][0]) < 600) {
+                            console.error('Abtf.js() ➤ web worker ➤ '+response[2][0]+' '+response[2][1],WEBWORKER.scriptQueue[scriptIndex].url);
+                            return;
+                        }
+                    }
                     console.error('Abtf.js() ➤ web worker script loader error',response[2]);
                 }
                 return;
@@ -618,7 +721,11 @@
             }
 
             if (ABTFDEBUG) {
-                console.info('Abtf.js() ➤ web worker script loader saved',Abtf.localUrl(src));
+                if (scriptData instanceof Array) {
+                    console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked','(' + scriptData.length + ' chunks)', Abtf.localUrl(src));
+                } else {
+                    console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '('+scriptData.length+')', Abtf.localUrl(src));
+                }
             }
 
             // save script to local storage

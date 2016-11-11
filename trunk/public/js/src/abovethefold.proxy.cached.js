@@ -174,7 +174,7 @@
 	/**
 	 * Return proxy or direct cache url based on preload list
 	 */
-	var PROXIFY_URL = function(url,type) {
+	var PROXIFY_URL = function(url,type, injectNode) {
 
 		if (ABTFDEBUG) {
 			var regexmatch = false;
@@ -256,12 +256,26 @@
 					// try Web Worker localStorage cache
 					if (typeof Abtf.cachedScriptUrl !== 'undefined') {
 						var parsedPath = PARSE_URL(path).href;
-						path = Abtf.cachedScriptUrl(parsedPath);
-						if (ABTFDEBUG) {
-							if (path !== parsedPath) {
-								localStorageUrl = path;
-							}
-						}
+						Abtf.cachedScriptUrl(parsedPath)
+							.then(function(url) {
+
+								// cache url
+								if (url !== parsedUrl) {
+
+									if (ABTFDEBUG) {
+										if (regexmatch) {
+											console.log('Abtf.proxy()', 'cached regex capture', Abtf.localUrl(originalUrl), '➤', 'cache:' + cachehash, '➤', url);
+										} else {
+							            	console.log('Abtf.proxy()', 'cached capture', Abtf.localUrl(parsedUrl), '➤', 'cache:' + cachehash, '➤', url);
+							        	}
+							        }
+
+								}
+								
+								// inject captured node
+	        					injectNode(url);
+							});
+						return;
 					}
 
 				} else if (type === 'css') {
@@ -269,44 +283,45 @@
 				}
 
 				if (ABTFDEBUG) {
-					if (localStorageUrl) {
-						if (regexmatch) {
-							console.log('Abtf.proxy()', 'localStorage regex capture', Abtf.localUrl(originalUrl), '➤', 'cache:' + cachehash, '➤', localStorageUrl);
-						} else {
-			            	console.log('Abtf.proxy()', 'localStorage capture', Abtf.localUrl(url), '➤', 'cache:' + cachehash, '➤', localStorageUrl);
-			        	}
+					if (regexmatch) {
+						console.log('Abtf.proxy()', 'regex capture', Abtf.localUrl(originalUrl), '➤', 'cache:' + cachehash);
 					} else {
-						if (regexmatch) {
-							console.log('Abtf.proxy()', 'regex capture', Abtf.localUrl(originalUrl), '➤', 'cache:' + cachehash);
-						} else {
-			            	console.log('Abtf.proxy()', 'capture', Abtf.localUrl(url), '➤', 'cache:' + cachehash);
-			        	}
-					}
-					
+		            	console.log('Abtf.proxy()', 'capture', Abtf.localUrl(url), '➤', 'cache:' + cachehash);
+		        	}
 		        }
 
-				return path;
+				return injectNode(path);
 			}
 		}
 
         if (type === 'js') {
 
-        	// try Web Worker localStorage cache
+        	// try Web Worker storage cache
 			if (typeof Abtf.cachedScriptUrl !== 'undefined') {
+
 				var parsedUrl = PARSE_URL(url).href;
-				url = Abtf.cachedScriptUrl(parsedUrl);
-				if (url !== parsedUrl) {
+				Abtf.cachedScriptUrl(parsedUrl)
+					.then(function(url) {
 
-					if (ABTFDEBUG) {
-						if (regexmatch) {
-							console.log('Abtf.proxy()', 'localStorage regex capture', Abtf.localUrl(originalUrl), 'regex', '➤', Abtf.localUrl(parsedUrl), '➤', url);
+						// cache url
+						if (url !== parsedUrl) {
+
+							if (ABTFDEBUG) {
+								if (regexmatch) {
+									console.log('Abtf.proxy()', 'cached regex capture', Abtf.localUrl(originalUrl), 'regex', '➤', Abtf.localUrl(parsedUrl), '➤', url);
+								} else {
+					            	console.log('Abtf.proxy()', 'cached capture', Abtf.localUrl(parsedUrl), '➤', url);
+					        	}
+					        }
+					        injectNode(url);
+
 						} else {
-			            	console.log('Abtf.proxy()', 'localStorage capture', Abtf.localUrl(parsedUrl), '➤', url);
-			        	}
-			        }
 
-					return url;
-				}
+							// inject captured node
+        					injectNode(GET_PROXY_URL(url, type));
+						}
+					});
+				return;
 			}
         }
 
@@ -318,7 +333,8 @@
         	}
         }
 
-        return GET_PROXY_URL(url, type);
+        // inject captured node
+        injectNode(GET_PROXY_URL(url, type));
 
 	};
 
@@ -517,7 +533,7 @@
 	/**
 	 * Proxy injected script or stylesheet URL
 	 */
-	var PROXY = function(node) {
+	var PROXY = function(node, injector) {
 
 		var type = IS_EXTERNAL_RESOURCE(node);
 		if (!type) {
@@ -532,21 +548,28 @@
     	var url = PARSE_URL((type === 'css') ? node.href : node.src).href;
 
     	// proxy or direct cache url
-    	var proxy_url = PROXIFY_URL(url, type);
+    	PROXIFY_URL(url, type, function injectNode(proxy_url) {
 
-        if (type === 'css') {
+    		if (type === 'css') {
 
-        	node.href = proxy_url;
+	        	node.href = proxy_url;
 
-        } else if (type === 'js') {
+	        } else if (type === 'js') {
 
-        	node.src = proxy_url;
-        }
+	        	node.src = proxy_url;
+	        }
+
+	        injector();
+    	});
+
+        
 
 	}
 
 	/**
 	 * Capture appendChild
+	 *
+	 * @todo appendChild / insertBefore require a return value?
 	 */
 	var CAPTURE = {
 
@@ -556,10 +579,11 @@
 		appendChild: function(type, aChild) {
 		    var target = this;
 
-		    PROXY(aChild);
+		    PROXY(aChild, function appendChild() {
+		    	ORIGINAL.append[type].call(target, aChild);
+		    });
 
-		    // call original method
-		    return ORIGINAL.append[type].call(this, aChild);
+		    return aChild;
 		},
 
 		/**
@@ -568,10 +592,11 @@
 		insertBefore: function(type, newNode, referenceNode) {
 		    var target = this;
 
-		    PROXY(newNode);
+		    PROXY(newNode, function insertBefore() {
+		    	ORIGINAL.insert[type].call(target, newNode, referenceNode);
+		    });
 
-		    // call original method
-		    return ORIGINAL.insert[type].call(this, newNode, referenceNode);
+		    return newNode;
 		}
 	};
 

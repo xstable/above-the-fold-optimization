@@ -44,6 +44,11 @@ module.exports = function(grunt) {
 						'public/js/src/abovethefold.js.js'
 					],
 
+					// Javascript localstorage script loader
+					'public/js/abovethefold-js-localstorage.min.js' : [
+						'public/js/src/abovethefold.loadscript-localstorage.js'
+					],
+
 					// Javascript cached script loader
 					'public/js/abovethefold-js-cached.min.js' : [
 						'public/js/src/abovethefold.loadscript-cached.js'
@@ -137,6 +142,11 @@ module.exports = function(grunt) {
 					'public/js/abovethefold-js.debug.min.js' : [
 						'public/js/src/abovethefold.loadscript.js',
 						'public/js/src/abovethefold.js.js'
+					],
+
+					// Javascript localstorage script loader
+					'public/js/abovethefold-js-localstorage.debug.min.js' : [
+						'public/js/src/abovethefold.loadscript-localstorage.js'
 					],
 
 					// Javascript cached script loader

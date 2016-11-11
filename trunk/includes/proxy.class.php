@@ -425,7 +425,9 @@ class Abovethefold_Proxy {
 	 * Handle forbidden requests
 	 */
 	public function forbidden() {
-		ob_end_clean();
+		while (ob_get_level()){
+	        ob_end_clean();
+	    };
 		header('HTTP/1.0 403 Forbidden');
 		die('Forbidden');
 	}
@@ -580,14 +582,23 @@ class Abovethefold_Proxy {
 		/**
 		 * Verify last modified
 		 */
-	    if (@strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) == $last_modified || 
-	        trim($_SERVER['HTTP_IF_NONE_MATCH']) == $filehash) {
+	    if (
+	    	(isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && @strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) == $last_modified) 
+	    	|| (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim($_SERVER['HTTP_IF_NONE_MATCH']) == $filehash)
+	    ) {
 
     		header("Etag: $filehash");
 			header("Last-Modified: " . gmdate("D, d M Y H:i:s", $last_modified) . " GMT");
 	        header("HTTP/1.1 304 Not Modified"); 
 		    exit; 
 		}
+
+		/**
+		 * Turn of output buffering
+		 */
+		while (ob_get_level()){
+	        ob_end_clean();
+	    };
 
 		/**
 		 * File headers
@@ -602,10 +613,12 @@ class Abovethefold_Proxy {
 
 		/**
 		 * Set gzip compression
+		 *
+		 * @since  2.6.5
 		 */
-		if (extension_loaded("zlib") && (ini_get("output_handler") != "ob_gzhandler")) {
-		    ini_set("zlib.output_compression", 1);
-		}
+		//if (extension_loaded("zlib") && (ini_get("output_handler") != "ob_gzhandler")) {
+		    //ini_set("zlib.output_compression", 1);
+		//}
 
 		// prevent sniffing of content type
 		header("X-Content-Type-Options: nosniff", true);
@@ -627,7 +640,6 @@ class Abovethefold_Proxy {
 		header("Expires: " .  gmdate("D, d M Y H:i:s", ($last_modified + $expire_time)) . " GMT");
 
 		readfile($cache_file);
-
 		exit;
 	}
 
@@ -823,7 +835,7 @@ class Abovethefold_Proxy {
 			// file hash based on url
 			$filehash = md5($url);
 
-			return array($url, $filehash);
+			return array($url, $filehash, false);
 		}
 	}
 
