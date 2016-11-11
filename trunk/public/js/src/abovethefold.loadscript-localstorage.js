@@ -160,7 +160,7 @@
         add: function( key, storeObj, retryCount ) {
 
             // skip retry after 10 removed entries
-            if (typeof retryCount !== 'undefined' && parseInt(retryCount) > 1) {
+            if (typeof retryCount !== 'undefined' && parseInt(retryCount) > 10) {
 
                 if (ABTFDEBUG) {
                     console.error('Abtf.js() ➤ localStorage quota reached','retry limit reached, abort saving...', key);
