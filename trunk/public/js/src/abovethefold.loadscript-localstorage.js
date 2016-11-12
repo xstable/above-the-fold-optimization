@@ -142,14 +142,14 @@
             LS.preloaded[url] = false;
 
             // get from localStorage
-            var cacheObject = this.get(url);
+            var cacheObject = LS.get(url);
 
             if (!cacheObject) {
                 return false; // not in cache
             }
 
             // verify expire time
-            if (typeof cacheObject.expire !== 'undefined' && (cacheObject.expire - this.now()) < 0) {
+            if (typeof cacheObject.expire !== 'undefined' && (cacheObject.expire - LS.now()) < 0) {
                 return false; // expired
             }
 
@@ -159,7 +159,7 @@
             if (typeof cacheObject.chunked !== 'undefined' && cacheObject.chunked === true) {
                 var data = [], chunkData;
                 for (var i = 0; i < cacheObject.chunks; i++) {
-                    chunkData = this.get('chunk:'+i+':'+url);
+                    chunkData = LS.get('chunk:'+i+':'+url);
 
                     // chunk is missing
                     if (chunkData === false) {
@@ -175,7 +175,6 @@
             OBJECT_URLS.push(LS.preloaded[url]);
 
             return LS.preloaded[url];
-
         },
 
         /**
@@ -312,11 +311,14 @@
             var item = localStorage.getItem( LS.prefix + key );
             try {
 
-                // chunk, return string
+                // chunk, return string data
                 if (key.indexOf('chunk:') !== -1) {
                     return item || false;
                 }
+
+                // return entry object
                 return JSON.parse( item || 'false' );
+
             } catch( e ) {
                 return false;
             }
@@ -393,8 +395,6 @@
          */
         return URL.createObjectURL(blob);
     };
-
-    LS.add('test',{x:1});
 
     /**
      * Web Worker source code
