@@ -428,7 +428,7 @@
         /**
          * Method for loading resource
          */
-        var LOAD_RESOURCE = function(file) {
+        self.LOAD_RESOURCE = function(file) {
 
             // resource loaded flag
             var resourceLoaded = false;
