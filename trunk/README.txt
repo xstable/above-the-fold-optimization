@@ -94,6 +94,10 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 
 == Changelog ==
 
+= 2.6.11 =
+* Improved: HTML5 script loader uses ES6 promises for async script loading.
+* Improved: HTML5 script loader preloads scripts from localStorage while waiting for WordPress dependencies.
+
 = 2.6.10 =
 * Improved: HTML5 script loader handling of localStorage quota.
 
