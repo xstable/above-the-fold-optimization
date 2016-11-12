@@ -526,8 +526,6 @@
 
     	/**
     	 * Translate relative url
-    	 * 
-    	 * @since  2.5.3
     	 */
     	var url = PARSE_URL((type === 'css') ? node.href : node.src).href;
 
