@@ -360,6 +360,8 @@ class Abovethefold_Optimization {
 			return $buffer;
 		}
 
+		$debug = (current_user_can('administrator') && intval($this->CTRL->options['debug']) === 1) ? true : false;
+
 		// search / replace 
 		$search = array();
 		$replace = array();
@@ -857,7 +859,10 @@ class Abovethefold_Optimization {
 				$scripts_data[] = false;
 			} else {
 				$scripts_data[] = $wp_script_depgroups;
-				$scripts_data[] = $wp_script_deprefs;
+
+				if ($debug) {
+					$scripts_data[] = $wp_script_deprefs;
+				}
 			}
 
 			if (defined('JSON_UNESCAPED_SLASHES')) {
