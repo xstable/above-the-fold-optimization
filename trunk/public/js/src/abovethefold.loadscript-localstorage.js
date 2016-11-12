@@ -198,20 +198,26 @@
 
                     if ( tempScripts.length ) {
                         tempScripts.sort(function( a, b ) {
-                            return a.date - b.date;
+                            return a[1].date - b[1].date;
                         });
 
                         if (ABTFDEBUG) {
-                            console.error('Abtf.js() ➤ localStorage quota reached','removed',tempScripts[0][0],e);
+                            console.error('Abtf.js() ➤ localStorage quota reached','removed',tempScripts[0][0],'for key',key);
                         }
-
+                        
                         LS.remove( tempScripts[0][0] );
 
-                        if (typeof retryCount === 'undefined') {
-                            retryCount = 0;
-                        }
-                        return LS.add( key, storeObj, ++retryCount );
+                        // minimize interference with rendering
+                        LS.execWhenIdle(function idleTime() {
 
+                            if (typeof retryCount === 'undefined') {
+                                retryCount = 0;
+                            }
+                            LS.add( key, storeObj, ++retryCount );
+
+                        }, 1000);
+
+                        return;
                     } else {
 
 

@@ -94,6 +94,9 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 
 == Changelog ==
 
+= 2.6.10 =
+* Improved: HTML5 script loader handling of localStorage quota.
+
 = 2.6.9 =
 * Improved: HTML5 script loader uses [requestIdleCallback](https://developers.google.com/web/updates/2015/08/using-requestidlecallback) to shedule tasks for CPU idle time to improve render performance.
 

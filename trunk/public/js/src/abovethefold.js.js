@@ -158,8 +158,7 @@
      * Javascript processing method
      */
     window['Abtf'].js = function(config) {
-
-        if (config === 'ABTF_JS') {
+        if (/^ABTF\_JS$/.test(config)) {
             if (ABTFDEBUG) {
                 console.error('Abtf.js()','output buffer failed to apply Javascript optimization');
             }
