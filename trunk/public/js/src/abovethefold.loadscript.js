@@ -34,16 +34,7 @@
         firstScript.parentNode.insertBefore(script, firstScript);
     };
 
-    window['Abtf'].loadScript = function (src, callback, context) {
-
-        /*eslint max-statements: [2, 32]*/
-        var setup;
-
-        if (callback && typeof callback !== "function") {
-            context = callback.context || context;
-            setup = callback.setup;
-            callback = callback.callback;
-        }
+    window['Abtf'].loadScript = function (src, callback) {
 
         var script = document.createElement("script");
         var done = false;
@@ -68,7 +59,7 @@
 
             // Callback.
             if (callback) {
-                callback.call(context, err);
+                callback(err);
             }
         };
 
@@ -177,11 +168,6 @@
             // `pendingScripts` ensures this can't happen.
             pendingScripts[id] = script;
 
-            // call the setup callback to mutate the script tag
-            if (setup) {
-                setup.call(context, script);
-            }
-
             // This triggers a request for the script, but its contents won't
             // be executed until we append it to the DOM.
             script.src = src;
@@ -203,11 +189,6 @@
             script.onload = _finish;
             script.async = true;
             script.charset = "utf-8";
-
-            // call the setup callback to mutate the script tag
-            if (setup) {
-                setup.call(context, script);
-            }
 
             script.src = src;
 

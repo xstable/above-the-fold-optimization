@@ -40,6 +40,21 @@
         var IDLE = false;
     }
 
+    // async
+    var ASYNC = function(fn) {
+        if ('Promise' in window) {
+            new Promise(function resolver(resolve,reject) {
+                resolve(fn());
+            });
+        } else {
+            if (window.setImmediate !== 'undefined') {
+                window.setImmediate(fn);
+            } else {
+                setTimeout(fn,0);
+            }
+        }
+    };
+
     /**
      * localStorage controller
      */
@@ -51,9 +66,8 @@
         // Default expire time in seconds
         default_expire: 86400, // 1 day
 
-        isValidItem: null,
-
-        timeout: 5000,
+        // preloaded scripts, loaded while waiting for dependencies
+        preloaded: {},
 
         // return current time in seconds
         now: function() {
@@ -120,6 +134,13 @@
          */
         getScript: function(url) {
 
+            if (typeof LS.preloaded[url] !== 'undefined' && LS.preloaded[url] !== false) {
+                return LS.preloaded[url];
+            }
+
+            // abort preloading
+            LS.preloaded[url] = false;
+
             // get from localStorage
             var cacheObject = this.get(url);
 
@@ -150,11 +171,32 @@
             }
 
             // create blob url
-            var bloburl = createBlobUrl(cacheObject.data,'application/javascript');
-            OBJECT_URLS.push(bloburl);
+            LS.preloaded[url] = createBlobUrl(cacheObject.data,'application/javascript');
+            OBJECT_URLS.push(LS.preloaded[url]);
 
-            return bloburl;
+            return LS.preloaded[url];
 
+        },
+
+        /**
+         * Preload script
+         */
+        preloadScript: function(url) {
+
+            if (typeof LS.preloaded[url] !== 'undefined') {
+                return;
+            }
+
+            // minimize interference with rendering
+            LS.execWhenIdle(function idleTime() {
+
+                if (typeof LS.preloaded[url] !== 'undefined') {
+                    return;
+                }
+
+                LS.preloaded[url] = LS.getScript(url);
+
+            },100);
         },
 
         /**
@@ -784,53 +826,72 @@
     /**
      * Load cached script
      */
-    window['Abtf'].loadCachedScript = function (src, callback, context) {
+    window['Abtf'].loadCachedScript = function (src, callback, onStart) {
 
-        /**
-         * Try localStorage cache
-         */
-        var url = LS.getScript(src);
-        if (url) {
-            Abtf.loadScript(url, callback, context);
-            return url;
-        }
-
-        /**
-         * Not in cache, start regular request
-         */
-        Abtf.loadScript(src, function scriptLoaded() {
-
-            callback();
+        ASYNC(function() {
 
             /**
-             * Load script into cache in the background
+             * Try localStorage cache
              */
-            WEBWORKER.loadScript(src, function onData(scriptData) {
-
-                if (!scriptData) {
-                    if (ABTFDEBUG) {
-                        console.error('Abtf.js() ➤ web worker script loader no data',Abtf.localUrl(src));
-                    }
-                    return;
-                }
-
+            var url = LS.getScript(src);
+            if (url) {
                 if (ABTFDEBUG) {
-                    if (scriptData instanceof Array) {
-                        console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked','(' + scriptData.length + ' chunks)', Abtf.localUrl(src));
-                    } else {
-                        console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '('+scriptData.length+')', Abtf.localUrl(src));
-                    }
+                    onStart(url);
                 }
+                Abtf.loadScript(url, callback);
+                return;
+            }
 
-                // save script to local storage
-                LS.saveScript(src,scriptData);
+            if (ABTFDEBUG) {
+                // not cached
+                onStart(false);
+            }
+
+            /**
+             * Not in cache, start regular request
+             */
+            Abtf.loadScript(src, function scriptLoaded() {
+
+                callback();
+
+                /**
+                 * Load script into cache in the background
+                 */
+                WEBWORKER.loadScript(src, function onData(scriptData) {
+
+                    if (!scriptData) {
+                        if (ABTFDEBUG) {
+                            console.error('Abtf.js() ➤ web worker script loader no data',Abtf.localUrl(src));
+                        }
+                        return;
+                    }
+
+                    if (ABTFDEBUG) {
+                        if (scriptData instanceof Array) {
+                            console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked','(' + scriptData.length + ' chunks)', Abtf.localUrl(src));
+                        } else {
+                            console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '('+scriptData.length+')', Abtf.localUrl(src));
+                        }
+                    }
+
+                    // save script to local storage
+                    LS.saveScript(src,scriptData);
+
+                });
 
             });
 
-        }, context);
-
-        return false;
+        });
         
+    };
+
+    /**
+     * Preload cached script
+     */
+    window['Abtf'].preloadCachedScript = function(url) {
+        ASYNC(function() {
+            LS.preloadScript(url);
+        });
     };
 
     /**

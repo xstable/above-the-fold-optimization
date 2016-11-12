@@ -136,9 +136,15 @@
                    }
                 }
 
+                /**
+                 * Preload script
+                 */
+                if (typeof Abtf.preloadCachedScript !== 'undefined') {
+                    Abtf.preloadCachedScript(PARSE_URL(script));
+                }
+
                 // try again once a script is loaded
                 ON_SCRIPT_LOAD(WAIT_FOR_DEPENDENCIES,[script,deps,callback]);
-
             }
         } else {
             callback();
@@ -231,10 +237,20 @@
             // load script
             var startLoad = function(script,async,handle,deps,scriptPos) {
 
+                if (ABTFDEBUG) {
+                    var depnames = [];
+                    if (deps.length > 0) {
+                        var l = deps.length;
+                        for (var i = 0; i < l; i++) {
+                            depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
+                        }
+                    }
+                }
+
                 LOADING_SCRIPTS_COUNT++;
 
                 // load script
-                var cached = LOADSCRIPT(PARSE_URL(script), function scriptReady() {
+                LOADSCRIPT(PARSE_URL(script), function scriptReady(cached) {
 
                     if (ABTFDEBUG) {
                         if (deps.length > 0) {
@@ -267,28 +283,24 @@
                         // continue with next script
                         loadScript(++scriptPos);
                     }
-                });
 
-                if (ABTFDEBUG) {
-                    if (deps.length > 0) {
-                        var depnames = [];
-                        var l = deps.length;
-                        for (var i = 0; i < l; i++) {
-                            depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
-                        }
-                        if (cached) {
-                            console.info('Abtf.js() ➤ localStorage '+((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached, (DEPENDENCIES[handle] || handle), depnames);
+                }, function onStart(cached) {
+                    if (ABTFDEBUG) {
+                        if (deps.length > 0) {
+                            if (cached) {
+                                console.info('Abtf.js() ➤ localStorage '+((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached, (DEPENDENCIES[handle] || handle), depnames);
+                            } else {
+                                console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script), (DEPENDENCIES[handle] || handle), depnames);
+                            }
                         } else {
-                            console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script), (DEPENDENCIES[handle] || handle), depnames);
+                            if (cached) {
+                                console.info('Abtf.js() ➤ localStorage '+((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached);
+                            } else {
+                                console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script));
+                            }
                         }
-                    } else {
-                        if (cached) {
-                            console.info('Abtf.js() ➤ localStorage '+((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached);
-                        } else {
-                            console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script));
-                        }
-                    }
-                };
+                    };
+                });
             };
 
             if (ABIDE_DEPENDENCIES && deps) {
