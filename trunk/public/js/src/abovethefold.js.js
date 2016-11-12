@@ -175,7 +175,7 @@
             return;
         }
 
-        // Cached script loader
+        // HTML5 cached script loader
         if (typeof window['Abtf'].loadCachedScript !== 'undefined') {
             LOADSCRIPT = window['Abtf'].loadCachedScript;
         } else {
