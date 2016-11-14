@@ -507,6 +507,18 @@ class Abovethefold_Proxy {
 	}
 
 	/**
+	 * Strip www. from hostname
+	 */
+	public function nowww_host($hostname) {
+
+		if (stripos($hostname,'www.') === 0) {
+			return substr($hostname,4);
+		}
+
+		return $hostname;
+	}
+
+	/**
 	 * Is local url?
 	 */
 	public function is_local($url, $originalUrl) {
@@ -518,17 +530,10 @@ class Abovethefold_Proxy {
 			$hostname = $parsed_url['host'];
 		}
 
-		$urlhost_nowww = $hostname;
-		if (stripos($urlhost_nowww,'www.') === 0) {
-			$urlhost_nowww = substr($urlhost_nowww,4);
-		}
-
-		$host_nowww = $_SERVER['HTTP_HOST'];
-		if (stripos($host_nowww,'www.') === 0) {
-			$host_nowww = substr($host_nowww,4);
-		}
-
-		if ($urlhost_nowww === $host_nowww) {
+		/**
+		 * Verify hostname
+		 */
+		if ($this->nowww_host($hostname) === $this->nowww_host($_SERVER['HTTP_HOST'])) {
 			if (stripos($originalUrl,$_SERVER['HTTP_HOST']) === false) {
 				$originalUrl = str_ireplace($hostname,$_SERVER['HTTP_HOST'],$originalUrl);
 			}
@@ -655,8 +660,6 @@ class Abovethefold_Proxy {
 
 		/**
 		 * Set gzip compression
-		 *
-		 * @since  2.6.5
 		 */
 		//if (extension_loaded("zlib") && (ini_get("output_handler") != "ob_gzhandler")) {
 		    //ini_set("zlib.output_compression", 1);
@@ -691,7 +694,7 @@ class Abovethefold_Proxy {
 	public function proxy_resource($url, $type) {
 
 		if (!in_array($type,array('js','css'))) {
-			wp_die('Invalid proxy resource');
+			wp_die('Invalid proxy resource type');
 		}
 
 		// parse url
@@ -703,6 +706,7 @@ class Abovethefold_Proxy {
 		 * File does not match include list, ignore
 		 */
 		if (!$this->url_include($url, $type)) {
+			wp_die('The resource is not specifically included via the include list.');
 			return false;
 		}
 
@@ -710,6 +714,7 @@ class Abovethefold_Proxy {
 		 * File matches exclude list, ignore
 		 */
 		if ($this->url_exclude($url, $type)) {
+			wp_die('The resource is excluded via the exclude list.');
 			return false;
 		}
 
@@ -747,14 +752,16 @@ class Abovethefold_Proxy {
 			if ($type === 'js') {
 
 				// valid javascript mime type?
-				if (!in_array($mime,$this->js_mimetypes)) {
+				if (!in_array($mime,$this->js_mimetypes) && !(substr($local_file,-3) === '.js' && $mime ==='text/html')) {
+					wp_die('The local javascript resource does not have a valid mimetype.<br /><br />File:'.str_replace(ABSPATH,'[HIDDEN]/',$local_file).'<br />Mime Type: <strong>'.$mime.'</strong>');
 					return false;
 				}
 
 			} else if ($type === 'css') {
 
 				// valid CSS mime type?
-				if (!in_array($mime,$this->css_mimetypes)) {
+				if (!in_array($mime,$this->css_mimetypes) && !(substr($local_file,-4) === '.css' && $mime ==='text/html')) {
+					wp_die('The local CSS resource does not have a valid mimetype.<br /><br />File:'.str_replace(ABSPATH,'[HIDDEN]/',$local_file).'<br />Mime Type: <strong>'.$mime.'</strong>');
 					return false;
 				}
 			}
@@ -765,6 +772,7 @@ class Abovethefold_Proxy {
 		 * External file? Require proxy to be enabled
 		 */
 		if (!$local_file && (!isset($this->CTRL->options[$type . '_proxy']) || !$this->CTRL->options[$type . '_proxy'])) {
+			wp_die('The proxy is not enabled for file type '.$type);
 			return false;
 		}
 
@@ -839,7 +847,7 @@ class Abovethefold_Proxy {
 
 			$parsed_url = parse_url($url);
 
-			if ($this->is_local($parsed_url,$url)) {
+			if ($this->is_local($parsed_url,$url) || (!empty($this->cdn_hosts) && in_array($parsed_url['host'],$this->cdn_hosts))) {
 
 				// local file
 				$url = str_ireplace( $http_prefix . $parsed_url['host'], '', $url);
@@ -1015,7 +1023,7 @@ class Abovethefold_Proxy {
 
 		if ($this->cdn) {
 			$jssettings['proxy']['cdn'] = $this->cdn;
-		}
+		}	
 
 		/**
 		 * Preload urls

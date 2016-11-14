@@ -34,9 +34,19 @@
         firstScript.parentNode.insertBefore(script, firstScript);
     };
 
+    // mark loadScript injections
+    window['Abtf'].markLoadScript = false;
+
     window['Abtf'].loadScript = function (src, callback) {
 
         var script = document.createElement("script");
+
+        if (window['Abtf'].markLoadScript) {
+
+            // mark Above The Fold
+            script.setAttribute('rel','abtf');
+        }
+
         var done = false;
         var err;
         var _cleanup; // _must_ be set below.
@@ -175,6 +185,7 @@
             // In some cases, the readyState is already "loaded" immediately
             // after setting src. It's a lie! Don't append to the DOM until
             // the onreadystatechange event says so.
+
 
         } else {
 

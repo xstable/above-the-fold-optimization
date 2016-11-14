@@ -161,6 +161,27 @@
     };
 
     /**
+     * Load script
+     */
+    var LOADSCRIPT = function(src,onLoad,onStart) {
+        if (ABTFDEBUG) {
+            if (typeof onStart !== 'function') {
+                onStart = function() { };
+            }
+        }
+
+        // HTML5 cached script loader
+        if (typeof Abtf.loadCachedScript !== 'undefined') {
+            Abtf.loadCachedScript(src,onLoad,onStart);
+        } else {
+            Abtf.loadScript(src,onLoad);
+            if (ABTFDEBUG) {
+                onStart();
+            }
+        }
+    };
+
+    /**
      * Javascript processing method
      */
     window['Abtf'].js = function(config) {
@@ -175,11 +196,11 @@
             return;
         }
 
-        // HTML5 cached script loader
-        if (typeof window['Abtf'].loadCachedScript !== 'undefined') {
-            LOADSCRIPT = window['Abtf'].loadCachedScript;
-        } else {
-            LOADSCRIPT = window['Abtf'].loadScript;
+        /**
+         * Javascript proxy enabled, mark scripts
+         */
+        if (typeof Abtf.cnf.proxy !== 'undefined' && Abtf.cnf.proxy.js) {
+            window['Abtf'].markLoadScript = true;
         }
 
         var files = config[0];
@@ -322,6 +343,11 @@
         // start with first script
         loadScript(0);
     };
+
+    /**
+     * Load script
+     */
+    window['Abtf'].jsLoad = LOADSCRIPT;
 
     /**
      * On script load

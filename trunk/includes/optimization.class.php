@@ -360,8 +360,6 @@ class Abovethefold_Optimization {
 			return $buffer;
 		}
 
-		$debug = (current_user_can('administrator') && intval($this->CTRL->options['debug']) === 1) ? true : false;
-
 		// search / replace 
 		$search = array();
 		$replace = array();
@@ -859,10 +857,7 @@ class Abovethefold_Optimization {
 				$scripts_data[] = false;
 			} else {
 				$scripts_data[] = $wp_script_depgroups;
-
-				if ($debug) {
-					$scripts_data[] = $wp_script_deprefs;
-				}
+				$scripts_data[] = $wp_script_deprefs;
 			}
 
 			if (defined('JSON_UNESCAPED_SLASHES')) {
@@ -931,7 +926,17 @@ class Abovethefold_Optimization {
 
 				foreach ($conditional['conditions'] as $condition) {
 
-					if ($condition === 'frontpage') {
+					if ($condition === 'categories') {
+
+						if (is_category()) {
+
+							// condition matches
+							$criticalcss_file = $this->CTRL->cache_path() . 'criticalcss_'.$conditionhash.'.css';
+							$criticalcss_name = $conditional['name'];
+							break 2;
+						}
+
+					} else if ($condition === 'frontpage') {
 
 						if (is_front_page()) {
 
@@ -1039,6 +1044,20 @@ class Abovethefold_Optimization {
 						}
 
 					} else if (substr($condition,0,3) === 'cat') {
+
+						/**
+						 * Categories
+						 */
+						$cat = substr($condition,3);
+						if (is_category($cat)) {
+
+							// condition matches
+							$criticalcss_file = $this->CTRL->cache_path() . 'criticalcss_'.$conditionhash.'.css';
+							$criticalcss_name = $conditional['name'];
+							break 2;
+						}
+
+					} else if (substr($condition,0,3) === 'catpost') {
 
 						/**
 						 * Posts with categories

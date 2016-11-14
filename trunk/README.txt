@@ -94,6 +94,15 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 
 == Changelog ==
 
+= 2.6.12 =
+* Bugfix: external resource proxy CDN option rejects http:// urls in admin panel. (@bluemad)
+* Improved: hide results in [securityheaders.io](https://securityheaders.io/) test from PageSpeed admin bar menu.
+* Improved: external resource proxy mime type security loosened to allow `text/html` for files with matching file extension.
+* Improved: external resource proxy captures script injected local and CDN scripts when HTML5 script loader is enabled for localStorage cache.
+* Improved: external resource proxy CDN resources are processed as local files.
+* Improved: external resource proxy prints debug notices on failure.
+* Added: Critical CSS conditions for category pages.
+
 = 2.6.11 =
 * Improved: HTML5 script loader uses ES6 promises for async script loading.
 * Improved: HTML5 script loader preloads scripts from localStorage while waiting for WordPress dependencies.

@@ -13,6 +13,7 @@ if ($conditionalcss_enabled) {
 	$coptions[] = '<optgroup label="'.__('Page Types').'" data-data=\'{"class":"optgroup-pagetype"}\'>';
 
 	$coptions[] = '<option value="frontpage" data-data=\'{"title": "Front Page","class":"pagetype"}\'>Front Page</option>';
+	$coptions[] = '<option value="categories" data-data=\'{"title": "Categories","class":"pagetype"}\'>Categories</option>';
 
 	$post_types = get_post_types();
 	foreach ($post_types as $pt) {
@@ -75,7 +76,7 @@ if ($conditionalcss_enabled) {
 	$taxonomy = 'category';
 	$terms = get_terms($taxonomy);
 	if (!empty($terms)) {
-		$coptions[] = '<optgroup label="'.__('Posts with categories').'" data-data=\'{"class":"optgroup-cat"}\'>';
+		$coptions[] = '<optgroup label="'.__('Categories').'" data-data=\'{"class":"optgroup-cat"}\'>';
 		foreach($terms as $term) {
 			$coptions[] = '<option value="cat'.$term->term_id.'" data-data=\'{"title" : "'.$term->term_id.'","class":"cat"}\'>' . $term->term_id . ': '.$term->slug.'</option>';
 		}

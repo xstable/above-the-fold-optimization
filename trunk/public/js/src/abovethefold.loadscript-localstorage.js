@@ -848,7 +848,7 @@
             }
 
             /**
-             * Not in cache, start regular request
+             * Not in cache, start regular request and potentially use browser cache speed
              */
             Abtf.loadScript(src, function scriptLoaded() {
 

@@ -83,7 +83,7 @@ class Abovethefold_Admin_Proxy {
 		// CDN
 		$options['proxy_cdn'] = (isset($input['proxy_cdn'])) ? trim($input['proxy_cdn']) : '';
 		if ($options['proxy_cdn'] !== '') {
-			if (!preg_match('|^http(s)://[a-z0-9]|Ui',$options['proxy_cdn'])) {
+			if (!preg_match('|^http(s)?://[a-z0-9]|Ui',$options['proxy_cdn'])) {
 				$this->CTRL->admin->set_notice('<p style="font-size:18px;">Proxy CDN url is not valid (only http:// and https:// urls are allowed).</p>', 'ERROR');
 				$options['proxy_cdn'] = '';
 			}

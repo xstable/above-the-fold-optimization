@@ -433,7 +433,7 @@ class Abovethefold_Admin {
 			'parent' => 'abovethefold-check-technical',
 			'id' => 'abovethefold-check-securityheaders',
 			'title' => __( 'SecurityHeaders.io', 'abovethefold' ),
-			'href' => 'https://securityheaders.io/?q='.urlencode($currenturl).'&followRedirects=on',
+			'href' => 'https://securityheaders.io/?q='.urlencode($currenturl).'&hide=on&followRedirects=on',
 			'meta' => array( 'title' => __( 'SecurityHeaders.io', 'abovethefold' ), 'target' => '_blank' )
 		) );
 		$admin_bar->add_node( array(

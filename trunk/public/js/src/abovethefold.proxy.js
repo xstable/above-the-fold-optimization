@@ -339,7 +339,6 @@
 
 			// test CDN urls
 			var l = CDN_URLS.length;
-			var cdnparser;
 			for (var i = 0; i < l; i++) {
 
 				if (parser.href.indexOf(CDN_URLS[i].href) !== -1) {
@@ -414,7 +413,6 @@
 
 			// test CDN urls
 			var l = CDN_URLS.length;
-			var cdnparser;
 			for (var i = 0; i < l; i++) {
 
 				if (parser.href.indexOf(CDN_URLS[i].href) !== -1) {
@@ -484,9 +482,38 @@
 					return false;
 				}
 
+				if (node.getAttribute('rel') === 'abtf') {
+					node.removeAttribute('rel');
+					return false;
+				}
+
 				if (node.src) {
 
 					if (!IS_EXTERNAL_SCRIPT(node.src)) {
+
+			        	// try Web Worker localStorage cache
+						if (typeof Abtf.cachedScriptUrl !== 'undefined') {
+							var parser = PARSE_URL(node.src);
+							if (parser.protocol === 'blob:') {
+								return false;
+							}
+							url = Abtf.cachedScriptUrl(parser.href);
+
+							if (url !== parser.href) {
+
+								if (ABTFDEBUG) {
+						            console.log('Abtf.proxy()', 'localStorage local capture', Abtf.localUrl(parser.href), '➤', url);
+						        }
+
+						        node.src = url;
+							} else {
+
+								if (ABTFDEBUG) {
+						            console.log('Abtf.proxy()', 'localStorage local capture', Abtf.localUrl(parser.href), '➤', 'not cached');
+						        }
+							}
+						}
+
 						return false;
 					}
 
@@ -496,6 +523,11 @@
 			} else if (node.nodeName.toUpperCase() === 'LINK' && node.rel.toLowerCase() === 'stylesheet') {
 
 				if (!PROXY_CSS) {
+					return false;
+				}
+
+				if (node.getAttribute('rel') === 'abtf') {
+					node.removeAttribute('rel');
 					return false;
 				}
 
