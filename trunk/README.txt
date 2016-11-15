@@ -94,6 +94,9 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 
 == Changelog ==
 
+= 2.6.13 =
+* Bugfix: external resource proxy displays error when using Better WordPress Minify. (@razifkamal)
+
 = 2.6.12 =
 * Bugfix: external resource proxy CDN option rejects http:// urls in admin panel. (@bluemad)
 * Improved: hide results in [securityheaders.io](https://securityheaders.io/) test from PageSpeed admin bar menu.
