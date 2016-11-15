@@ -328,7 +328,7 @@
 	var IS_EXTERNAL_SCRIPT = function(url,ignoreCDN) {
 
 		// parse url
-		var parser = PARSE_URL(url);
+		var parser = (typeof url === 'object' && typeof url.href !== 'undefined') ? url : PARSE_URL(url);
 
 		// blob: url
 		if (parser.protocol === 'blob:') {
@@ -353,6 +353,22 @@
 			return false;
 		}
 
+		return true; // external
+	};
+
+	/**
+	 * Detect if url is ignored via include or exclude list
+	 */
+	var IS_IGNORED_SCRIPT = function(url) {
+
+		// parse url
+		var parser = (typeof url === 'object' && typeof url.href !== 'undefined') ? url : PARSE_URL(url);
+
+		// blob: url
+		if (parser.protocol === 'blob:') {
+			return true;
+		}
+
 		// verify include list
 		if (PROXY_JS_INCLUDE) {
 
@@ -372,7 +388,7 @@
 					console.log('Abtf.proxy()', 'ignore', Abtf.localUrl(parser.href), 'not on include list');
 		        }
 
-				return false;
+				return true;
 			}
 		}
 
@@ -388,13 +404,13 @@
 			        }
 
 					// ignore file
-					return false;
+					return true;
 				}
 			}
 		}
 
-		return true;
-	}
+		return false; // not ignored
+	};
 
 	/**
 	 * Detect if url is external style
@@ -402,7 +418,7 @@
 	var IS_EXTERNAL_STYLE = function(url) {
 
 		// parse url
-		var parser = PARSE_URL(url);
+		var parser = (typeof url === 'object' && typeof url.href !== 'undefined') ? url : PARSE_URL(url);
 
 		// blob: url
 		if (parser.protocol === 'blob:') {
@@ -427,6 +443,22 @@
 			return false;
 		}
 
+		return true; // external
+	};
+
+	/**
+	 * Detect if url is on include / exclude list
+	 */
+	var IS_IGNORED_STYLE = function(url) {
+
+		// parse url
+		var parser = (typeof url === 'object' && typeof url.href !== 'undefined') ? url : PARSE_URL(url);
+
+		// blob: url
+		if (parser.protocol === 'blob:') {
+			return true;
+		}
+
 		// verify include list
 		if (PROXY_CSS_INCLUDE) {
 
@@ -446,7 +478,7 @@
 					console.log('Abtf.proxy()', 'ignore', Abtf.localUrl(parser.href), 'not on include list');
 		        }
 
-				return false;
+				return true;
 			}
 		}
 
@@ -462,12 +494,12 @@
 			        }
 
 					// ignore file
-					return false;
+					return true;
 				}
 			}
 		}
 
-		return true;
+		return false; // not ignored
 	};
 
 	/**
@@ -489,11 +521,19 @@
 
 				if (node.src) {
 
-					if (!IS_EXTERNAL_SCRIPT(node.src)) {
+					// parse url
+					var parser = PARSE_URL(node.src);
+
+					// ignored
+					if (IS_IGNORED_SCRIPT(parser)) {
+						return false;
+					}
+
+					if (!IS_EXTERNAL_SCRIPT(parser)) {
+
 
 			        	// try Web Worker localStorage cache
 						if (typeof Abtf.cachedScriptUrl !== 'undefined') {
-							var parser = PARSE_URL(node.src);
 							if (parser.protocol === 'blob:') {
 								return false;
 							}
@@ -532,8 +572,17 @@
 				}
 
 				if (node.href) {
-					
-					if (!IS_EXTERNAL_STYLE(node.href)) {
+
+					// parse url
+					var parser = PARSE_URL(node.href);
+
+					// ignored
+					if (IS_IGNORED_STYLE(parser)) {
+						return false;
+					}
+
+					// not external
+					if (!IS_EXTERNAL_STYLE(parser)) {
 						return false;
 					}
 

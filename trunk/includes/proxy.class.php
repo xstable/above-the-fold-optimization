@@ -424,12 +424,25 @@ class Abovethefold_Proxy {
 	/**
 	 * Handle forbidden requests
 	 */
-	public function forbidden() {
+	public function forbidden($text = 'Forbidden') {
 		while (ob_get_level()){
 	        ob_end_clean();
 	    };
-		header('HTTP/1.0 403 Forbidden');
-		die('Forbidden');
+		wp_die($text,'Proxy Error - Above The Fold Optimization', array(
+			'response' => '403'
+		));
+	}
+
+	/**
+	 * Handle errors
+	 */
+	public function error($text = 'Forbidden') {
+		while (ob_get_level()){
+	        ob_end_clean();
+	    };
+		wp_die($text,'Proxy Error - Above The Fold Optimization', array(
+			'response' => '500'
+		));
 	}
 
 	/**
@@ -439,14 +452,14 @@ class Abovethefold_Proxy {
 
 		// verify hash
 		if (strlen($hash) !== 32) {
-			wp_die('Invalid cache file hash');
+			$this->forbidden('Invalid cache file hash');
 		}
 
 		// Initialize cache path
 		$cache_path = $this->CTRL->cache_path() . 'proxy/';
 		if (!is_dir($cache_path)) {
 			if (!@mkdir($cache_path, $this->CTRL->CHMOD_DIR, true)) {
-				wp_die('Failed to create directory ' . $cache_path);
+				$this->error('Failed to create directory ' . $cache_path);
 			}
 		}
 
@@ -461,7 +474,7 @@ class Abovethefold_Proxy {
 
 		if (!is_dir($cache_path)) {
 			if (!@mkdir($cache_path, $this->CTRL->CHMOD_DIR, true)) {
-				wp_die('Failed to create directory ' . $cache_path);
+				$this->error('Failed to create directory ' . $cache_path);
 			}
 		}
 
@@ -560,7 +573,7 @@ class Abovethefold_Proxy {
 
 		// verify hash
 		if (strlen($hash) !== 32) {
-			wp_die('Invalid cache file hash');
+			$this->forbidden('Invalid cache file hash');
 		}
 
 		// check if cache file exists
@@ -598,7 +611,7 @@ class Abovethefold_Proxy {
 	public function handle_request() {
 
 		if ((!isset($this->CTRL->options['js_proxy']) || !$this->CTRL->options['js_proxy']) && (!isset($this->CTRL->options['css_proxy']) || !$this->CTRL->options['css_proxy'])) {
-			wp_die('Proxy is disabled');
+			$this->forbidden('Proxy is disabled');
 		}
 
 		$url = (isset($_REQUEST['url'])) ? trim($_REQUEST['url']) : '';
@@ -691,11 +704,11 @@ class Abovethefold_Proxy {
 	/**
 	 * Proxy resource
 	 */
-	public function proxy_resource($url, $type, $debugExit = false) {
+	public function proxy_resource($url, $type, $debugExit = true) {
 
 		if (!in_array($type,array('js','css'))) {
 			if ($debugExit) {
-				wp_die('Invalid proxy resource type');
+				$this->error('Invalid proxy resource type');
 			}
 			return false;
 		}
@@ -710,7 +723,7 @@ class Abovethefold_Proxy {
 		 */
 		if (!$this->url_include($url, $type)) {
 			if ($debugExit) {
-				wp_die('The resource is not specifically included via the include list.');
+				$this->forbidden('The resource is not specifically included via the include list.');
 			}
 			return false;
 		}
@@ -720,7 +733,7 @@ class Abovethefold_Proxy {
 		 */
 		if ($this->url_exclude($url, $type)) {
 			if ($debugExit) {
-				wp_die('The resource is excluded via the exclude list.');
+				$this->forbidden('The resource is excluded via the exclude list.');
 			}
 			return false;
 		}
@@ -751,7 +764,7 @@ class Abovethefold_Proxy {
 				// failed
 				// @todo test support / stability in all environments
 				if ($debugExit) {
-					wp_die('The local javascript resource does not have a valid mimetype.<br /><br />File: '.str_replace(ABSPATH,'[HIDDEN]/',$local_file).'<br />Mime Type: <strong>'.$mime.'</strong>');
+					$this->forbidden('The local javascript resource does not have a valid mimetype.<br /><br />File: '.str_replace(ABSPATH,'[HIDDEN]/',$local_file).'<br />Mime Type: <strong>'.$mime.'</strong>');
 				}
 				return false;
 			}
@@ -764,7 +777,7 @@ class Abovethefold_Proxy {
 				// valid javascript mime type?
 				if (!in_array($mime,$this->js_mimetypes) && !(substr($local_file,-3) === '.js' && substr($mime,0,5) ==='text/')) {
 					if ($debugExit) {
-						wp_die('The local javascript resource does not have a valid mimetype.<br /><br />File: '.str_replace(ABSPATH,'[HIDDEN]/',$local_file).'<br />Mime Type: <strong>'.$mime.'</strong>');
+						$this->forbidden('The local javascript resource does not have a valid mimetype.<br /><br />File: '.str_replace(ABSPATH,'[HIDDEN]/',$local_file).'<br />Mime Type: <strong>'.$mime.'</strong>');
 					}
 					return false;
 				}
@@ -774,7 +787,7 @@ class Abovethefold_Proxy {
 				// valid CSS mime type?
 				if (!in_array($mime,$this->css_mimetypes) && !(substr($local_file,-4) === '.css' && substr($mime,0,5) ==='text/')) {
 					if ($debugExit) {
-						wp_die('The local CSS resource does not have a valid mimetype.<br /><br />File: '.str_replace(ABSPATH,'[HIDDEN]/',$local_file) . '<br />Mime Type: <strong>'.$mime.'</strong>');
+						$this->forbidden('The local CSS resource does not have a valid mimetype.<br /><br />File: '.str_replace(ABSPATH,'[HIDDEN]/',$local_file) . '<br />Mime Type: <strong>'.$mime.'</strong>');
 					}
 					return false;
 				}
@@ -787,7 +800,7 @@ class Abovethefold_Proxy {
 		 */
 		if (!$local_file && (!isset($this->CTRL->options[$type . '_proxy']) || !$this->CTRL->options[$type . '_proxy'])) {
 			if ($debugExit) {
-				wp_die('The proxy is not enabled for file type '.$type);
+				$this->forbidden('The proxy is not enabled for file type '.$type);
 			}
 			return false;
 		}
@@ -811,7 +824,7 @@ class Abovethefold_Proxy {
 			chmod($cache_file, $this->CTRL->CHMOD_FILE);
 		} else {
 			if ($debugExit) {
-				wp_die('Failed to proxy file ' . htmlentities($url,ENT_COMPAT,'utf-8'));
+				$this->error('Failed to proxy file ' . htmlentities($url,ENT_COMPAT,'utf-8'));
 			}
 		}
 
@@ -964,7 +977,7 @@ class Abovethefold_Proxy {
 		 * Require proxy to be enabled
 		 */
 		if (!isset($this->CTRL->options[$type . '_proxy']) || !$this->CTRL->options[$type . '_proxy']) {
-			return false; // wp_die('Proxy is disabled');
+			return false;
 		}
 
 		$include_key = $type . '_include';
@@ -997,7 +1010,7 @@ class Abovethefold_Proxy {
 		 * Require proxy to be enabled
 		 */
 		if (!isset($this->CTRL->options[$type . '_proxy']) || !$this->CTRL->options[$type . '_proxy']) {
-			return false; // wp_die('Proxy is disabled');
+			return false;
 		}
 
 		$exclude_key = $type . '_exclude';

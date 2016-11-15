@@ -94,6 +94,9 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 
 == Changelog ==
 
+= 2.6.14 =
+* Bugfix: external resource proxy async injected script capture not applying ignore list.
+
 = 2.6.13 =
 * Bugfix: external resource proxy displays error when using Better WordPress Minify. (@razifkamal)
 
