@@ -428,7 +428,7 @@ class Abovethefold_Proxy {
 		while (ob_get_level()){
 	        ob_end_clean();
 	    };
-		wp_die($text,'Proxy Error - Above The Fold Optimization', array(
+		wp_die($text,'Proxy Forbidden - Above The Fold Optimization', array(
 			'response' => '403'
 		));
 	}
@@ -704,7 +704,7 @@ class Abovethefold_Proxy {
 	/**
 	 * Proxy resource
 	 */
-	public function proxy_resource($url, $type, $debugExit = true) {
+	public function proxy_resource($url, $type, $debugExit = false) {
 
 		if (!in_array($type,array('js','css'))) {
 			if ($debugExit) {
