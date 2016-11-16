@@ -49,7 +49,7 @@
 														<p class="description">A state of the art script loader for optimal mobile speed, inspired by <a href="https://addyosmani.com/basket.js/#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=Above%20The%20Fold%20Optimization" target="_blank">basket.js</a> (by a Google engineer), a script loading concept in use by Google. With fallback to little-loader for old browsers.</p>
 														<fieldset style="border:solid 1px #efefef;padding:10px;margin:0px;margin-top:7px;background:#f1f1f1;">
 															<p class="description" style="margin-top:0px;">
-																<strong>Advantages of the HTML5 script loader (unique innovation by this plugin)</strong>
+																<strong>Advantages of the HTML5 script loader (an innovation by this plugin)</strong>
 															</p>
 															<p class="description" style="margin-bottom:0px;">
 																<ul style="margin:0px;padding:0px;">
