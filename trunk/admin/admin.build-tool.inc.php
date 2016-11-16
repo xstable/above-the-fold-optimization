@@ -60,7 +60,7 @@
 														<th scope="row">Append extra.css</th>
 														<td>
 						                                    <label><input type="checkbox" name="extra" value="1"<?php if ($extra) { print ' checked'; } ?>> Enabled</label>
-						                                    <p class="description">Add a file <code>extra.css</code> to the package to be appended to the critical path CSS. </p>
+						                                    <p class="description">Add a file <code>extra.css</code> to the package to be appended to the critical path CSS. The combined result is minified to prevent overlapping CSS.</p>
 														</td>
 													</tr>
 													<tr valign="top">

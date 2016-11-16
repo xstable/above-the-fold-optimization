@@ -101,6 +101,9 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 
 == Changelog ==
 
+= 2.6.15 =
+* Bugfix: Critical CSS Build Tool Task Manager permissions not set correctly when automatically updating WordPress critical CSS.
+
 = 2.6.14 =
 * Bugfix: external resource proxy async injected script capture not applying ignore list.
 

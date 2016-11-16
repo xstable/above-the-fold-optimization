@@ -187,6 +187,57 @@ module.exports = function (gulp, plugins, critical) {
 	} else {
 
 		$filename = ($settings['update'] === 'global') ? 'criticalcss_global.css' : 'criticalcss_' . $settings['update']['key'] . '.css';
+
+		$permissions = array(
+            'owner' => array(
+                'read' => true,
+                'write' => true,
+                'execute' => false
+            ),
+            'group' => array(
+                'read' => true,
+                'write' => true,
+                'execute' => false
+            ),
+            'others' => array(
+                'read' => true,
+                'write' => true,
+                'execute' => false
+            )
+        ); 
+
+		$chmod = (string)decoct($this->CTRL->CHMOD_FILE);
+		if (strlen($chmod) === 3) {
+
+			$chmodparts = str_split($chmod);
+			$perm_user = intval($chmodparts[0]);
+			$perm_group = intval($chmodparts[1]);
+			$perm_others = intval($chmodparts[2]);
+
+			if ($perm_user === 7) {
+				$permissions['owner']['execute'] = true;
+			} else if ($perm_user <= 6 && $perm_user !== 1) {
+				$permissions['owner']['execute'] = false;
+			}
+			if ($perm_group === 7) {
+				$permissions['group']['execute'] = true;
+			} else if ($perm_group <= 6 && $perm_group !== 1) {
+				$permissions['group']['execute'] = false;
+			}
+			if ($perm_others === 7) {
+				$permissions['others']['execute'] = true;
+			}
+			if ($perm_others <= 6 && $perm_others !== 1) {
+				$permissions['others']['execute'] = false;
+			}
+			if ($perm_others <= 4 && $perm_others !== 2) {
+				$permissions['others']['write'] = false;
+			}
+			if ($perm_others === 0) {
+				$permissions['others']['read'] = false;
+			}
+		}
+
 ?>
 				console.log('\n' + plugins.util.colors.green.bold('Update <?php if ($settings['update'] !== 'global') { print 'Conditional '; } ?>Critical CSS storage file...'));
 				console.log(' ➤ ' + plugins.util.colors.green('/wp-content/uploads/abovethefold/<?php print $filename; ?>'));
@@ -194,7 +245,7 @@ module.exports = function (gulp, plugins, critical) {
 				// append extra.css
 				gulp.src([taskpath + 'output/critical.min.css'])
     				.pipe(plugins.rename('<?php print $filename; ?>'))
-    				.pipe(plugins.chmod(<?php print decoct($this->CTRL->CHMOD_FILE); ?>)) // WordPress permissions
+    				.pipe(plugins.chmod(<?php print json_encode($permissions,$encodeflag); ?>)) // WordPress permissions
     				.pipe(plugins.chown(<?php print (string) getmyuid() . "," . (string) getmygid(); ?>)) // set to PHP user
 			        .pipe(gulp.dest('../../../uploads/abovethefold'))
 			        .pipe(plugins.es.map(function(file, callback) {
