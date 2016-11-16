@@ -188,6 +188,7 @@ module.exports = function (gulp, plugins, critical) {
 
 		$filename = ($settings['update'] === 'global') ? 'criticalcss_global.css' : 'criticalcss_' . $settings['update']['key'] . '.css';
 
+		// default 664
 		$permissions = array(
             'owner' => array(
                 'read' => true,
@@ -201,7 +202,7 @@ module.exports = function (gulp, plugins, critical) {
             ),
             'others' => array(
                 'read' => true,
-                'write' => true,
+                'write' => false,
                 'execute' => false
             )
         ); 
@@ -216,19 +217,12 @@ module.exports = function (gulp, plugins, critical) {
 
 			if ($perm_user === 7) {
 				$permissions['owner']['execute'] = true;
-			} else if ($perm_user <= 6 && $perm_user !== 1) {
-				$permissions['owner']['execute'] = false;
 			}
 			if ($perm_group === 7) {
 				$permissions['group']['execute'] = true;
-			} else if ($perm_group <= 6 && $perm_group !== 1) {
-				$permissions['group']['execute'] = false;
 			}
 			if ($perm_others === 7) {
 				$permissions['others']['execute'] = true;
-			}
-			if ($perm_others <= 6 && $perm_others !== 1) {
-				$permissions['others']['execute'] = false;
 			}
 			if ($perm_others <= 4 && $perm_others !== 2) {
 				$permissions['others']['write'] = false;
