@@ -24,6 +24,7 @@
 								<td>
 									<label><input type="checkbox" name="abovethefold[jsdelivery]" value="1"<?php if (isset($options['jsdelivery']) && intval($options['jsdelivery']) === 1) { print ' checked'; } ?> onchange="if (jQuery(this).is(':checked')) { jQuery('.jsdeliveryoptions').show(); } else { jQuery('.jsdeliveryoptions').hide(); }"> Enabled</label>
 									<p class="description">When enabled, Javascript files are loaded asynchronously using an enhanced version of <a href="https://github.com/walmartlabs/little-loader" target="_blank">little-loader</a> from Walmart Labs (<a href="https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=Above%20The%20Fold%20Optimization" target="_blank">reference</a>).</p>
+
 								</td>
 							</tr>
 							<tr valign="top" class="jsdeliveryoptions" style="<?php if (!isset($options['jsdelivery']) || intval($options['jsdelivery']) !== 1) { print 'display:none;'; } ?>">
@@ -46,7 +47,19 @@
 														<label><input type="radio" name="abovethefold[jsdelivery_scriptloader]" value="html5"<?php if ($jsProxy && isset($options['jsdelivery_scriptloader']) && $options['jsdelivery_scriptloader'] === 'html5') { print ' checked'; } ?> <?php if (!$jsProxy) { print ' DISABLED'; } ?>> little-loader + HTML5 Web Worker and Fetch API based script loader with localStorage cache</label>
 														<p class="description" style="color:red;<?php if ($jsProxy) { print 'display:none;'; } ?>">This script loader requires the <a href="<?php echo add_query_arg( array( 'page' => 'abovethefold', 'tab' => 'proxy' ), admin_url( 'admin.php' ) ); ?>">Javascript proxy</a> to be enabled to bypass <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS" target="_blank">CORS</a>.</p> 
 														<p class="description">A state of the art script loader for optimal mobile speed, inspired by <a href="https://addyosmani.com/basket.js/#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=Above%20The%20Fold%20Optimization" target="_blank">basket.js</a> (by a Google engineer), a script loading concept in use by Google. With fallback to little-loader for old browsers.</p>
-														
+														<fieldset style="border:solid 1px #efefef;padding:10px;margin:0px;margin-top:7px;background:#f1f1f1;">
+															<p class="description" style="margin-top:0px;">
+																<strong>Advantages of the HTML5 script loader (unique innovation by this plugin)</strong>
+															</p>
+															<p class="description" style="margin-bottom:0px;">
+																<ul style="margin:0px;padding:0px;">
+																	<li style="padding:0px;margin:0px;">&nbsp;<span style="color: #666;">➤</span> 0 javascript file download during navigation</li>
+																	<li style="padding:0px;margin:0px;">&nbsp;<span style="color: #666;">➤</span> 0 javascript file download for returning visitors</li>
+																	<li style="padding:0px;margin:0px;">&nbsp;<span style="color: #666;">➤</span> abide WordPress dependencies</li>
+																	<li style="padding:0px;margin:0px;">&nbsp;<span style="color: #666;">➤</span> faster script loading than browser cache, especially on mobile</li>
+																</ul>
+															</p>
+														</fieldset>
 													</td>
 												</tr>
 												<tr valign="top">
@@ -126,7 +139,6 @@
 
 								</td>
 							</tr>
-							
 							<tr valign="top">
 								<th scope="row">
 									Lazy Load Scripts<a name="lazyscripts">&nbsp;</a>

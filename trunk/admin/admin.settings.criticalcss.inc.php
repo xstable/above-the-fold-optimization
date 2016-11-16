@@ -10,7 +10,6 @@
 	if (file_exists($cssfile)) {
 		$inlinecss = file_get_contents($cssfile);
 	}
-
 ?>
 	<div class="menu-item-bar criticalcss-edit-header" rel="global">
 		<div class="menu-item-handle" style="width:auto!important;cursor: pointer;">
