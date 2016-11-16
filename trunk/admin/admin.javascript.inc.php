@@ -62,7 +62,7 @@
 														</fieldset>
 														<br />
 														<strong>Minification and code performance optimization</strong>
-														<p class="description">Interested in <a href="https://developers.google.com/closure/compiler/?hl=<?php print $lgcode;?>" target="_blank">Google Closure Compiler</a> javascript minification with code speed optimization and the ability to combine all scripts, including script injected scripts such as Google Analytics into 1 single optimized download with individual script loading from localStorage cache for the best first page load, navigation and returning visitor performance unmatched by any other plugin or even anything on the web? You can help fund it by donating to PayPal <a href="mailto:info@pagespeed.pro">info@pagespeed.pro</a> with reference <code>Google Closure Compiler</code>. 1500 USD is required to make it available.</p>
+														<p class="description">Interested in <a href="https://developers.google.com/closure/compiler/?hl=<?php print $lgcode;?>" target="_blank">Google Closure Compiler</a> javascript minification with code speed optimization and the ability to combine all scripts, including script injected scripts such as Google Analytics into a single optimized download with individual script loading from localStorage cache for the best first page load, navigation and returning visitor performance unmatched by any other plugin or even anything on the web? You can help fund it by donating to PayPal <a href="mailto:info@pagespeed.pro">info@pagespeed.pro</a> with reference <code>Google Closure Compiler</code>. 1500 USD is required to make it available.</p>
 													</td>
 												</tr>
 												<tr valign="top">
