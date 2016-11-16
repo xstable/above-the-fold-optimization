@@ -48,7 +48,8 @@ The plugin offers advanced options such as a render delay in milliseconds, the p
 
 The plugin contains a tool to optimize loading of javascript via an enhanced version of [little-loader](https://github.com/walmartlabs/little-loader) from Walmart Labs ([reference](https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/)) or a state of the art HTML5 Web Worker and Fetch API based script loader with localStorage cache. The tool contains a jQuery Stub and it enables async loading of all javascript files, optionally abiding WordPress dependency configuration.
 
-= The HTML5 script loader (an innovation by this plugin) offers the following unique features: =
+The HTML5 script loader (an innovation by this plugin) offers the following unique features:
+
 * 0 javascript file download during navigation
 * 0 javascript file download for returning visitors
 * abide WordPress dependencies
