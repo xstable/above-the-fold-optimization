@@ -162,7 +162,6 @@ FB.XFBML.parse(document.getElementById(\'fblikebutton_1\').parentNode||null);
 								</td>
 							</tr>
 						</table>
-						<p>More javascript optimization tools will be added in next versions.</p>
 						<hr />
 						<?php
 							submit_button( __( 'Save' ), 'primary large', 'is_submit', false );
