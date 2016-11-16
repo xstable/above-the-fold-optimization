@@ -81,11 +81,7 @@
 									<td style="padding-top:0px;">
 										<h5 class="h">&nbsp;Proxy Preload List</h5>
 										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[js_proxy_preload]"><?php if ($jsPreload !== '') { echo $jsPreload; } ?></textarea>
-										<p class="description">Enter the exact url or JSON config object of external scripts to preload for "script injected" async script capture, e.g. <code>https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url or JSON object per line.</p>
-										<fieldset style="border:solid 1px #efefef;padding:10px;margin:0px;margin-top:7px;background:#f1f1f1;">
-											<p class="description" style="margin-top:0px;">JSON config objects must be placed on one line and contain a target url. Valid parameters are <code>url</code>, <code>regex</code>, <code>regex-flags</code>, <code>cdn</code> and <code>expire</code> (expire time in seconds).</p>
-											<p class="description" style="margin-bottom:0px;">Example: <code>{"regex": "^https://app\\.analytics\\.com/file\\.js\\?\\d+$", "regex-flags":"i", "url": "https://app.analytics.com/file.js", "expire": "2592000"}</code></p>
-										</fieldset>
+										<p class="description">Enter the exact url or JSON config object [<a href="#jsoncnf" title="More information">?</a>] of external scripts to preload for "script injected" async script capture, e.g. <code>https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url or JSON object per line.</p>
 									</td>
 								</tr>
 								<tr valign="top">
@@ -117,9 +113,15 @@
 										<h5 class="h">&nbsp;Proxy Preload List</h5>
 										<textarea style="width: 100%;height:50px;font-size:11px;" name="abovethefold[css_proxy_preload]"><?php if ($cssPreload !== '') { echo $cssPreload; } ?></textarea>
 										<p class="description">Enter the exact url or JSON config object of external stylesheets to preload for "script injected" async stylesheet capture, e.g. <code>http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css</code>. This setting will enable the proxy to load the cache url instead of the WordPress PHP proxy url. One url or JSON object per line.</p>
+										
+										<a name="jsoncnf">&nbsp;</a>
 										<fieldset style="border:solid 1px #efefef;padding:10px;margin:0px;margin-top:7px;background:#f1f1f1;">
-											<p class="description" style="margin-top:0px;">JSON config objects must be placed on one line and contain a target url. Valid parameters are <code>url</code>, <code>regex</code>, <code>regex-flags</code>, <code>cdn</code> and <code>expire</code> (expire time in seconds).</p>
-										<p class="description" style="margin-bottom:0px;">Example: <code>{"regex": "^https://app\\.analytics\\.com/file\\.css\\?\\d+$", "regex-flags":"i", "url": "https://app.analytics.com/file.css", "expire": "2592000"}</code></p></fieldset>
+											<h4 style="margin:0px;padding:0px;margin-bottom:5px;">JSON Proxy Config Object</h4>
+											<p class="description" style="margin-top:0px;">JSON config objects enable advanced file based proxy configuration. JSON objects can be used together with simple file entry and must be placed on one line (no spaces are allowed).</p>
+											<p class="description">JSON config objects must contain a target url (the url that will be downloaded by the proxy). Regular expression enables to match a source URL in the HTML, e.g. an URL with a cache busting date string (?time) or an url on a different host. Valid parameters are <code>url</code>, <code>regex</code>, <code>regex-flags</code>, <code>cdn</code> and <code>expire</code> (expire time in seconds).</p>
+											<p class="description" style="margin-bottom:0px;margin-top:5px;">Example:
+											<br /><code>{"regex": "^https://app\\.analytics\\.com/file\\.js\\?\\d+$", "regex-flags":"i", "url": "https://app.analytics.com/file.js", "expire": "2592000"}</code></p>
+										</fieldset>
 									</td>
 								</tr>
 								
