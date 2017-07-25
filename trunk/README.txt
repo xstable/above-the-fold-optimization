@@ -109,7 +109,7 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 * Added: Link to Google PageSpeed scores from plugin index.
 * Update: webfont.js upgraded to `v1.6.28`.
 * Update: [CodeMirror](http://codemirror.net/) upgraded to `v5.27.4`.
-* Updated: URL for Google's new full spectrum mobile speed test for small business ([Think With Google](https://testmysite.thinkwithgoogle.com/))
+* Updated: URL for Google's new full spectrum mobile speed test for small business ([Think With Google](https://testmysite.thinkwithgoogle.com/)).
 * Removed: Console reference to plugin.
 
 = 2.7.10 =
