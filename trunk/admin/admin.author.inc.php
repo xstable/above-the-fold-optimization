@@ -8,7 +8,7 @@
 		</div>
 
 		<div class="inside" style="margin:0px;float:left;font-style:italic;">
-			<img src="https://optimalisatie.nl/img/websockify-rocket-50.png" title="Websockify" style="float:left;margin-right:5px;margin-top:8px;" width="50" align="absmiddle" />
+			<img src="<?php print WPABTF_URI; ?>admin/images/websockify-rocket-50.png" title="Websockify" style="float:left;margin-right:5px;margin-top:8px;" width="50" align="absmiddle" />
 			<p>PageSpeed.pro has developed a plugin that is able to provide instant (&lt;1ms) page load times, up to 99% HTML data transfer saving and real time HTML (live content). 
 			<a href="https://pagespeed.pro/innovation/instant/" class="ws-info" target="_blank">Information</a> / <a href="https://www.fastestwebsite.co/" class="ws-info" target="_blank">Demo (WooCommerce)</a>
 			<span id="livehtml" style="display:none;"></span></p>

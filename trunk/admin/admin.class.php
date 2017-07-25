@@ -207,6 +207,7 @@ class Abovethefold_Admin
     {
         if ($file == plugin_basename(WPABTF_SELF)) {
             $lgcode = strtolower(get_locale());
+            $intlcode = 'en-us';
             if (strpos($lgcode, '_') !== false) {
                 $lgparts = explode('_', $lgcode);
                 $lgcode = $lgparts[0];
@@ -217,8 +218,8 @@ class Abovethefold_Admin
             }
 
             $row_meta = array(
-                'pagespeed_insights'    => '<a href="' . esc_url('https://developers.google.com/speed/docs/insights/about?hl=' . $lgcode) . '" target="_blank" title="' . esc_attr(__('View Google PageSpeed Insights Documentation', 'pagespeed')) . '">' . __('Google PageSpeed', 'pagespeed') . '</a>',
-                'pagespeed_scores'    => '<a href="' . esc_url('https://testmysite.thinkwithgoogle.com/intl/'.$intlcode.'?url='.home_url()) . '" target="_blank" title="' . esc_attr(__('View Google PageSpeed Scores Documentation', 'pagespeed')) . '">' . __('View Scores', 'pagespeed') . '</a>',
+                'pagespeed_insights'    => '<a href="' . esc_url('https://developers.google.com/speed/pagespeed/insights/?hl=' . $lgcode) . '" target="_blank" title="' . esc_attr(__('View Google PageSpeed Insights Test', 'pagespeed')) . '">' . __('Google PageSpeed', 'pagespeed') . '</a>',
+                'pagespeed_scores'    => '<a href="' . esc_url('https://testmysite.' . (($intlcode === 'en-us') ? 'think' : '') . 'withgoogle.com/intl/'.$intlcode.'?url='.home_url()) . '" target="_blank" title="' . esc_attr(__('View Google PageSpeed Scores Documentation', 'pagespeed')) . '">' . __('View Scores', 'pagespeed') . '</a>',
             );
 
             return array_merge($links, $row_meta);
@@ -405,7 +406,7 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
             'parent' => 'abovethefold',
             'id' => 'abovethefold-check-pagespeed-scores',
             'title' => __('Google PageSpeed Scores', 'abovethefold'),
-            'href' => 'https://testmysite.thinkwithgoogle.com/intl/'.$this->google_intlcode.'?url=' . urlencode($currenturl),
+            'href' => 'https://testmysite.' . (($this->google_intlcode === 'en-us') ? 'think' : '') . 'withgoogle.com/intl/'.$this->google_intlcode.'?url=' . urlencode($currenturl),
             'meta' => array( 'title' => __('Google PageSpeed Scores', 'abovethefold'), 'target' => '_blank' )
         ));
 
