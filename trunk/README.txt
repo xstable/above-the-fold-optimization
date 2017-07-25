@@ -1,9 +1,9 @@
 === Above The Fold Optimization ===
 Contributors: optimalisatie
 Donate link: https://pagespeed.pro/
-Tags: optimization, above the fold, critical css, css, performance, localization, javascript, minification, minify, minify css, minify stylesheet, optimize, speed, stylesheet, pagespeed, google, web font, webfont
+Tags: optimization, above the fold, pagespeed, css, performance, critical css, localization, javascript, minification, minify, minify css, minify stylesheet, optimize, speed, stylesheet, google, web font, webfont
 Requires at least: 3.0.1
-Tested up to: 4.6.1
+Tested up to: 4.8
 Stable tag: 4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -12,7 +12,7 @@ Above the fold optimization toolkit that enables to achieve a Google PageSpeed 1
 
 == Description ==
 
-This plugin is a toolkit for Above The Fold Optimization that enables to achieve a [Google PageSpeed](https://developers.google.com/speed/docs/insights/about) 100 Score.
+This plugin is a toolkit for Above The Fold Optimization that enables to achieve a Google PageSpeed 100 Score.
 
 This plugin is compatible with most optimization, minification and full page cache plugins and can be made compatible with any plugin by creating a module extension.
 
@@ -48,12 +48,14 @@ The plugin offers advanced options such as a render delay in milliseconds, the p
 
 The plugin contains a tool to optimize loading of javascript via an enhanced version of [little-loader](https://github.com/walmartlabs/little-loader) from Walmart Labs ([reference](https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/)) or a state of the art HTML5 Web Worker and Fetch API based script loader with localStorage cache. The tool contains a jQuery Stub and it enables async loading of all javascript files, optionally abiding WordPress dependency configuration.
 
-The HTML5 script loader (an innovation by this plugin) offers the following unique features:
+The HTML5 script loader offers the following unique features:
 
 * 0 javascript file download during navigation
 * 0 javascript file download for returning visitors
 * abide WordPress dependencies
 * faster script loading than browser cache, especially on mobile
+
+Saving javascript requests will result in a faster load speed for returning visitors.
 
 ### Lazy Loading Javascript
 
@@ -75,9 +77,9 @@ The plugin contains a tool to localize (proxy) external javascript and CSS resou
 
 The plugin contains a tool to optimize web fonts. The plugin automatically parses web font `@import` links in minified CSS files and `<link>` links in the HTML and loads the fonts via [Google Web Font Loader](https://github.com/typekit/webfontloader).
 
-### Gulp.js Critical CSS Generator Task Manager
+### Gulp.js Critical CSS Creator
 
-The plugin contains a tool to manage Critical CSS Generator tasks that optionally automatically updates WordPress Critical CSS. The tool is based on [critical](https://github.com/addyosmani/critical) (by a Google engineer) and makes it possible for designers and less experienced WordPress users to create professional quality Critical CSS in just a few seconds. The tool is intended to make it more efficient to maintain perfect quality Critical CSS.
+The plugin contains a tool to manage Critical CSS Generator tasks that optionally automatically update WordPress Critical CSS. The tool is based on [critical](https://github.com/addyosmani/critical) (by a Google engineer) and makes it possible for designers and less experienced WordPress users to create professional quality Critical CSS in just a few seconds. The tool is intended to make it more efficient to maintain perfect quality Critical CSS.
 
 == Installation ==
 
@@ -100,6 +102,66 @@ The plugin contains a tool to manage Critical CSS Generator tasks that optionall
 8. Gulp.js Critical CSS Generator Task Manager
 
 == Changelog ==
+
+= 2.7.11 =
+* Added: Google Webfont auto-detect option.
+* Added: Google Webfont optimization ignore list.
+* Added: Link to Google PageSpeed scores from plugin index.
+* Update: webfont.js upgraded to `v1.6.28`.
+* Update: [CodeMirror](http://codemirror.net/) upgraded to `v5.27.4`.
+* Updated: URL for Google's new full spectrum mobile speed test for small business ([Think With Google](https://testmysite.withgoogle.com/))
+* Removed: Console reference to plugin.
+
+= 2.7.10 =
+* Update: updated support policy.
+
+= 2.7.9 =
+* Bugfix: PHP 7 does not support methods with a double underscore prefix.
+
+= 2.7.8 =
+* Added: module for [LiteSpeed Cache](https://wordpress.org/plugins-wp/litespeed-cache/). ([pending evaluation by requesting user](https://wordpress.org/support/topic/please-add-support-for-litespeed-cache/))
+
+= 2.7.7 =
+* Updated: cache directory moved to /wp-content/cache/abtf/
+* Updated: default file permissions set to 666 (public read & write) to allow FTP access.
+* Added: proxy cache cleanup cron.
+* Added: proxy cache stats on proxy configuration page.
+* Added: file and expire meta header added to proxy cache files.
+* Improved: wp_remote_get implementation optimized by disabling keep-alive. (@aamir2007)
+
+= 2.7.6 =
+* Bugfix: notice error on theme switch. (@samkatakouzinos)
+* Improved: global.css Critical Path CSS file automatically created on theme switch.
+
+= 2.7.5 =
+* Bugfix: Full CSS export is missing quotes in url translation.
+
+= 2.7.4 =
+* Added: warning in admin panel when Critical Path CSS is empty.
+
+= 2.7.3 =
+* Bugfix: notice error with WP_DEBUG enabled. (@samkatakouzinos)
+
+= 2.7.2 =
+* Updated: minor improvements.
+
+= 2.7.1 =
+* Added: Google Webfont zip-file upload and extract.
+
+= 2.7.0 =
+* Updated: Critical CSS file storage location moved to theme directory.
+* Added: file based critical CSS configuration to allow editing via FTP.
+* Added: Critical CSS filter function condition.
+* Added: append/prepend CSS file(s) to critical CSS.
+* Added: enhanced Critical CSS debug comment.
+
+= 2.6.17 =
+* Updated: new [Google Mobile Indexation Test](https://search.google.com/search-console/mobile-friendly).
+
+= 2.6.16 =
+* Bugfix: stray script end tags not removed. (@ferares)
+* Added: support for AMP Supremacy. (@cwfaraday)
+* Added: website monitor resource.
 
 = 2.6.15 =
 * Bugfix: Critical Path CSS Build Tool Task Manager permissions not set correctly when automatically updating WordPress critical CSS.

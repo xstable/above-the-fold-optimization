@@ -1,12 +1,4 @@
 
-.g100 {
-    display: inline-block;
-    font: 1em sans-serif;
-    color: #fff;
-    background-color: #079c2d;
-    padding: 2px 4px;
-}
-
 .authorbox .inside {
     width:45%;
 }
@@ -23,6 +15,21 @@
     font-size:12px;
 }
 
+.nav-tab-offer {
+    font-family: Roboto,sans-serif;
+    background: #0085ba;
+    border-color: #0073aa #006799 #006799;
+    -webkit-box-shadow: 0 1px 0 #006799;
+    box-shadow: 0 1px 0 #006799;
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 -1px 1px #006799,1px 0 1px #006799,0 1px 1px #006799,-1px 0 1px #006799;
+}
+.nav-tab-offer:hover, .nav-tab-offer:focus {
+    background:#008ec2;
+    border-color:#006799;
+    color:#fff
+}
 
 .abtfexample thead td {
     font-size:22px;
@@ -233,4 +240,79 @@ textarea.abtfcmd {
     100% { 
         opacity: 0.5;
     }
+}
+
+
+.warning_red {
+    background: #FFF8F8;
+    border: solid 2px red;
+    padding:10px;
+    margin-top:10px;
+    margin-bottom:20px;
+    color:black;
+}
+.ok_green {
+    background: #F6FFF9;
+    border: solid 2px #079c2d;
+    padding:10px;
+    margin-top:10px;
+    margin-bottom:20px;
+    color:black;
+}
+.info_yellow {
+    background: #FEFBF0;
+    padding:10px;
+    margin-top:10px;
+    margin-bottom:20px;
+    border: solid 1px #FFDF82;
+}
+.info_yellow .mark {
+   
+}
+
+.info_seagreen {
+    background: #F1FFFE;
+    border: solid 1px #019e97;
+    padding:10px;
+    margin-top:10px;
+    margin-bottom:20px;
+    color:black;
+}
+.info_seagreen a {
+    color:#019e97;
+}
+
+.uptime table.inside th {
+    text-align:left;
+}
+.uptime table.inside thead th {
+    border-bottom:solid 1px #efefef;
+}
+
+
+fieldset.limited {
+    border:solid 4px #079c2d;
+    padding:0px;
+    background:white;
+}
+fieldset.limited legend {
+    font-size:22px;
+    padding-left:10px;
+    padding-right:10px;
+    margin-left:20px;
+    margin-right:20px;
+}
+fieldset.limited div.c {
+    padding:10px;
+    padding-top:0px;
+    font-size:16px;
+}
+fieldset.limited p, fieldset.limited ul li { 
+    font-size:16px;
+    line-height:20px;
+}
+fieldset.limited ul {
+    padding-left:2em;
+    list-style:square;
+    font-size:14px;
 }

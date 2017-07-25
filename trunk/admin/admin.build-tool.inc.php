@@ -1,7 +1,5 @@
 <?php
 
-	$conditionalcss_enabled = (isset($options['conditionalcss_enabled']) && intval($options['conditionalcss_enabled']) === 1) ? true : false;
-
 	$default = get_option('abtf-build-tool-default');
 	if (!is_array($default)) { $default = array(); }
 
@@ -19,7 +17,7 @@
 				<div id="post-body-content">
 					<div class="postbox">
 						<h3 class="hndle">
-							<span><?php _e( 'Build Tool Critical Path CSS Creation', 'abovethefold' ); ?></span>
+							<span><?php _e( 'Critical Path CSS Creator', 'abovethefold' ); ?></span>
 						</h3>
 						<div class="inside testcontent">
 
@@ -69,19 +67,21 @@
 
 						                                     <select name="update" class="wp-update-select">
 						                                     	<option value=""<?php if (!$update) { print ' selected="selected"'; } ?>>Do not update (store result in /package/output/)</option>
-						                                     	<option value="global"<?php if ($update === 'global') { print ' selected="selected"'; } ?>>Overwrite global Critical CSS</option>
+						                                     	<option value="global.css"<?php if ($update === 'global') { print ' selected="selected"'; } ?>>Overwrite global Critical CSS</option>
 <?php
-
-	if ($conditionalcss_enabled && !empty($options['conditional_css'])) {
+	$criticalcss_files = $this->CTRL->criticalcss->get_theme_criticalcss();
+	if ($criticalcss_files && count($criticalcss_files) > 1) {
 
 		print '<optgroup label="Conditional Critical CSS">';
 
-		foreach ($options['conditional_css'] as $condition_hash => $cCSS) {
-			print '<option value="'.htmlentities($condition_hash,ENT_COMPAT,'utf-8').'"'.(($update && is_array($update) && $update['key'] === $condition_hash) ? ' selected="selected"' : '').'>Overwrite "'.htmlentities($cCSS['name'],ENT_COMPAT,'utf-8').'"</option>';
+		foreach ($criticalcss_files as $file => $config) {
+			if ($file === 'global.css') {
+				continue 1;
+			}
+			print '<option value="'.htmlentities($file,ENT_COMPAT,'utf-8').'"'.(($update === $file) ? ' selected="selected"' : '').'>Overwrite '.htmlentities($file . ' - ' . $config['name'],ENT_COMPAT,'utf-8').'</option>';
 		}
 
 		print '</optgroup>';
-
 	} else {
 
 		print '<option value="" disabled="disabled">Conditional Critical CSS is disabled</option>';
@@ -147,7 +147,7 @@
 
 							<h1 style="padding-bottom:0px;">More Optimizations</h1>
 							<p>There are many other WordPress optimizations that can be performed via Grunt.js or Gulp.js, for example <a href="https://developers.google.com/speed/webp/?hl=<?php print $lgcode; ?>" target="_blank">Google WebP</a> image optimization, uncss (unused CSS stripping), CSS data-uri (CSS images) and more. <a href="https://encrypted.google.com/search?q=grunt+or+gulp+wordpress+optimization&amp;hl=<?=$lgcode;?>" target="_blank">Search Google</a> for more information.</p>
-							<p>Example: optimize images of your /themes/ and /uploads/ directory using Gulp.js or Grunt.js <a href="https://github.com/imagemin/imagemin" target="_blank">imagemin</a> using professional image compression software, including Google WebP, and instead of overwriting the original images like many other solutions, place the images in a subdirectory /wp-content/optimized/ and have Nginx serve the optimized image only when the optimized version is newer. It will result in the best performance possible, with the best possible image optimization and instant refresh of images when updated in WordPress. And when you want to apply a new image optimization technique, you will have the original files available. A server cron makes it possible to optimize updated images daily.</p>
+							<div class="info_yellow"><p style="margin:0px;"><strong>Tip:</strong> optimize images of your /themes/ and /uploads/ directory using Gulp.js or Grunt.js <a href="https://github.com/imagemin/imagemin" target="_blank">imagemin</a> using professional image compression software, including Google WebP, and instead of overwriting the original images like many other solutions, place the images in a subdirectory /wp-content/optimized/ and have Nginx serve the optimized image only when the optimized version is newer. It will result in the best performance, with the best image optimization and instant refresh of images when updated in WordPress. And when you want to apply a new image optimization technique, you will have the original files available. A server cron makes it possible to optimize updated images daily.</p></div>
 
 						</div>
 					</div>

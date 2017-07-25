@@ -33,7 +33,7 @@ class Abovethefold_LazyScripts {
 		/**
 		 * Lazy loading of scripts enabled
 		 */
-		if ($this->CTRL->options['lazyscripts_enabled']) {
+		if (isset($this->CTRL->options['lazyscripts_enabled']) && $this->CTRL->options['lazyscripts_enabled']) {
 
 			// enqueue jquery Lazy XT widget module
 			$this->CTRL->loader->add_action('wp_enqueue_scripts', $this, 'enqueue_lazyxt', 10);

@@ -2,51 +2,49 @@
   "_args": [
     [
       {
-        "raw": "webfontloader",
+        "raw": "webfontloader@^1.6.28",
         "scope": null,
         "escapedName": "webfontloader",
         "name": "webfontloader",
-        "rawSpec": "",
-        "spec": "latest",
-        "type": "tag"
+        "rawSpec": "^1.6.28",
+        "spec": ">=1.6.28 <2.0.0",
+        "type": "range"
       },
-      "/home/laptop/dev/above-the-fold-optimization/trunk"
+      "/home/w/dev/abtf27/trunk"
     ]
   ],
-  "_from": "webfontloader@latest",
-  "_id": "webfontloader@1.6.26",
+  "_from": "webfontloader@>=1.6.28 <2.0.0",
+  "_id": "webfontloader@1.6.28",
   "_inCache": true,
-  "_installable": true,
   "_location": "/webfontloader",
-  "_nodeVersion": "5.5.0",
+  "_nodeVersion": "6.10.1",
   "_npmOperationalInternal": {
-    "host": "packages-16-east.internal.npmjs.com",
-    "tmp": "tmp/webfontloader-1.6.26.tgz_1467978298801_0.48626396455802023"
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/webfontloader-1.6.28.tgz_1495902524753_0.6911738032940775"
   },
   "_npmUser": {
     "name": "bramstein",
     "email": "b.l.stein@gmail.com"
   },
-  "_npmVersion": "3.8.6",
+  "_npmVersion": "3.10.10",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "webfontloader",
+    "raw": "webfontloader@^1.6.28",
     "scope": null,
     "escapedName": "webfontloader",
     "name": "webfontloader",
-    "rawSpec": "",
-    "spec": "latest",
-    "type": "tag"
+    "rawSpec": "^1.6.28",
+    "spec": ">=1.6.28 <2.0.0",
+    "type": "range"
   },
   "_requiredBy": [
-    "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/webfontloader/-/webfontloader-1.6.26.tgz",
-  "_shasum": "04909e273e913c9d7e4856f42c4e69fd7b3d5f28",
+  "_resolved": "https://registry.npmjs.org/webfontloader/-/webfontloader-1.6.28.tgz",
+  "_shasum": "db786129253cb6e8eae54c2fb05f870af6675bae",
   "_shrinkwrap": null,
-  "_spec": "webfontloader",
-  "_where": "/home/laptop/dev/above-the-fold-optimization/trunk",
+  "_spec": "webfontloader@^1.6.28",
+  "_where": "/home/w/dev/abtf27/trunk",
   "bugs": {
     "url": "https://github.com/typekit/webfontloader/issues"
   },
@@ -73,14 +71,14 @@
   "devDependencies": {},
   "directories": {},
   "dist": {
-    "shasum": "04909e273e913c9d7e4856f42c4e69fd7b3d5f28",
-    "tarball": "https://registry.npmjs.org/webfontloader/-/webfontloader-1.6.26.tgz"
+    "shasum": "db786129253cb6e8eae54c2fb05f870af6675bae",
+    "tarball": "https://registry.npmjs.org/webfontloader/-/webfontloader-1.6.28.tgz"
   },
   "files": [
     "webfontloader.js",
     "src/**/*.js"
   ],
-  "gitHead": "33bec9da7ca4b0a46b1efbaca705c2ae5029840b",
+  "gitHead": "117e48d521d6408f78cbfe4d23923cc828fdf576",
   "homepage": "https://github.com/typekit/webfontloader",
   "keywords": [
     "web",
@@ -96,6 +94,10 @@
     {
       "name": "bramstein",
       "email": "b.l.stein@gmail.com"
+    },
+    {
+      "name": "pzula",
+      "email": "persa@persazula.com"
     }
   ],
   "name": "webfontloader",
@@ -108,5 +110,5 @@
   "scripts": {
     "test": "phantomjs tools/jasmine-phantomjs/jasmine-phantomjs.js spec/index.html"
   },
-  "version": "1.6.26"
+  "version": "1.6.28"
 }
