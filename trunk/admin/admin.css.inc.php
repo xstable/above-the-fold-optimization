@@ -234,7 +234,7 @@
                                                                 print ' checked';
                                                             } ?>> Auto-detect enabled
 										</label>
-																<p class="description">When enabled, fonts detected on pages are automatically added to the list.</p>
+																<p class="description">When enabled, fonts are automatically extracted from the HTML, CSS and existing WebFontConfig.</p>
 
 																<br />
 																<h5 class="h">&nbsp;Ignore List</h5>
