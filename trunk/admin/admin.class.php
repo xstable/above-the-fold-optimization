@@ -218,7 +218,7 @@ class Abovethefold_Admin
 
             $row_meta = array(
                 'pagespeed_insights'    => '<a href="' . esc_url('https://developers.google.com/speed/docs/insights/about?hl=' . $lgcode) . '" target="_blank" title="' . esc_attr(__('View Google PageSpeed Insights Documentation', 'pagespeed')) . '">' . __('Google PageSpeed', 'pagespeed') . '</a>',
-                'pagespeed_scores'    => '<a href="' . esc_url('https://testmysite.withgoogle.com/intl/'.$intlcode.'?url='.home_url()) . '" target="_blank" title="' . esc_attr(__('View Google PageSpeed Scores Documentation', 'pagespeed')) . '">' . __('View Scores', 'pagespeed') . '</a>',
+                'pagespeed_scores'    => '<a href="' . esc_url('https://testmysite.thinkwithgoogle.com/intl/'.$intlcode.'?url='.home_url()) . '" target="_blank" title="' . esc_attr(__('View Google PageSpeed Scores Documentation', 'pagespeed')) . '">' . __('View Scores', 'pagespeed') . '</a>',
             );
 
             return array_merge($links, $row_meta);
@@ -405,7 +405,7 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
             'parent' => 'abovethefold',
             'id' => 'abovethefold-check-pagespeed-scores',
             'title' => __('Google PageSpeed Scores', 'abovethefold'),
-            'href' => 'https://testmysite.withgoogle.com/intl/'.$this->google_intlcode.'?url=' . urlencode($currenturl),
+            'href' => 'https://testmysite.thinkwithgoogle.com/intl/'.$this->google_intlcode.'?url=' . urlencode($currenturl),
             'meta' => array( 'title' => __('Google PageSpeed Scores', 'abovethefold'), 'target' => '_blank' )
         ));
 
