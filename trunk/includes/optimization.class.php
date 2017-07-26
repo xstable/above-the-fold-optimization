@@ -873,6 +873,10 @@ class Abovethefold_Optimization
             list($search, $replace, $search_regex, $replace_regex) = $searchreplace;
         }
 
+        // add reference
+        $search_regex[] = '|<html([^>]*)>|i';
+        $replace_regex[] = '<html$1 data-optimization="https://goo.gl/C1gw96">';
+
         // update buffer
         if (!empty($search)) {
             $buffer = str_replace($search, $replace, $buffer);
