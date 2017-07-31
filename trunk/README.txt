@@ -117,7 +117,7 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 = 2.7.12 =
 * Updated: Default permissions for cache directory changed to 755/644. ([@azirer](https://github.com/optimalisatie/above-the-fold-optimization/pull/54))
-* Added: Option to remove plugin reference from HTML source code using `ABTF_NOREF` in wp-config.php.
+* Added: Option to remove plugin reference (`data-abtf="https://goo.gl/C1gw96"`) from HTML source code using `ABTF_NOREF` in wp-config.php.
 
 = 2.7.11 =
 * Added: Google Webfont auto-detect option.
