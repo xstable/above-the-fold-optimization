@@ -474,7 +474,7 @@ class Abovethefold
     /**
      * Create directory
      */
-    public function mkdir($path, $mask = 0777)
+    public function mkdir($path, $mask = 0755)
     {
         if (!is_dir($path)) {
             if (!@mkdir($path, $mask)) {
@@ -513,7 +513,7 @@ class Abovethefold
     /**
      * File put contents
      */
-    public function file_put_contents($file, $contents, $mask = 0666)
+    public function file_put_contents($file, $contents, $mask = 0644)
     {
         if (file_exists($file)) {
             @unlink($file);
@@ -531,7 +531,7 @@ class Abovethefold
     /**
      * Cache path
      */
-    public function cache_path($type = '', $mask = 0777)
+    public function cache_path($type = '', $mask = 0755)
     {
         $path = ABTF_CACHE_DIR;
         if (!is_dir($path)) {
@@ -572,7 +572,7 @@ class Abovethefold
     /**
      * Theme content path
      */
-    public function theme_path($type = false, $mask = 0777)
+    public function theme_path($type = false, $mask = 0755)
     {
         $path = trailingslashit(get_stylesheet_directory()) . 'abovethefold/';
         if (!is_dir($path)) {

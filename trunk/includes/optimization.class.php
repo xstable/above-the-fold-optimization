@@ -873,10 +873,6 @@ class Abovethefold_Optimization
             list($search, $replace, $search_regex, $replace_regex) = $searchreplace;
         }
 
-        // add reference
-        $search_regex[] = '|<html([^>]*)>|i';
-        $replace_regex[] = '<html$1 data-optimization="https://goo.gl/C1gw96">';
-
         // update buffer
         if (!empty($search)) {
             $buffer = str_replace($search, $replace, $buffer);
@@ -1028,13 +1024,9 @@ class Abovethefold_Optimization
             $headCSS = false;
         }
 
-        // Hide PageSpeed.pro reference in browser console
-        if (defined('ABTF_NOREF') || current_user_can('manage_options')) {
-            $jssettings['noref'] = true;
-        }
 
         $inlineJS .= 'Abtf.h(' . json_encode($jssettings) . ');';
-        print '<script rel="abtf">' . $inlineJS . '</script>';
+        print '<script rel="abtf"'.((!defined('ABTF_NOREF') || !ABTF_NOREF) ? ' data-abtf="https://goo.gl/C1gw96"' : '').'>' . $inlineJS . '</script>';
 
         print '<style type="text/css" rel="abtf" id="AbtfCSS">' . $inlineCSS . '</style>';
 
