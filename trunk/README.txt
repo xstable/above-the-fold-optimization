@@ -59,6 +59,7 @@ Some of the features:
 The plugin contains tools to optimize the loading of javascript.
 
 Some of the features:
+
 * Robust async script loader based on [little-loader](https://github.com/walmartlabs/little-loader) by Walmart Labs ([reference](https://formidable.com/blog/2016/01/07/the-only-correct-script-loader-ever-made/))
 * HTML5 Web Worker and Fetch API based script loader with localStorage cache and fallback to little-loader for old browsers.
 * jQuery Stub that enables async loading of jQuery.
@@ -116,7 +117,7 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 = 2.7.12 =
 * Updated: Default permissions for cache directory changed to 755/644. ([@azirer](https://github.com/optimalisatie/above-the-fold-optimization/pull/54))
-* Updated: Enable to remove plugin reference from HTML source code using `ABTF_NOREF` in wp-config.php.
+* Added: Option to remove plugin reference from HTML source code using `ABTF_NOREF` in wp-config.php.
 
 = 2.7.11 =
 * Added: Google Webfont auto-detect option.
