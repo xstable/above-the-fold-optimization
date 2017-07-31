@@ -17,7 +17,7 @@ This plugin is a toolkit for Above The Fold Optimization that enables to achieve
 This plugin is compatible with most optimization, minification and full page cache plugins and can be made compatible with other plugins by creating a module extension.
 
 Some of the supported plugins include:
-[Autoptimize](https://wordpress.org/plugins/autoptimize/)
+* [Autoptimize](https://wordpress.org/plugins/autoptimize/)
 * [W3 Total Cache](https://wordpress.org/plugins/w3-total-cache/)
 * [WP Super Cache](https://wordpress.org/plugins/wp-super-cache/)
 * [WP Fastest Cache](https://wordpress.org/plugins/wp-fastest-cache/)
