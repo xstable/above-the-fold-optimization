@@ -19,7 +19,7 @@
 			<label><input type="checkbox" name="abovethefold[html_minify]" value="1"<?php if (isset($options['html_minify']) && intval($options['html_minify']) === 1) {
     print ' checked';
 } ?> /> Enabled</label>
-			<p class="description">Compress HTML using a enhanced version of <a href="https://github.com/mrclay/minify/blob/master/lib/Minify/HTML.php" target="_blank">HTML.php</a>. This option will reduce the size of HTML but may require a full page cache to maintain an optimal server speed.</p>
+			<p class="description">Compress HTML using an enhanced version of <a href="https://github.com/mrclay/minify/blob/master/lib/Minify/HTML.php" target="_blank">HTML.php</a>. This option will reduce the size of HTML but may require a full page cache to maintain an optimal server speed.</p>
 		</td>
 	</tr>
 	<tr valign="top">
