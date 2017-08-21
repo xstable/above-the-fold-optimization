@@ -3,7 +3,7 @@ Contributors: optimalisatie
 Donate link: https://pagespeed.pro/
 Tags: optimization, above the fold, pagespeed, css, performance, critical css, localization, javascript, minification, minify, minify css, minify stylesheet, optimize, speed, stylesheet, google, web font, webfont
 Requires at least: 3.0.1
-Tested up to: 4.8
+Tested up to: 4.8.1
 Stable tag: 4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -114,6 +114,15 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 8. Gulp.js Critical CSS Generator Task Manager
 
 == Changelog ==
+
+= 2.8.0 =
+* Added: URL reference in HTML5 script loader cache blobs.
+* Added: HTML minification with selective comment removal.
+* Added: HTML search and replace.
+* Added: Javascript script execution prioritization using [requestIdleCallback](https://developers.google.com/web/updates/2015/08/using-requestidlecallback).
+* Updated: Client javascript optimized and compressed with [Google Closure Compiler](https://developers.google.com/closure/compiler/) with ~25% size reduction.
+* Updated: Inline identification parameter changed to `data-abtf`. ([@azirer](https://github.com/optimalisatie/above-the-fold-optimization/pull/54))
+* Removed: Page and condition search cache. Queries are now directly performed on the database.
 
 = 2.7.12 =
 * Updated: Default permissions for cache directory changed to 755/644. ([@azirer](https://github.com/optimalisatie/above-the-fold-optimization/pull/54))

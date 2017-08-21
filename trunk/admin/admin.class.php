@@ -47,6 +47,7 @@ class Abovethefold_Admin
     public $tabs = array(
         'intro' => 'Intro',
         'criticalcss' => 'Critical CSS',
+        'html' => 'HTML',
         'css' => 'CSS',
         'javascript' => 'Javascript',
         'proxy' => 'Proxy',
@@ -127,17 +128,10 @@ class Abovethefold_Admin
             $this->CTRL->loader->add_action('wp_ajax_abtf_page_search', $this, 'ajax_page_search');
 
             /**
-             * Delete page options cache on update
-             */
-            $this->CTRL->loader->add_action('save_post', $this, 'delete_pageoptions_cache');
-            $this->CTRL->loader->add_action('edited_terms', $this, 'delete_pageoptions_cache');
-            // WooCommerce
-            $this->CTRL->loader->add_action('create_product_cat', $this, 'delete_pageoptions_cache');
-
-            /**
              * Load dependencies
              */
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.criticalcss.class.php';
+            require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.html.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.css.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.javascript.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.proxy.class.php';
@@ -154,6 +148,11 @@ class Abovethefold_Admin
              * Load CSS management
              */
             $this->css = new Abovethefold_Admin_CSS($CTRL);
+
+            /**
+             * Load HTML management
+             */
+            $this->html = new Abovethefold_Admin_HTML($CTRL);
 
             /**
              * Load Javascript management
@@ -564,134 +563,6 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
     }
 
     /**
-     * Delete page options cache
-     */
-    public function delete_pageoptions_cache()
-    {
-        update_option('abtf-pageoptions', array( 't' => 0, 'options' => array() ), false);
-        delete_option('abtf-pageoptions');
-    }
-
-    /**
-     * Return all page options
-     */
-    public function page_search_options()
-    {
-
-        /**
-         * Try cache
-         *
-         * Options are cleared on page / post / category update
-         */
-        $refresh_interval = 3600;
-        $pageoptions = get_option('abtf-pageoptions');
-        if ($pageoptions && is_array($pageoptions) && isset($pageoptions['t'])) {
-            if ($pageoptions['t'] > (time() - $refresh_interval)) {
-                return $pageoptions['options'];
-            }
-        }
-
-        /**
-         * Query database
-         */
-        /**
-         * Paths
-         */
-        $pageoptions = array();
-
-        // root
-        $pageoptions[] = array(
-            'value' => home_url(),
-            'name' => 'Home Page (index)'
-        );
-
-        $post_types = get_post_types();
-        foreach ($post_types as $pt) {
-            if (in_array($pt, array('revision','nav_menu_item'))) {
-                continue 1;
-            }
-
-            // Get random post
-            $args = array( 'post_type' => $pt, 'posts_per_page' => -1 );
-            query_posts($args);
-            if (have_posts()) {
-                while (have_posts()) {
-                    the_post();
-                    switch ($pt) {
-                        case "post":
-                            $pageoptions[] = array(
-                                'class' => 'posts',
-                                'value' => get_permalink($wp_query->post->ID),
-                                'name' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title()
-                            );
-                        break;
-                        case "product":
-                            $pageoptions[] = array(
-                                'class' => 'woocommerce',
-                                'value' => get_permalink(get_the_ID()),
-                                'name' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title()
-                            );
-                        break;
-                        default:
-                            $pageoptions[] = array(
-                                'class' => 'pages',
-                                'value' => get_permalink(get_the_ID()),
-                                'name' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title()
-                            );
-                        break;
-                    }
-                }
-            }
-        }
-
-        $taxonomies = get_taxonomies();
-        if (!empty($taxonomies)) {
-            foreach ($taxonomies as $taxonomy) {
-                switch ($taxonomy) {
-                    case "category":
-                    case "post_tag":
-                    case "product_cat":
-                    case "product_brand":
-                        $terms = get_terms($taxonomy, array(
-                            'orderby'    => 'title',
-                            'order'      => 'ASC',
-                            'hide_empty' => false
-                        ));
-                        if ($terms) {
-                            foreach ($terms as $term) {
-                                switch ($taxonomy) {
-                                    case "product_cat":
-                                    case "product_brand":
-                                        $pageoptions[] = array(
-                                            'class' => 'woocommerce',
-                                            'value' => get_term_link($term->slug, $taxonomy),
-                                            'name' => $term->term_id.'. ' . str_replace(home_url(), '', get_category_link($term->term_id)) . ' - ' . $term->name
-                                        );
-                                    break;
-                                    default:
-                                        $pageoptions[] = array(
-                                            'class' => 'categories',
-                                            'value' => get_category_link($term->term_id),
-                                            'name' => $term->term_id.'. ' . str_replace(home_url(), '', get_category_link($term->term_id)) . ' - ' . $term->name
-                                        );
-                                    break;
-                                }
-                            }
-                        }
-                    break;
-                    default:
-                        
-                    break;
-                }
-            }
-        }
-
-        update_option('abtf-pageoptions', array( 't' => time(), 'options' => $pageoptions ), false);
-
-        return $pageoptions;
-    }
-
-    /**
      * Return options for page selection menu
      */
     public function ajax_page_search()
@@ -701,23 +572,111 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
         $query = (isset($_POST['query'])) ? trim($_POST['query']) : '';
         $limit = (isset($_POST['maxresults']) && intval($_POST['maxresults']) > 10 && intval($_POST['maxresults']) < 30) ? intval($_POST['maxresults']) : 10;
 
-        // get page options
-        $options = $this->page_search_options();
+        /**
+         * Results
+         */
+        $results = array();
 
-        $result = array();
+        $post_types = get_post_types();
+        foreach ($post_types as $pt) {
+            if (in_array($pt, array('revision','nav_menu_item'))) {
+                continue 1;
+            }
+            
+            if (count($results) >= $limit) {
+                break;
+            }
 
-        $count = 0;
-        foreach ($options as $option) {
-            if (stripos($option['name'], $query) !== false) {
-                $result[] = $option;
-                $count++;
-                if ($count === $limit) {
-                    break;
+            // Get random post
+            $args = array( 'post_type' => $pt, 'posts_per_page' => $limit, 's'=> $query );
+            query_posts($args);
+            if (have_posts()) {
+                while (have_posts()) {
+                    the_post();
+                    switch ($pt) {
+                        case "post":
+                            $results[] = array(
+                                'class' => 'posts',
+                                'value' => get_permalink($wp_query->post->ID),
+                                'name' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title()
+                            );
+                        break;
+                        case "product":
+                            $results[] = array(
+                                'class' => 'woocommerce',
+                                'value' => get_permalink(get_the_ID()),
+                                'name' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title()
+                            );
+                        break;
+                        default:
+                            $results[] = array(
+                                'class' => 'pages',
+                                'value' => get_permalink(get_the_ID()),
+                                'name' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title()
+                            );
+                        break;
+                    }
+                    if (count($results) >= $limit) {
+                        break;
+                    }
                 }
             }
         }
 
-        $json = json_encode($result);
+        if (count($results) < $limit) {
+            $taxonomies = get_taxonomies();
+            if (!empty($taxonomies)) {
+                foreach ($taxonomies as $taxonomy) {
+                    if (count($results) >= $limit) {
+                        break;
+                    }
+                    switch ($taxonomy) {
+                        case "category":
+                        case "post_tag":
+                        case "product_cat":
+                        case "product_brand":
+                            $terms = get_terms($taxonomy, array(
+                                'orderby'    => 'title',
+                                'order'      => 'ASC',
+                                'hide_empty' => false,
+                            'number'     => $limit,
+                                'name__like' => $query
+                            ));
+                            if ($terms) {
+                                foreach ($terms as $term) {
+                                    switch ($taxonomy) {
+                                        case "product_cat":
+                                        case "product_brand":
+                                            $results[] = array(
+                                                'class' => 'woocommerce',
+                                                'value' => get_term_link($term->slug, $taxonomy),
+                                                'name' => $term->term_id.'. ' . str_replace(home_url(), '', get_category_link($term->term_id)) . ' - ' . $term->name
+                                            );
+                                        break;
+                                        default:
+                                            $results[] = array(
+                                                'class' => 'categories',
+                                                'value' => get_category_link($term->term_id),
+                                                'name' => $term->term_id.'. ' . str_replace(home_url(), '', get_category_link($term->term_id)) . ' - ' . $term->name
+                                            );
+                                        break;
+                                    }
+                                    
+                                    if (count($results) >= $limit) {
+                                        break;
+                                    }
+                                }
+                            }
+                        break;
+                        default:
+                            
+                        break;
+                    }
+                }
+            }
+        }
+        
+        $json = json_encode($results);
 
         header('Content-Type: application/json');
         header('Content-Length: ' . strlen($json));
@@ -790,9 +749,7 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
 // pagesearch optgroups
 window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_optgroups()); ?>;
 </script>
-<div class="wrap">
-<h1><?php _e('Above The Fold Optimization', 'abovethefold') ?></h1>
-</div>
+
 <?php
 
         // active tab
@@ -809,26 +766,14 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
         $utmstring = $this->utm_string;
 
         // print tabs
-        echo '<div id="icon-themes" class="icon32"><br></div>';
-        echo '<h1 class="nav-tab-wrapper">';
-        foreach ($this->tabs as $tabkey => $name) {
-            $class = ($tabkey == $tab) ? ' nav-tab-active' : '';
-            if ($tabkey === 'offer') {
-                $class .= ($tabkey == 'offer') ? ' nav-tab-offer' : '';
-                echo "<a class='nav-tab$class' href='https://pagespeed.pro/innovation/advanced-wordpress-optimization/' target='_blank'>$name</a>";
-            } else {
-                echo "<a class='nav-tab$class' href='?page=abovethefold&amp;tab=$tabkey'>$name</a>";
-            }
-        }
-        echo '</h1>';
+        require_once('admin.tabs.inc.php');
 
-        // author info
-        require_once('admin.author.inc.php');
          
         // print tab content
         switch ($tab) {
             case "criticalcss":
             case "css":
+            case "html":
             case "javascript":
             case "proxy":
             case "settings":

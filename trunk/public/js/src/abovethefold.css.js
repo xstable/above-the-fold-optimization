@@ -8,7 +8,7 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-(function(window, Abtf) {
+(function(Abtf) {
 
     // Wait for Critical CSS <style>
     var retrycount = 0;
@@ -16,42 +16,39 @@
 
     var timeset = false;
 
-    window['Abtf'].css = function() {
+    Abtf.c = function() {
 
         var m;
-        var files = this.cnf.css;
+        var files = Abtf.css;
 
-        if (files === 'ABTF_CRITICALCSS') {
+        if (!files) {
+            return;
+        }
+
+        if (typeof files !== 'object') {
             if (ABTFDEBUG) {
-                console.error('Abtf.css()','output buffer failed to apply CSS optimization');
+                console.error('Abtf.css()', 'output buffer failed to apply CSS optimization');
             }
             return;
         }
 
         if (ABTFDEBUG) {
-            if (!files) {
-                return;
-            } else {
-                console.log('Abtf.css()', files);
-            }
-        }
-        if (!files) {
-            return;
+            console.log('Abtf.css()', files);
         }
 
         // target for inserting CSS
         var target = (document.getElementById('AbtfCSS')) ? document.getElementById('AbtfCSS').nextSibling : false;
 
         for (i in files) {
-            if (typeof files[i] !== 'object') {
+            if (!files.hasOwnProperty(i) || typeof files[i] !== 'object') {
                 if (ABTFDEBUG) {
-                    console.error('Abtf.css()','Invalid CSS file configuration',i,files);
+                    console.error('Abtf.css()', 'Invalid CSS file configuration', i, files);
                 }
                 continue;
             }
             m = files[i][0].join(',');
-            this.loadCSS(files[i][1],target,m);
+            Abtf.lc(files[i][1], target, m);
         }
     };
 
-})(window, window['Abtf']);
+})(window.Abtf);

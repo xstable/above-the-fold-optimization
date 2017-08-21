@@ -163,4 +163,4 @@
         return jQuery;
     });
 
-})(window, document, window['Abtf'], Object);
+})(window, document, window.Abtf, Object);

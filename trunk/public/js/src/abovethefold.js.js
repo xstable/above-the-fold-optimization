@@ -6,7 +6,7 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-(function(window, Abtf, Object) {
+(function(Abtf, Object) {
 
     // active loading scripts
     var LOADING_SCRIPTS_COUNT = 0;
@@ -15,13 +15,13 @@
     var ONLOAD_QUEUE = [];
 
     // queue callback to process when a script is loaded
-    var ON_SCRIPT_LOAD = function(fn,args) {
-        ONLOAD_QUEUE.push([fn,args]);
+    var ON_SCRIPT_LOAD = function(fn, args) {
+        ONLOAD_QUEUE.push([fn, args]);
     };
 
     // script loaded, process callback queue
     var SCRIPT_LOADED = function() {
-        var queue = ONLOAD_QUEUE.splice(0,ONLOAD_QUEUE.length);
+        var queue = ONLOAD_QUEUE.splice(0, ONLOAD_QUEUE.length);
         var l = queue.length;
         for (var i = 0; i < l; i++) {
             queue[i][0].apply(null, queue[i][1]);
@@ -48,7 +48,7 @@
     }
 
     // wait for dependencies to execute callback
-    var WAIT_FOR_DEPENDENCIES = function(script,deps,callback) {
+    var WAIT_FOR_DEPENDENCIES = function(script, deps, callback) {
 
         // no dependencies
         if (deps === false || !(deps instanceof Array) || deps.length === 0) {
@@ -106,7 +106,7 @@
             if (LOADING_SCRIPTS_COUNT === 0) {
 
                 // no more loading scripts, presume dependency configuration error and continue loading script
-                
+
                 if (ABTFDEBUG) {
 
                     var depnames = [];
@@ -115,11 +115,11 @@
                         depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
                     }
 
-                    console.error('Abtf.js() ➤ dependency unmet and no more scripts loading', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' ('+DEPENDENCIES[wait_for_group]+')' : ''), script, depnames);
+                    console.error('Abtf.js() ➤ dependency unmet and no more scripts loading', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' (' + DEPENDENCIES[wait_for_group] + ')' : ''), script, depnames);
                 }
 
                 callback();
-                
+
             } else {
 
                 if (ABTFDEBUG) {
@@ -132,19 +132,19 @@
                             depnames.push((DEPENDENCIES[deps[i]] || deps[i]));
                         }
 
-                        console.info('Abtf.js() ➤ wait for dependency', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' ('+DEPENDENCIES[wait_for_group]+')' : ''), script, depnames);
-                   }
+                        console.info('Abtf.js() ➤ wait for dependency', (DEPENDENCIES[wait_for] || wait_for) + ((DEPENDENCIES[wait_for_group]) ? ' (' + DEPENDENCIES[wait_for_group] + ')' : ''), script, depnames);
+                    }
                 }
 
                 /**
                  * Preload script
                  */
-                if (typeof Abtf.preloadCachedScript !== 'undefined') {
-                    Abtf.preloadCachedScript(PARSE_URL(script));
+                if (typeof Abtf.pcs !== 'undefined') {
+                    Abtf.pcs(PARSE_URL(script));
                 }
 
                 // try again once a script is loaded
-                ON_SCRIPT_LOAD(WAIT_FOR_DEPENDENCIES,[script,deps,callback]);
+                ON_SCRIPT_LOAD(WAIT_FOR_DEPENDENCIES, [script, deps, callback]);
             }
         } else {
             callback();
@@ -163,18 +163,18 @@
     /**
      * Load script
      */
-    var LOADSCRIPT = function(src,onLoad,onStart) {
+    var LOADSCRIPT = function(src, onLoad, onStart) {
         if (ABTFDEBUG) {
             if (typeof onStart !== 'function') {
-                onStart = function() { };
+                onStart = function() {};
             }
         }
 
         // HTML5 cached script loader
-        if (typeof Abtf.loadCachedScript !== 'undefined') {
-            Abtf.loadCachedScript(src,onLoad,onStart);
+        if (typeof Abtf.lcs !== 'undefined') {
+            Abtf.lcs(src, onLoad, onStart);
         } else {
-            Abtf.loadScript(src,onLoad);
+            Abtf.ls(src, onLoad);
             if (ABTFDEBUG) {
                 onStart();
             }
@@ -184,13 +184,8 @@
     /**
      * Javascript processing method
      */
-    window['Abtf'].js = function(config) {
-        if (/^ABTF\_JS$/.test(config)) {
-            if (ABTFDEBUG) {
-                console.error('Abtf.js()','output buffer failed to apply Javascript optimization');
-            }
-            return;
-        }
+    Abtf.j = function(config) {
+        console.log(config);
 
         if (typeof config !== 'object' || typeof config[0] === 'undefined' || !config[0]) {
             return;
@@ -199,12 +194,12 @@
         /**
          * Javascript proxy enabled, mark scripts
          */
-        if (typeof Abtf.cnf.proxy !== 'undefined' && Abtf.cnf.proxy.js) {
-            window['Abtf'].markLoadScript = true;
+        if (typeof Abtf.proxy !== 'undefined' && Abtf.proxy.js) {
+            Abtf.mls = true;
         }
 
         var files = config[0];
-
+        console.log(files);
         // dependencies disabled
         if (config[1] === false) {
             ABIDE_DEPENDENCIES = false;
@@ -224,10 +219,14 @@
                 if (DEPENDENCY_GROUPS) {
                     var depgroups = [];
                     for (var group in DEPENDENCY_GROUPS) {
-                        if (!DEPENDENCY_GROUPS.hasOwnProperty(group)) { continue; }
+                        if (!DEPENDENCY_GROUPS.hasOwnProperty(group)) {
+                            continue;
+                        }
                         depgroups.push(DEPENDENCIES[group]);
                     }
-                } else { depgroups = false; }
+                } else {
+                    depgroups = false;
+                }
 
                 console.log('Abtf.js() ➤ abide dependencies', DEPENDENCIES, depgroups);
             }
@@ -244,7 +243,7 @@
 
             if (typeof files[scriptPos] !== 'object') {
                 if (ABTFDEBUG) {
-                    console.error('Abtf.js()','Invalid Javascript file configuration',scriptPos,files);
+                    console.error('Abtf.js()', 'Invalid Javascript file configuration', scriptPos, files);
                 }
                 return;
             }
@@ -256,7 +255,7 @@
             var deps = ((scriptData[3]) ? scriptData[3] : false);
 
             // load script
-            var startLoad = function(script,async,handle,deps,scriptPos) {
+            var startLoad = function(script, async, handle, deps, scriptPos) {
 
                 if (ABTFDEBUG) {
                     var depnames = [];
@@ -309,15 +308,15 @@
                     if (ABTFDEBUG) {
                         if (deps.length > 0) {
                             if (cached) {
-                                console.info('Abtf.js() ➤ localStorage '+((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached, (DEPENDENCIES[handle] || handle), depnames);
+                                console.info('Abtf.js() ➤ localStorage ' + ((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached, (DEPENDENCIES[handle] || handle), depnames);
                             } else {
-                                console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script), (DEPENDENCIES[handle] || handle), depnames);
+                                console.info('Abtf.js() ➤ ' + ((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script), (DEPENDENCIES[handle] || handle), depnames);
                             }
                         } else {
                             if (cached) {
-                                console.info('Abtf.js() ➤ localStorage '+((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached);
+                                console.info('Abtf.js() ➤ localStorage ' + ((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached);
                             } else {
-                                console.info('Abtf.js() ➤ '+((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script));
+                                console.info('Abtf.js() ➤ ' + ((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script));
                             }
                         }
                     };
@@ -325,11 +324,11 @@
             };
 
             if (ABIDE_DEPENDENCIES && deps) {
-                WAIT_FOR_DEPENDENCIES(script,deps,function callback() {
-                    startLoad(script,async,handle,deps,scriptPos);
+                WAIT_FOR_DEPENDENCIES(script, deps, function callback() {
+                    startLoad(script, async, handle, deps, scriptPos);
                 });
             } else {
-                startLoad(script,async,handle,deps,scriptPos);
+                startLoad(script, async, handle, deps, scriptPos);
             }
 
             if (async) {
@@ -339,19 +338,14 @@
             }
 
         };
-
+        console.log('start s');
         // start with first script
         loadScript(0);
     };
 
     /**
-     * Load script
-     */
-    window['Abtf'].jsLoad = LOADSCRIPT;
-
-    /**
      * On script load
      */
-    window['Abtf'].onScriptLoad = ON_SCRIPT_LOAD;
+    Abtf.osl = ON_SCRIPT_LOAD;
 
-})(window, window['Abtf'], Object);
+})(window.Abtf, Object);

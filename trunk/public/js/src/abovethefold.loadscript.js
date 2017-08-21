@@ -8,20 +8,20 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-(function(window, Abtf) {
+(function(Abtf) {
 
     // Global state.
     var pendingScripts = {};
     var scriptCounter = 0;
 
     /**
-    * Insert script into the DOM
-    *
-    * @param {Object} script Script DOM object
-    * @returns {void}
-    */
-    var _addScript = function (script) {
-        
+     * Insert script into the DOM
+     *
+     * @param {Object} script Script DOM object
+     * @returns {void}
+     */
+    var _addScript = function(script) {
+
         // Get the first script element, we're just going to use it
         // as a reference for where to insert ours. Do NOT try to do
         // this just once at the top and then re-use the same script
@@ -35,16 +35,16 @@
     };
 
     // mark loadScript injections
-    window['Abtf'].markLoadScript = false;
+    Abtf.mls = false;
 
-    window['Abtf'].loadScript = function (src, callback) {
+    Abtf.ls = function(src, callback) {
 
         var script = document.createElement("script");
 
-        if (window['Abtf'].markLoadScript) {
+        if (Abtf.mls) {
 
             // mark Above The Fold
-            script.setAttribute('rel','abtf');
+            script.setAttribute('rel', 'abtf');
         }
 
         var done = false;
@@ -52,16 +52,18 @@
         var _cleanup; // _must_ be set below.
 
         /**
-        * Final handler for error or completion.
-        *
-        * **Note**: Will only be called _once_.
-        *
-        * @returns {void}
-        */
-        var _finish = function () {
+         * Final handler for error or completion.
+         *
+         * **Note**: Will only be called _once_.
+         *
+         * @returns {void}
+         */
+        var _finish = function() {
 
             // Only call once.
-            if (done) { return; }
+            if (done) {
+                return;
+            }
             done = true;
 
             // Internal cleanup.
@@ -74,11 +76,11 @@
         };
 
         /**
-        * Error handler
-        *
-        * @returns {void}
-        */
-        var _error = function () {
+         * Error handler
+         *
+         * @returns {void}
+         */
+        var _error = function() {
             err = new Error(src || "EMPTY");
             _finish();
         };
@@ -92,11 +94,14 @@
             // support those browsers anyway.
 
             var id = scriptCounter++;
-            var isReady = { loaded: true, complete: true };
+            var isReady = {
+                loaded: true,
+                complete: true
+            };
             var inserted = false;
 
             // Clear out listeners, state.
-            _cleanup = function () {
+            _cleanup = function() {
                 script.onreadystatechange = script.onerror = null;
                 pendingScripts[id] = void 0;
             };
@@ -104,11 +109,13 @@
             // Attach the handler before setting src, otherwise we might
             // miss events (consider that IE could fire them synchronously
             // upon setting src, for example).
-            script.onreadystatechange = function () {
+            script.onreadystatechange = function() {
                 var firstState = script.readyState;
 
                 // Protect against any errors from state change randomness.
-                if (err) { return; }
+                if (err) {
+                    return;
+                }
 
                 if (!inserted && isReady[firstState]) {
                     inserted = true;
@@ -192,7 +199,7 @@
             // This section is for modern browsers, including IE10+.
 
             // Clear out listeners.
-            _cleanup = function () {
+            _cleanup = function() {
                 script.onload = script.onerror = null;
             };
 
@@ -208,4 +215,4 @@
         }
     };
 
-})(window, window['Abtf']);
+})(window.Abtf);

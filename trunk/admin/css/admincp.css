@@ -316,3 +316,54 @@ fieldset.limited ul {
     list-style:square;
     font-size:14px;
 }
+
+nav div.ref {
+    position:absolute;top:0px;right:0px;text-align:right;
+}
+nav div.ref a.logo {
+text-decoration:none;font-family:'Roboto',sans-serif;font-weight:bold;color:black;font-size:18px;line-height:20px;margin-top:4px;
+    }
+    nav div.ref a.logo .g100 { 
+        padding:3px;
+    }
+    nav div.ref .links { 
+padding:0px;margin:0px;font-size:12px;line-height:14px;
+    }
+
+    @media screen and (max-width: 1030px) {
+        nav div.ref {
+margin-top:-40px;
+}
+    }
+
+    nav.subnav {
+    padding:5px;
+    font-size:16px;
+    line-height:20px;
+    padding-bottom:0px;
+}
+nav.subnav a {
+    display:inline-block;
+    padding-left:10px;
+    border-left:solid 1px #ccc;
+    margin-left:10px;
+    }
+    nav.subnav a.f { 
+        padding-left:0px;
+        margin-left:2px;
+        border-left:0;
+    }
+    nav.subnav a.s { 
+        color:inherit;
+        font-weight:bold;
+        text-decoration:none;
+    }
+
+    nav.subnav .t {
+   
+}
+textarea.json-array-lines {
+    width: 100%;
+    height: 50px;
+    font-size: 11px;
+}

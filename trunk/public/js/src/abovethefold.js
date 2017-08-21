@@ -7,171 +7,135 @@
  * @subpackage abovethefold/public
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
-window['Abtf'] = (function(window) {
+(function(Abtf) {
 
     if (ABTFDEBUG) {
         console.warn('Abtf', 'debug notices visible to admin only');
-    }
+    };
 
-    var Abtf = {
+    /**
+     * Header init
+     */
+    Abtf.h = function(css) {
 
-        cnf: {},
+        if (Abtf.proxy) {
+            Abtf.ps(Abtf.proxy);
+        }
+        // load scripts in header
+        if (Abtf.js && !Abtf.js[1]) {
+            Abtf.j(Abtf.js[0]);
+        }
 
-        /**
-         * Header init
-         */
-        h: function(cnf, css) {
+        // Google Web Font Loader
+        if (typeof Abtf.gwf !== 'undefined') {
+            if (Abtf.gwf[0] && !Abtf.gwf[1]) {
 
-            this.cnf = cnf;
+                if (Abtf.gwf[0] === 'a') {
+                    Abtf.a(Abtf.gwf[2], 'webfont');
 
-            /*if (css) {
-                this.css();
-            }*/
+                    if (ABTFDEBUG) {
+                        console.log('Abtf.fonts()', 'async', WebFontConfig);
+                    }
 
-            if (cnf.proxy) {
-                window['Abtf'].proxy_setup(cnf.proxy);
-            }
+                } else if (typeof WebFont !== 'undefined') {
 
-            // load scripts in header
-            if (this.cnf.js && !this.cnf.js[1]) {
-                this.js(this.cnf.js[0]);
-            }
+                    // Convert WebFontConfig object string
+                    if (typeof Abtf.gwf[0] === 'string') {
+                        Abtf.gwf[0] = eval('(' + Abtf.gwf[0] + ')');
+                    }
 
-            /**
-             * Print reference in console
-             */
-            var noref = (typeof this.cnf.noref !== 'undefined' && this.cnf.noref) ? true : false;
-            if (!noref) {
-                this.ref();
-            }
+                    // load WebFontConfig
+                    WebFont.load(Abtf.gwf[0]);
 
-            // Google Web Font Loader
-            if (typeof cnf.gwf !== 'undefined') {
-                if (cnf.gwf[0] && !cnf.gwf[1]) {
-
-                    if (cnf.gwf[0] === 'a') {
-                        this.async(cnf.gwf[2], 'webfont');
-
-                        if (ABTFDEBUG) {
-                            console.log('Abtf.fonts()', 'async', WebFontConfig);
-                        }
-
-                    } else if (typeof WebFont !== 'undefined') {
-
-                        // Convert WebFontConfig object string
-                        if (typeof cnf.gwf[0] === 'string') {
-                            cnf.gwf[0] = eval('(' + cnf.gwf[0] + ')');
-                        }
-
-                        // load WebFontConfig
-                        WebFont.load(cnf.gwf[0]);
-
-                        if (ABTFDEBUG) {
-                            console.log('Abtf.fonts()', cnf.gwf[0]);
-                        }
+                    if (ABTFDEBUG) {
+                        console.log('Abtf.fonts()', Abtf.gwf[0]);
                     }
                 }
             }
-        },
-
-        /**
-         * Footer init
-         */
-        f: function(css) {
-
-            // Load CSS
-            if (css && this.css) {
-
-                if (ABTFDEBUG) {
-                    console.log('Abtf.css()', 'footer start');
-                }
-
-                this.css();
-            }
-
-            // load scripts in footer
-            if (this.cnf.js && this.cnf.js[1]) {
-
-                if (ABTFDEBUG) {
-                    console.log('Abtf.js()', 'footer start');
-                }
-
-                this.js(this.cnf.js[0]);
-            }
-
-            // Google Web Font Loader
-            if (typeof this.cnf.gwf !== 'undefined') {
-                if (this.cnf.gwf[0] && this.cnf.gwf[1]) {
-
-                    /**
-                     * Async
-                     */
-                    if (this.cnf.gwf[0] === 'a') {
-                        this.async(this.cnf.gwf[2], 'webfont');
-
-                        if (ABTFDEBUG) {
-                            console.log('Abtf.fonts() [footer]', 'async', WebFontConfig);
-                        }
-
-                    } else if (typeof WebFont !== 'undefined') {
-
-                        // load WebFontConfig
-                        WebFont.load(this.cnf.gwf[0]);
-
-                        if (ABTFDEBUG) {
-                            console.log('Abtf.fonts() [footer]', this.cnf.gwf[0]);
-                        }
-                    }
-                }
-            }
-        },
-
-        /**
-         * DomReady
-         */
-        ready: function(a, b, c) {
-            b = document;
-            c = 'addEventListener';
-            b[c] ? b[c]('DocumentContentLoaded', a) : window.attachEvent('onload', a);
-        },
-
-        /**
-         * Print reference
-         */
-        ref: function() {
-            if (ABTFDEBUG) {
-                return;
-            }
-            /*if (typeof window.console !== 'undefined') {
-                console.log(
-                    "\n%c100", 
-                    "font: 1em sans-serif; color: white; background-color: #079c2d;padding:2px;",
-                    "Google PageSpeed Score optimized using https://goo.gl/C1gw96\n\nTest your website: https://pagespeed.pro/tests\n\n"
-                );
-            }*/
-        },
-
-        /**
-         * Async load script
-         */
-        async: function(scriptFile, id) {
-            (function(d) {
-                var wf = d.createElement('script');
-                wf.src = scriptFile;
-                if (id) {
-                    wf.id = id;
-                }
-                wf.async = true;
-                var s = d.getElementsByTagName('script')[0];
-                if (s) {
-                    s.parentNode.insertBefore(wf, s);
-                } else {
-                    var h = document.head || document.getElementsByTagName("head")[0];
-                    h.appendChild(wf);
-                }
-            })(document);
         }
     };
+
+    /**
+     * Footer init
+     */
+    Abtf.f = function(css) {
+
+        // Load CSS
+        if (css && Abtf.c) {
+
+            if (ABTFDEBUG) {
+                console.log('Abtf.css()', 'footer start');
+            }
+
+            Abtf.c();
+        }
+
+        // load scripts in footer
+        if (Abtf.js && Abtf.js[1]) {
+
+            if (ABTFDEBUG) {
+                console.log('Abtf.js()', 'footer start');
+            }
+
+            Abtf.j(Abtf.js[0]);
+        }
+
+        // Google Web Font Loader
+        if (typeof Abtf.gwf !== 'undefined') {
+            if (Abtf.gwf[0] && Abtf.gwf[1]) {
+
+                /**
+                 * Async
+                 */
+                if (Abtf.gwf[0] === 'a') {
+                    this.a(Abtf.gwf[2], 'webfont');
+
+                    if (ABTFDEBUG) {
+                        console.log('Abtf.fonts() [footer]', 'async', WebFontConfig);
+                    }
+
+                } else if (typeof WebFont !== 'undefined') {
+
+                    // load WebFontConfig
+                    WebFont.load(Abtf.gwf[0]);
+
+                    if (ABTFDEBUG) {
+                        console.log('Abtf.fonts() [footer]', Abtf.gwf[0]);
+                    }
+                }
+            }
+        }
+    };
+
+    /**
+     * DomReady
+     */
+    /*Abtf.r = function(a, b, c) {
+        b = document;
+        c = 'addEventListener';
+        b[c] ? b[c]('DocumentContentLoaded', a) : window.attachEvent('onload', a);
+    };*/
+
+    /**
+     * Async load script
+     */
+    Abtf.a = function(scriptFile, id) {
+        (function(d) {
+            var wf = d.createElement('script');
+            wf.src = scriptFile;
+            if (id) {
+                wf.id = id;
+            }
+            wf.async = true;
+            var s = d.getElementsByTagName('script')[0];
+            if (s) {
+                s.parentNode.insertBefore(wf, s);
+            } else {
+                var h = document.head || document.getElementsByTagName("head")[0];
+                h.appendChild(wf);
+            }
+        })(document);
+    }
 
     if (ABTFDEBUG) {
 
@@ -187,6 +151,4 @@ window['Abtf'] = (function(window) {
         }
     }
 
-    return Abtf;
-
-})(window);
+})(window.Abtf);

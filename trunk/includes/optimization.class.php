@@ -36,6 +36,11 @@ class Abovethefold_Optimization
     public $optimize_js_delivery = false;
 
     /**
+     * HTML Search & Replace
+     */
+    public $html_replace = false;
+
+    /**
      * Javascript replacement string
      */
     public $js_replacement_string = 'ABTF_JS';
@@ -44,6 +49,11 @@ class Abovethefold_Optimization
      * Critical CSS replacement string
      */
     public $criticalcss_replacement_string = 'ABTF_CRITICALCSS';
+
+    /**
+     * Preserve comments
+     */
+    public $preserve_comments;
 
     /**
      * Initialize the class and set its properties
@@ -65,6 +75,11 @@ class Abovethefold_Optimization
          * Optimize Javascript loading
          */
         $this->optimize_js_delivery = (isset($this->CTRL->options['jsdelivery']) && intval($this->CTRL->options['jsdelivery']) === 1) ? true : false;
+
+        /**
+         * HTML Search & Replace
+         */
+        $this->html_replace = (isset($this->CTRL->options['html_search_replace']) && is_array($this->CTRL->options['html_search_replace']) && !empty($this->CTRL->options['html_search_replace'])) ? $this->CTRL->options['html_search_replace'] : false;
 
         /**
          * Extract Full CSS view
@@ -276,66 +291,69 @@ class Abovethefold_Optimization
         $dependencygroups = array();
         $dependencyreferences = array();
 
-        // load dependency references from WordPress scripts
-        foreach ($wp_scripts->done as $handle) {
-            if (isset($wp_scripts->registered[$handle]) && isset($wp_scripts->registered[$handle]->handle)) {
+        if (isset($wp_scripts) && isset($wp_scripts->done) && !empty($wp_scripts->done)) {
 
-                // Handle
-                $handle = (string) $wp_scripts->registered[$handle]->handle;
-                if (trim($handle) === '') {
-                    continue 1;
-                }
+            // load dependency references from WordPress scripts
+            foreach ($wp_scripts->done as $handle) {
+                if (isset($wp_scripts->registered[$handle]) && isset($wp_scripts->registered[$handle]->handle)) {
 
-                $handleindex = array_search($handle, $dependencyreferences);
-                if ($handleindex === false) {
-                    $handleindex = count($dependencyreferences);
-                    $dependencyreferences[$handleindex] = $handle;
-                }
-
-                $deps = array();
-                $handledeps = (isset($wp_scripts->registered[$handle]->deps) && is_array($wp_scripts->registered[$handle]->deps)) ? $wp_scripts->registered[$handle]->deps : array();
-
-                // jquery migrate is part of jquery group
-                if ($handle === 'jquery-migrate') {
-                    // wait for jquery-core
-                    $handledeps[] = 'jquery-core';
-                }
-
-                // admin-bar requires jquery
-                if ($handle === 'admin-bar') {
-                    // wait for jquery
-                    $handledeps[] = 'jquery';
-                }
-
-                if (!empty($handledeps)) {
-                    foreach ($handledeps as $dep) {
-                        if (trim($dep) === '') {
-                            continue;
-                        }
-
-                        $depindex = array_search($dep, $dependencyreferences);
-                        if ($depindex === false) {
-                            $depindex = count($dependencyreferences);
-                            $dependencyreferences[$depindex] = $dep;
-                        }
-
-                        $deps[] = $depindex;
-
-                        $scriptdepsrefs[] = array($depindex,$dep);
+                    // Handle
+                    $handle = (string) $wp_scripts->registered[$handle]->handle;
+                    if (trim($handle) === '') {
+                        continue 1;
                     }
-                }
 
-                if (!isset($wp_scripts->registered[$handle]->src) || trim($wp_scripts->registered[$handle]->src) === '') {
-
-                    // group reference
-                    if (!empty($deps)) {
-                        $dependencygroups[$handleindex] = $deps;
+                    $handleindex = array_search($handle, $dependencyreferences);
+                    if ($handleindex === false) {
+                        $handleindex = count($dependencyreferences);
+                        $dependencyreferences[$handleindex] = $handle;
                     }
-                } else {
-                    $scriptdeps[str_replace(home_url(), '', $wp_scripts->registered[$handle]->src)] = array(
-                        $handleindex,
-                        $deps
-                    );
+
+                    $deps = array();
+                    $handledeps = (isset($wp_scripts->registered[$handle]->deps) && is_array($wp_scripts->registered[$handle]->deps)) ? $wp_scripts->registered[$handle]->deps : array();
+
+                    // jquery migrate is part of jquery group
+                    if ($handle === 'jquery-migrate') {
+                        // wait for jquery-core
+                        $handledeps[] = 'jquery-core';
+                    }
+
+                    // admin-bar requires jquery
+                    if ($handle === 'admin-bar') {
+                        // wait for jquery
+                        $handledeps[] = 'jquery';
+                    }
+
+                    if (!empty($handledeps)) {
+                        foreach ($handledeps as $dep) {
+                            if (trim($dep) === '') {
+                                continue;
+                            }
+
+                            $depindex = array_search($dep, $dependencyreferences);
+                            if ($depindex === false) {
+                                $depindex = count($dependencyreferences);
+                                $dependencyreferences[$depindex] = $dep;
+                            }
+
+                            $deps[] = $depindex;
+
+                            $scriptdepsrefs[] = array($depindex,$dep);
+                        }
+                    }
+
+                    if (!isset($wp_scripts->registered[$handle]->src) || trim($wp_scripts->registered[$handle]->src) === '') {
+
+                        // group reference
+                        if (!empty($deps)) {
+                            $dependencygroups[$handleindex] = $deps;
+                        }
+                    } else {
+                        $scriptdeps[str_replace(home_url(), '', $wp_scripts->registered[$handle]->src)] = array(
+                            $handleindex,
+                            $deps
+                        );
+                    }
                 }
             }
         }
@@ -873,16 +891,75 @@ class Abovethefold_Optimization
             list($search, $replace, $search_regex, $replace_regex) = $searchreplace;
         }
 
+        // HTML Search & Replace configuration
+        if ($this->html_replace) {
+            foreach ($this->html_replace as $cnf) {
+                if (!is_array($cnf) || !isset($cnf['search']) || !isset($cnf['replace'])) {
+                    continue;
+                }
+                if (isset($cnf['regex'])) {
+                    $search_regex[] = $cnf['search'];
+                    $replace_regex[] = $cnf['replace'];
+                } else {
+                    $search[] = $cnf['search'];
+                    $replace[] = $cnf['replace'];
+                }
+            }
+        }
+
         // update buffer
         if (!empty($search)) {
-            $buffer = str_replace($search, $replace, $buffer);
+            try {
+                $replaced = str_replace($search, $replace, $buffer);
+            } catch (Exception $e) {
+                $replaced = false;
+            }
+            if ($replaced) {
+                $buffer = $replaced;
+            }
         }
         if (!empty($search_regex)) {
-            $buffer = preg_replace($search_regex, $replace_regex, $buffer);
+            try {
+                $replaced = preg_replace($search_regex, $replace_regex, $buffer);
+            } catch (Exception $e) {
+                $replaced = false;
+            }
+            if ($replaced) {
+                $buffer = $replaced;
+            }
         }
 
         // apply HTML filters
-        $buffer = apply_filters('abtf_html', $buffer);
+        try {
+            $replaced = apply_filters('abtf_html', $buffer);
+        } catch (Exception $e) {
+            $replaced = false;
+        }
+        if ($replaced) {
+            $buffer = $replaced;
+        }
+        
+        // strip comments
+        if (isset($this->CTRL->options['html_comments']) && $this->CTRL->options['html_comments']) {
+
+            // preserve comments
+            $this->preserve_comments = (isset($this->CTRL->options['html_comments_preserve']) && !empty($this->CTRL->options['html_comments_preserve'])) ? $this->CTRL->options['html_comments_preserve'] : array();
+
+            try {
+                $replaced = preg_replace_callback(
+                '/<!--([\\s\\S]*?)-->/', array($this, 'remove_comments'), $buffer);
+            } catch (Exception $e) {
+                $replaced = false;
+            }
+            if ($replaced) {
+                $buffer = $replaced;
+            }
+        }
+
+        // minify HTML
+        if (isset($this->CTRL->options['html_minify']) && $this->CTRL->options['html_minify']) {
+            $buffer = $this->minify_html($buffer);
+        }
 
         return $buffer;
     }
@@ -1001,6 +1078,9 @@ class Abovethefold_Optimization
          */
         if ($this->optimize_js_delivery) {
             $jssettings['js'] = array($this->js_replacement_string,($this->CTRL->options['jsdelivery_position'] === 'footer') ? true : false);
+            if (isset($this->CTRL->options['jsdelivery_idle']) && !empty($this->CTRL->options['jsdelivery_idle'])) {
+                $jssettings['js'][] = $this->CTRL->options['jsdelivery_idle'];
+            }
         } else {
 
             // do not load CSS
@@ -1024,17 +1104,17 @@ class Abovethefold_Optimization
             $headCSS = false;
         }
 
+        // client javascript
+        print '<script '.((!defined('ABTF_NOREF') || !ABTF_NOREF) ? 'data-abtf="https://goo.gl/C1gw96"' : 'data-abtf').'>window.Abtf='.json_encode($jssettings).';' . $inlineJS . 'Abtf.h();</script>';
 
-        $inlineJS .= 'Abtf.h(' . json_encode($jssettings) . ');';
-        print '<script rel="abtf"'.((!defined('ABTF_NOREF') || !ABTF_NOREF) ? ' data-abtf="https://goo.gl/C1gw96"' : '').'>' . $inlineJS . '</script>';
-
-        print '<style type="text/css" rel="abtf" id="AbtfCSS">' . $inlineCSS . '</style>';
+        // above the fold CSS
+        print '<style type="text/css" id="AbtfCSS" data-abtf>' . $inlineCSS . '</style>';
 
         /**
          * Start async loading of CSS
          */
         if ($this->optimize_css_delivery && $headCSS) {
-            print '<script rel="abtf">Abtf.css();</script>';
+            print '<script data-abtf>Abtf.c();</script>';
         }
     }
 
@@ -1064,7 +1144,52 @@ class Abovethefold_Optimization
 
             // start loading CSS from footer position
             
-            print "<script rel=\"abtf\">Abtf.f(".json_encode($footCSS).");</script>";
+            print "<script data-abtf>Abtf.f(".json_encode($footCSS).");</script>";
         }
+    }
+
+    /**
+     * Minify HTML
+     */
+    public function minify_html($HTML)
+    {
+       
+        // use PHP minifier
+        require_once WPABTF_PATH . 'includes/HTML.php';
+        $htmlmin = new ABTF_HTMLMinify();
+
+        // try minification
+        try {
+            $minified = $htmlmin->minify($HTML);
+        } catch (Exception $err) {
+            $minified = false;
+        }
+
+        if ($minified) {
+            return $minified;
+        }
+
+        return $HTML;
+    }
+
+    /**
+     * Remove comments from HTML
+     *
+     * @param  array     $match        The preg_replace_callback match result.
+     * @return string                  The modified string.
+     */
+    public function remove_comments($match)
+    {
+        if (!empty($this->preserve_comments)) {
+            foreach ($this->preserve_comments as $str) {
+                if (strpos($match[1], $str) !== false) {
+                    return $match[0];
+                }
+            }
+        }
+
+        return (0 === strpos($match[1], '[') || false !== strpos($match[1], '<!['))
+            ? $match[0]
+            : '';
     }
 }

@@ -329,134 +329,10 @@ class Abovethefold_Admin_CriticalCSS
     }
 
     /**
-     * Return all condition options
-     */
-    public function condition_search_options()
-    {
-
-        /**
-         * Try cache
-         *
-         * Options are cleared on page / post / category update
-         */
-        $refresh_interval = 3600;
-        $conditionoptions = get_option('abtf-conditionoptions');
-        if ($conditionoptions && is_array($conditionoptions) && isset($conditionoptions['t'])) {
-            if ($conditionoptions['t'] > (time() - $refresh_interval)) {
-
-                // apply filters
-                return apply_filters('abtf_conditional_options', $conditionoptions['options']);
-            }
-        }
-
-        list($conditional_options, $conditional_groups) = $this->get_default_conditional_options();
-
-        $post_types = get_post_types();
-        foreach ($post_types as $pt) {
-            
-            // Get random post
-            $args = array( 'post_type' => $pt, 'posts_per_page' => -1 );
-            query_posts($args);
-            if (have_posts()) {
-                while (have_posts()) {
-                    the_post();
-                    switch ($pt) {
-                        case "page":
-                            $conditional_options[] = array(
-                                'value' => 'is_'.$pt.'():' . get_the_ID(),
-                                'title' => get_the_ID(),
-                                'titlelong' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title(),
-                                'optgroup' => 'page',
-                                'class' => 'page'
-                            );
-                        break;
-                        case "attachment":
-                            // ignore
-                        break;
-                        default:
-                            $conditional_options[] = array(
-                                'value' => 'is_single():' . get_the_ID(),
-                                'title' => get_the_ID(),
-                                'titlelong' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title(),
-                                'optgroup' => 'post',
-                                'class' => 'post'
-                            );
-                        break;
-                    }
-                }
-            }
-        }
-
-        $taxonomies = get_taxonomies();
-        if (!empty($taxonomies)) {
-            foreach ($taxonomies as $taxonomy) {
-                switch ($taxonomy) {
-                    case "category":
-                        // ignore
-                    break;
-                    case "post_tag":
-                    case "product_cat":
-                    case "product_brand":
-                        $terms = get_terms($taxonomy, array(
-                            'orderby'    => 'title',
-                            'order'      => 'ASC',
-                            'hide_empty' => false
-                        ));
-                        if ($terms) {
-                            foreach ($terms as $term) {
-                                switch ($taxonomy) {
-                                    case "product_cat":
-                                    case "product_brand":
-                                        $conditional_options[] = array(
-                                            'value' => 'is_tax():' . $taxonomy . ':' . $term->slug,
-                                            'title' => 'Term: ' . $taxonomy . '/' . $term->name,
-                                            'titlelong' => 'Term: ' . $term->term_id.'. ' . str_replace(home_url(), '', get_category_link($term->term_id)) . ' - ' . $term->name,
-                                            'optgroup' => 'category',
-                                            'class' => 'cat'
-                                        );
-                                    break;
-                                    case "post_tag":
-                                        $conditional_options[] = array(
-                                            'value' => 'is_tag():' . $term->slug,
-                                            'title' => 'Tag: ' . $term->name,
-                                            'titlelong' => 'Tag: ' . $term->term_id.'. ' . str_replace(home_url(), '', get_category_link($term->term_id)) . ' - ' . $term->name,
-                                            'optgroup' => 'category',
-                                            'class' => 'cat'
-                                        );
-                                    break;
-                                    default:
-                                        $conditional_options[] = array(
-                                            'value' => 'is_tax():' . $taxonomy . ':' . $term->slug,
-                                            'title' => 'Term: ' . $taxonomy . '/' . $term->name,
-                                            'titlelong' => 'Term: ' . $term->term_id.'. ' . str_replace(home_url(), '', get_category_link($term->term_id)) . ' - ' . $term->name,
-                                            'optgroup' => 'category',
-                                            'class' => 'cat'
-                                        );
-                                    break;
-                                }
-                            }
-                        }
-                    break;
-                    default:
-                        
-                    break;
-                }
-            }
-        }
-
-        update_option('abtf-conditionoptions', array( 't' => time(), 'options' => $conditional_options ), false);
-
-        return apply_filters('abtf_conditional_options', $conditional_options);
-    }
-
-    /**
      * Get condition values
      */
     public function get_condition_values($conditionConfig)
     {
-
-        // get available options
-        $search_options = $this->condition_search_options();
 
         // options to return
         $conditions = array();
@@ -485,41 +361,19 @@ class Abovethefold_Admin_CriticalCSS
                                 $refid = trim(json_encode($filter_vars), '[]');
                             }
 
-                            // search condition in available search options
-                            $search_key = $key . ':' . $refid;
-                            $searchkey = array_keys(array_filter($search_options, function ($item) use ($search_key) {
-                                return $item['value'] === $search_key;
-                            }));
-                            
-                            if (is_array($searchkey) && !empty($searchkey) && is_numeric($searchkey[0])) {
-                                $conditions[] = $search_options[$searchkey[0]];
-                            } else {
-
-                                // not found
-                                $conditions[] = array(
-                                    'value' => $key . ':' . $refid,
-                                    'title' => $key . ':' . $refid
-                                );
-                            }
+                            // not found
+                            $conditions[] = array(
+                                'value' => $key . ':' . $refid,
+                                'title' => $key . ':' . $refid
+                            );
                         }
                     } else {
 
-                        // search condition in available search options
-                        $search_key = $key;
-                        $searchkey = array_keys(array_filter($search_options, function ($item) use ($search_key) {
-                            return $item['value'] === $search_key;
-                        }));
-
-                        if (is_array($searchkey) && !empty($searchkey) && is_numeric($searchkey[0])) {
-                            $conditions[] = $search_options[$searchkey[0]];
-                        } else {
-
-                            // not found
-                            $conditions[] = array(
-                                'value' => $key,
-                                'title' => $key
-                            );
-                        }
+                        // not found
+                        $conditions[] = array(
+                            'value' => $key,
+                            'title' => $key
+                        );
                     }
                 break;
             }
@@ -538,23 +392,124 @@ class Abovethefold_Admin_CriticalCSS
         $query = (isset($_POST['query'])) ? trim($_POST['query']) : '';
         $limit = (isset($_POST['maxresults']) && intval($_POST['maxresults']) > 10 && intval($_POST['maxresults']) < 30) ? intval($_POST['maxresults']) : 10;
 
-        // get page options
-        $options = $this->condition_search_options();
+        $results = array();
 
-        $result = array();
+        $post_types = get_post_types();
+        foreach ($post_types as $pt) {
+            if (in_array($pt, array('revision','nav_menu_item'))) {
+                continue 1;
+            }
+            if (count($results) >= $limit) {
+                break;
+            }
+            
+            // Get random post
+            $args = array( 'post_type' => $pt, 'posts_per_page' => $limit, 's' => $query );
+            query_posts($args);
+            if (have_posts()) {
+                while (have_posts()) {
+                    the_post();
+                    switch ($pt) {
+                        case "page":
+                            $results[] = array(
+                                'value' => 'is_'.$pt.'():' . get_the_ID(),
+                                'title' => get_the_ID(),
+                                'titlelong' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title(),
+                                'optgroup' => 'page',
+                                'class' => 'page'
+                            );
+                        break;
+                        case "attachment":
+                            // ignore
+                        break;
+                        default:
+                            $results[] = array(
+                                'value' => 'is_single():' . get_the_ID(),
+                                'title' => get_the_ID(),
+                                'titlelong' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title(),
+                                'optgroup' => 'post',
+                                'class' => 'post'
+                            );
+                        break;
+                    }
+                    if (count($results) >= $limit) {
+                        break;
+                    }
+                }
+            }
+        }
 
-        $count = 0;
-        foreach ($options as $option) {
-            if (stripos($option['title'], $query) !== false || stripos($option['value'], $query) !== false || (isset($option['titlelong']) && stripos($option['titlelong'], $query) !== false)) {
-                $result[] = $option;
-                $count++;
-                if ($count === $limit) {
+        $taxonomies = get_taxonomies();
+        if (!empty($taxonomies)) {
+            foreach ($taxonomies as $taxonomy) {
+                if (count($results) >= $limit) {
+                    break;
+                }
+                switch ($taxonomy) {
+                    case "category":
+                        // ignore
+                    break;
+                    case "post_tag":
+                    case "product_cat":
+                    case "product_brand":
+                        $terms = get_terms($taxonomy, array(
+                            'orderby'    => 'title',
+                            'order'      => 'ASC',
+                            'number'     => $limit,
+                            'hide_empty' => false,
+                            'name__like' => $query
+                        ));
+                        if ($terms) {
+                            foreach ($terms as $term) {
+                                switch ($taxonomy) {
+                                    case "product_cat":
+                                    case "product_brand":
+                                        $results[] = array(
+                                            'value' => 'is_tax():' . $taxonomy . ':' . $term->slug,
+                                            'title' => 'Term: ' . $taxonomy . '/' . $term->name,
+                                            'titlelong' => 'Term: ' . $term->term_id.'. ' . str_replace(home_url(), '', get_category_link($term->term_id)) . ' - ' . $term->name,
+                                            'optgroup' => 'category',
+                                            'class' => 'cat'
+                                        );
+                                    break;
+                                    case "post_tag":
+                                        $results[] = array(
+                                            'value' => 'is_tag():' . $term->slug,
+                                            'title' => 'Tag: ' . $term->name,
+                                            'titlelong' => 'Tag: ' . $term->term_id.'. ' . str_replace(home_url(), '', get_category_link($term->term_id)) . ' - ' . $term->name,
+                                            'optgroup' => 'category',
+                                            'class' => 'cat'
+                                        );
+                                    break;
+                                    default:
+                                        $results[] = array(
+                                            'value' => 'is_tax():' . $taxonomy . ':' . $term->slug,
+                                            'title' => 'Term: ' . $taxonomy . '/' . $term->name,
+                                            'titlelong' => 'Term: ' . $term->term_id.'. ' . str_replace(home_url(), '', get_category_link($term->term_id)) . ' - ' . $term->name,
+                                            'optgroup' => 'category',
+                                            'class' => 'cat'
+                                        );
+                                    break;
+                                }
+
+                                if (count($results) >= $limit) {
+                                    break;
+                                }
+                            }
+                        }
+                    break;
+                    default:
+                        
                     break;
                 }
             }
         }
 
-        $json = json_encode($result);
+        if ($returnSingle) {
+            return (!empty($results)) ? $results[0] : false;
+        }
+
+        $json = json_encode($results);
 
         header('Content-Type: application/json');
         header('Content-Length: ' . strlen($json));

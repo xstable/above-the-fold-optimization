@@ -1,12 +1,64 @@
 /* global module:false */
 module.exports = function(grunt) {
 
+    // closure compiler
+    var CC = {}
+    var CCfiles = {
+        //'public/js/abovethefold.min.js': 'public/js/min/abovethefold.js',
+        /*'public/js/abovethefold-proxy.min.js': 'public/js/min/abovethefold-proxy.js',
+        'public/js/abovethefold-jquery-stub.min.js': 'public/js/min/abovethefold-jquery-stub.js',*/
+        //'public/js/abovethefold-js.min.js': 'public/js/min/abovethefold-js.js',
+        'public/js/abovethefold-js-localstorage.min.js': 'public/js/min/abovethefold-js-localstorage.js',
+        /*'public/js/abovethefold-css.min.js': 'public/js/min/abovethefold-css.js',
+        'public/js/abovethefold-loadcss-enhanced.min.js': 'public/js/min/abovethefold-loadcss-enhanced.js',
+        'public/js/abovethefold-loadcss.min.js': 'public/js/min/abovethefold-loadcss.js'*/
+    };
+
+    var srcfile;
+    for (var file in CCfiles) {
+        if (!CCfiles.hasOwnProperty(file)) {
+            continue;
+        }
+        CC[file] = {
+            closurePath: 'public/js/closure-compiler',
+            js: CCfiles[file],
+            jsOutputFile: file,
+            //reportFile: 'public/js/closure-compiler/reports/pagespeed+' + keys.join('+') + '.txt',
+            noreport: true,
+            maxBuffer: 500,
+            options: {
+                compilation_level: 'ADVANCED_OPTIMIZATIONS',
+                language_in: 'ECMASCRIPT5_STRICT',
+                externs: ['public/js/closure-compiler/abtf-externs.js']
+            }
+        };
+
+        // debug
+        srcfile = CCfiles[file].replace('.js', '.debug.js');
+        file = file.replace('.min.js', '.debug.min.js');
+        CC[file] = {
+            closurePath: 'public/js/closure-compiler',
+            js: srcfile,
+            jsOutputFile: file,
+            //reportFile: 'public/js/closure-compiler/reports/pagespeed+' + keys.join('+') + '.txt',
+            noreport: true,
+            maxBuffer: 500,
+            options: {
+                compilation_level: 'ADVANCED_OPTIMIZATIONS',
+                language_in: 'ECMASCRIPT5_STRICT',
+                externs: ['public/js/closure-compiler/abtf-externs.js']
+            }
+        };
+    }
+
     // Project configuration
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         meta: {
-            banner: '/*! Above the fold Optimization v<%= pkg.version %> */'
+            banner: '/*! Above The Fold Optimization v<%= pkg.version %> */'
         },
+
+        'closure-compiler': CC,
 
         uglify: {
             options: {
@@ -24,28 +76,28 @@ module.exports = function(grunt) {
                 files: {
 
                     // Above The Fold Javascript Controller
-                    'public/js/abovethefold.min.js': [
+                    'public/js/min/abovethefold.js': [
                         'public/js/src/abovethefold.js'
                     ],
 
                     // Proxy
-                    'public/js/abovethefold-proxy.min.js': [
+                    'public/js/min/abovethefold-proxy.js': [
                         'public/js/src/abovethefold.proxy.js'
                     ],
 
                     // jQuery Stub
-                    'public/js/abovethefold-jquery-stub.min.js': [
+                    'public/js/min/abovethefold-jquery-stub.js': [
                         'public/js/src/abovethefold.jquery-stub.js'
                     ],
 
                     // Javascript optimization
-                    'public/js/abovethefold-js.min.js': [
+                    'public/js/min/abovethefold-js.js': [
                         'public/js/src/abovethefold.js.js',
                         'public/js/src/abovethefold.loadscript.js'
                     ],
 
                     // Javascript localstorage script loader
-                    'public/js/abovethefold-js-localstorage.min.js': [
+                    'public/js/min/abovethefold-js-localstorage.js': [
                         'public/js/src/abovethefold.loadscript-localstorage.js'
                     ],
 
@@ -55,17 +107,17 @@ module.exports = function(grunt) {
                     ],*/
 
                     // CSS optimization
-                    'public/js/abovethefold-css.min.js': [
+                    'public/js/min/abovethefold-css.js': [
                         'public/js/src/abovethefold.css.js'
                     ],
 
                     // Enhanced loadCSS
-                    'public/js/abovethefold-loadcss-enhanced.min.js': [
+                    'public/js/min/abovethefold-loadcss-enhanced.js': [
                         'public/js/src/abovethefold.loadcss-modified.js'
                     ],
 
                     // Original loadCSS
-                    'public/js/abovethefold-loadcss.min.js': [
+                    'public/js/min/abovethefold-loadcss.js': [
                         'bower_components/loadcss/src/loadCSS.js',
                         'public/js/src/abovethefold.loadcss.js'
                     ],
@@ -101,6 +153,11 @@ module.exports = function(grunt) {
                         'bower_components/selectize/dist/js/standalone/selectize.min.js'
                     ],
 
+                    // admincp html
+                    'admin/js/admincp-html.min.js': [
+                        'admin/js/admincp-html.js'
+                    ],
+
                     // Codemirror
                     'admin/js/codemirror.min.js': [
                         'bower_components/codemirror/lib/codemirror.js',
@@ -129,23 +186,23 @@ module.exports = function(grunt) {
                 files: {
 
                     // Above The Fold Javascript Controller
-                    'public/js/abovethefold.debug.min.js': [
+                    'public/js/min/abovethefold.debug.js': [
                         'public/js/src/abovethefold.js'
                     ],
 
                     // Proxy
-                    'public/js/abovethefold-proxy.debug.min.js': [
+                    'public/js/min/abovethefold-proxy.debug.js': [
                         'public/js/src/abovethefold.proxy.js'
                     ],
 
                     // Javascript optimization
-                    'public/js/abovethefold-js.debug.min.js': [
+                    'public/js/min/abovethefold-js.debug.js': [
                         'public/js/src/abovethefold.js.js',
                         'public/js/src/abovethefold.loadscript.js'
                     ],
 
                     // Javascript localstorage script loader
-                    'public/js/abovethefold-js-localstorage.debug.min.js': [
+                    'public/js/min/abovethefold-js-localstorage.debug.js': [
                         'public/js/src/abovethefold.loadscript-localstorage.js'
                     ],
 
@@ -157,28 +214,28 @@ module.exports = function(grunt) {
                     ],*/
 
                     // jQuery Stub
-                    'public/js/abovethefold-jquery-stub.debug.min.js': [
+                    'public/js/min/abovethefold-jquery-stub.debug.js': [
                         'public/js/src/abovethefold.jquery-stub.js'
                     ],
 
                     // CSS optimization
-                    'public/js/abovethefold-css.debug.min.js': [
+                    'public/js/min/abovethefold-css.debug.js': [
                         'public/js/src/abovethefold.css.js'
                     ],
 
                     // Enhanced loadCSS
-                    'public/js/abovethefold-loadcss-enhanced.debug.min.js': [
+                    'public/js/min/abovethefold-loadcss-enhanced.debug.js': [
                         'public/js/src/abovethefold.loadcss-modified.js'
                     ],
 
                     // Original loadCSS
-                    'public/js/abovethefold-loadcss.debug.min.js': [
+                    'public/js/min/abovethefold-loadcss.debug.js': [
                         'bower_components/loadcss/src/loadCSS.js',
                         'public/js/src/abovethefold.loadcss.js'
                     ]
 
                 }
-            }
+            },
         },
 
         cssmin: {
@@ -199,6 +256,9 @@ module.exports = function(grunt) {
                     ],
                     'admin/css/admincp-global.min.css': [
                         'admin/css/admincp-global.css'
+                    ],
+                    'admin/css/admincp-jsoneditor.min.css': [
+                        'admin/css/admincp-jsoneditor.css'
                     ],
                     'admin/css/codemirror.min.css': [
                         'bower_components/codemirror/lib/codemirror.css',
@@ -236,7 +296,7 @@ module.exports = function(grunt) {
     // Load Dependencies
     require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
-    grunt.registerTask('build', ['uglify', 'cssmin', 'copy']);
+    grunt.registerTask('build', ['uglify', 'closure-compiler', 'cssmin', 'copy']);
 
     grunt.registerTask('default', ['uglify', 'cssmin']);
 };

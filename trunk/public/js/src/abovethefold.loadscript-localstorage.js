@@ -10,7 +10,6 @@
  */
 
 (function(window, Abtf) {
-    'use strict';
 
     // test availability of localStorage
     try {
@@ -19,7 +18,7 @@
         } else {
             return;
         }
-    } catch(e) {
+    } catch (e) {
         return;
     }
 
@@ -34,23 +33,19 @@
     var OBJECT_URLS = [];
 
     // requestIdleCallback, run tasks in CPU idle time
-    try {
-        var IDLE = ('requestIdleCallback' in window && window['requestIdleCallback'] !== null) ? window['requestIdleCallback'] : false;
-    } catch (err) {
-        var IDLE = false;
-    }
+    var IDLE = ('requestIdleCallback' in window && window.requestIdleCallback !== null) ? window.requestIdleCallback : false;
 
     // async
     var ASYNC = function(fn) {
         if ('Promise' in window) {
-            new Promise(function resolver(resolve,reject) {
+            new Promise(function resolver(resolve, reject) {
                 resolve(fn());
             });
         } else {
             if (window.setImmediate !== 'undefined') {
                 window.setImmediate(fn);
             } else {
-                setTimeout(fn,0);
+                setTimeout(fn, 0);
             }
         }
     };
@@ -75,12 +70,14 @@
         },
 
         // process task when idle
-        execWhenIdle: function(task,timeframe) {
+        execWhenIdle: function(task, timeframe) {
 
             if (IDLE) {
 
                 // shedule for idle time
-                IDLE(task, { timeout: timeframe });
+                IDLE(task, {
+                    timeout: timeframe
+                });
 
             } else {
                 task();
@@ -90,7 +87,7 @@
         /**
          * Save script to localStorage cache
          */
-        saveScript: function( url, scriptData, expire ) {
+        saveScript: function(url, scriptData, expire) {
 
             // minimize interference with rendering
             LS.execWhenIdle(function idleTime() {
@@ -99,7 +96,7 @@
 
                 var now = LS.now();
                 scriptObj.date = now;
-                scriptObj.expire = now + ( expire || LS.default_expire );
+                scriptObj.expire = now + (expire || LS.default_expire);
 
                 if (scriptData instanceof Array) {
 
@@ -117,12 +114,12 @@
                     scriptObj.data = scriptData;
                 }
 
-                LS.add( url, scriptObj );
+                LS.add(url, scriptObj);
 
                 if (chunkObjects) {
                     var l = chunkObjects.length;
                     for (var i = 0; i < l; i++) {
-                        LS.add( 'chunk:'+i+':'+url, chunkObjects[i] );
+                        LS.add('chunk:' + i + ':' + url, chunkObjects[i]);
                     }
                 }
 
@@ -157,9 +154,10 @@
              * Chunked data
              */
             if (typeof cacheObject.chunked !== 'undefined' && cacheObject.chunked === true) {
-                var data = [], chunkData;
+                var data = [],
+                    chunkData;
                 for (var i = 0; i < cacheObject.chunks; i++) {
-                    chunkData = LS.get('chunk:'+i+':'+url);
+                    chunkData = LS.get('chunk:' + i + ':' + url);
 
                     // chunk is missing
                     if (chunkData === false) {
@@ -170,8 +168,44 @@
                 cacheObject.data = data.join('');
             }
 
+            var scriptData = '/* Above The Fold Optimization HTML5 Script Loader\n * @url ' + url + ' */\n';
+
+            var idle = false,
+                idle_timeframe;
+
+            /** requestIdleCallback */
+            if (IDLE && typeof Abtf.js[2] !== 'undefined' && Abtf.js[2]) {
+
+                var l = Abtf.js[2].length,
+                    str;
+                for (var i = 0; i < l; i++) {
+                    if (typeof Abtf.js[2][i] !== 'object') {
+                        continue;
+                    }
+                    if (url.indexOf(Abtf.js[2][i][0]) !== -1) {
+                        idle = true;
+                        if (Abtf.js[2][i][1]) {
+                            idle_timeframe = Abtf.js[2][i][1];
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (idle) {
+                scriptData += 'window.requestIdleCallback(function(){';
+                scriptData += cacheObject.data;
+                if (idle_timeframe) {
+                    scriptData += '},{timeout:' + idle_timeframe + '});';
+                } else {
+                    scriptData += '});';
+                }
+            } else {
+                scriptData += cacheObject.data;
+            }
+
             // create blob url
-            LS.preloaded[url] = createBlobUrl(cacheObject.data,'application/javascript');
+            LS.preloaded[url] = createBlobUrl(scriptData, 'application/javascript');
             OBJECT_URLS.push(LS.preloaded[url]);
 
             return LS.preloaded[url];
@@ -195,58 +229,58 @@
 
                 LS.preloaded[url] = LS.getScript(url);
 
-            },100);
+            }, 100);
         },
 
         /**
          * Add data to localStorage cache
          */
-        add: function( key, storeObj, retryCount ) {
+        add: function(key, storeObj, retryCount) {
 
             // skip retry after 10 removed entries
             if (typeof retryCount !== 'undefined' && parseInt(retryCount) > 10) {
 
                 if (ABTFDEBUG) {
-                    console.error('Abtf.js() ➤ localStorage quota reached','retry limit reached, abort saving...', key);
+                    console.error('Abtf.js() ➤ localStorage quota reached', 'retry limit reached, abort saving...', key);
                 }
                 return;
             }
 
             if (typeof storeObj === 'object') {
-                storeObj = JSON.stringify( storeObj );
+                storeObj = JSON.stringify(storeObj);
             }
             try {
-                localStorage.setItem( LS.prefix + key, storeObj );
+                localStorage.setItem(LS.prefix + key, storeObj);
                 return true;
-            } catch( e ) {
+            } catch (e) {
 
                 /**
                  * localStorage quota reached, prune old cache entries
                  */
-                if ( e.name.toUpperCase().indexOf('QUOTA') >= 0 ) {
+                if (e.name.toUpperCase().indexOf('QUOTA') >= 0) {
                     var item, entry, entryKey;
                     var tempScripts = [];
 
-                    for ( item in localStorage ) {
-                        if ( item.indexOf( LS.prefix ) === 0 && item.indexOf('chunk:') === -1 ) {
-                            entryKey = item.split( LS.prefix )[ 1 ];
-                            entry = LS.get( entryKey );
+                    for (item in localStorage) {
+                        if (item.indexOf(LS.prefix) === 0 && item.indexOf('chunk:') === -1) {
+                            entryKey = item.split(LS.prefix)[1];
+                            entry = LS.get(entryKey);
                             if (entry) {
-                                tempScripts.push( [entryKey, entry] );
+                                tempScripts.push([entryKey, entry]);
                             }
                         }
                     }
 
-                    if ( tempScripts.length ) {
-                        tempScripts.sort(function( a, b ) {
+                    if (tempScripts.length) {
+                        tempScripts.sort(function(a, b) {
                             return a[1].date - b[1].date;
                         });
 
                         if (ABTFDEBUG) {
-                            console.error('Abtf.js() ➤ localStorage quota reached','removed',tempScripts[0][0],'for key',key);
+                            console.error('Abtf.js() ➤ localStorage quota reached', 'removed', tempScripts[0][0], 'for key', key);
                         }
-                        
-                        LS.remove( tempScripts[0][0] );
+
+                        LS.remove(tempScripts[0][0]);
 
                         // minimize interference with rendering
                         LS.execWhenIdle(function idleTime() {
@@ -254,7 +288,7 @@
                             if (typeof retryCount === 'undefined') {
                                 retryCount = 0;
                             }
-                            LS.add( key, storeObj, ++retryCount );
+                            LS.add(key, storeObj, ++retryCount);
 
                         }, 1000);
 
@@ -263,7 +297,7 @@
 
 
                         if (ABTFDEBUG) {
-                            console.error('Abtf.js() ➤ localStorage quota reached','no files to remove');
+                            console.error('Abtf.js() ➤ localStorage quota reached', 'no files to remove');
                         }
 
                         // no files to remove. Larger than available quota
@@ -273,7 +307,7 @@
                 } else {
 
                     if (ABTFDEBUG) {
-                        console.error('Abtf.js() ➤ localStorage error',e.name,e);
+                        console.error('Abtf.js() ➤ localStorage error', e.name, e);
                     }
 
                     // some other error
@@ -285,9 +319,9 @@
         /**
          * Remove from localStorage
          */
-        remove: function( key ) {
+        remove: function(key) {
 
-            var entry = LS.get( key );
+            var entry = LS.get(key);
             if (!entry) {
                 return;
             }
@@ -297,18 +331,18 @@
                 // remove chunks
                 var l = parseInt(entry.chunks);
                 for (var i = 0; i < l; i++) {
-                    localStorage.removeItem( LS.prefix + 'chunk:'+i+':'+key);
+                    localStorage.removeItem(LS.prefix + 'chunk:' + i + ':' + key);
                 }
             }
 
-            localStorage.removeItem( LS.prefix + key );
+            localStorage.removeItem(LS.prefix + key);
         },
 
         /**
          * Get from localStorage
          */
-        get: function( key ) {
-            var item = localStorage.getItem( LS.prefix + key );
+        get: function(key) {
+            var item = localStorage.getItem(LS.prefix + key);
             try {
 
                 // chunk, return string data
@@ -317,9 +351,9 @@
                 }
 
                 // return entry object
-                return JSON.parse( item || 'false' );
+                return JSON.parse(item || 'false');
 
-            } catch( e ) {
+            } catch (e) {
                 return false;
             }
         },
@@ -327,7 +361,7 @@
         /**
          * Clear expired entries in localStorage
          */
-        clear: function( expired ) {
+        clear: function(expired) {
             var item, key;
             var now = this.now();
 
@@ -336,8 +370,8 @@
             }
 
             var entry, clear;
-            for ( item in localStorage ) {
-                key = item.split( LS.prefix )[ 1 ];
+            for (item in localStorage) {
+                key = item.split(LS.prefix)[1];
                 if (key) {
                     if (key.indexOf('chunk:') !== -1) {
                         // chunk, remove by parent object
@@ -345,7 +379,7 @@
                     }
 
                     // get entry
-                    entry = LS.get( key );
+                    entry = LS.get(key);
                     if (!entry) {
                         // entry does not exist
                         continue;
@@ -354,7 +388,7 @@
                     if (!expired || entry.expire <= now) {
 
                         // remove entry
-                        LS.remove( key );
+                        LS.remove(key);
 
                         if (ABTFDEBUG) {
                             removed.push(key);
@@ -365,9 +399,9 @@
 
             if (ABTFDEBUG) {
                 if (removed.length > 0) {
-                    console.warn('Abtf.js() ➤ localStorage cleared',removed.length,'expired scripts');
+                    console.warn('Abtf.js() ➤ localStorage cleared', removed.length, 'expired scripts');
                 }
-            }   
+            }
         }
 
     };
@@ -375,14 +409,16 @@
     /**
      * Create javascript blob url
      */
-    var createBlobUrl = function(fileData,mimeType) {
+    var createBlobUrl = function(fileData, mimeType) {
         var blob;
 
         /**
          * Create blob
          */
         try {
-            blob = new Blob([fileData], {type: mimeType});
+            blob = new Blob([fileData], {
+                type: mimeType
+            });
         } catch (e) { // Backwards-compatibility
             window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
             blob = new BlobBuilder();
@@ -401,245 +437,245 @@
      */
     var WORKER_CODE = ((function() {
 
-        // Fetch API
-        self.FETCH = self.fetch || false;
+            // Fetch API
+            self.FETCH = self.fetch || false;
 
-        // default timeout
-        self.DEFAULT_TIMEOUT = 5000;
+            // default timeout
+            self.DEFAULT_TIMEOUT = 5000;
 
-        // @todo performance tests
-        // @link https://jsperf.com/localstorage-10x100kb-vs-2x-500kb-vs-1x-1mb
-        self.MAX_CHUNK_SIZE = 100000; // 100kb
+            // @todo performance tests
+            // @link https://jsperf.com/localstorage-10x100kb-vs-2x-500kb-vs-1x-1mb
+            self.MAX_CHUNK_SIZE = 100000; // 100kb
 
-        // chunk data for localStorage
-        self.CHUNK_DATA = function(data,chunkSize) {
-            var chunksCount = Math.ceil(data.length/chunkSize);
-            var chunks  = new Array(chunksCount);
-            var offset;
+            // chunk data for localStorage
+            self.CHUNK_DATA = function(data, chunkSize) {
+                var chunksCount = Math.ceil(data.length / chunkSize);
+                var chunks = new Array(chunksCount);
+                var offset;
 
-            for (var i=0; i<chunksCount; i++) {
-                offset = i * chunkSize;
-                chunks[i] = data.substring(offset, offset + chunkSize);
-            }
-
-            return chunks;
-        };
-
-        /**
-         * Method for loading resource
-         */
-        self.LOAD_RESOURCE = function(file) {
-
-            // resource loaded flag
-            var resourceLoaded = false;
-            var request_timeout = false;
-
-            // onload callback
-            var resourceOnload = function(error,returnData) {
-                if (resourceLoaded) {
-                    return;  // already processed
+                for (var i = 0; i < chunksCount; i++) {
+                    offset = i * chunkSize;
+                    chunks[i] = data.substring(offset, offset + chunkSize);
                 }
 
-                resourceLoaded = true;
-
-                if (request_timeout) {
-                    clearTimeout(request_timeout);
-                    request_timeout = false;
-                }
-
-                if (!error && returnData) {
-
-                    /**
-                     * localStorage appears to become buggy with large scripts
-                     *
-                     * Split data in chunks.
-                     */
-                    var dataSize = returnData.length;
-
-                    // calculate data size
-                    if (dataSize > MAX_CHUNK_SIZE) {
-                        returnData = CHUNK_DATA(returnData,MAX_CHUNK_SIZE);
-                    }
-                }
-
-                RESOURCE_LOAD_COMPLETED(file,error,returnData);
+                return chunks;
             };
 
             /**
-             * Use Fetch API
+             * Method for loading resource
              */
-            if(FETCH) {
+            self.LOAD_RESOURCE = function(file) {
 
-                // fetch configuration
-                var fetchInit = { 
-                    method: 'GET',
-                    mode: 'cors',
-                    cache: 'default'
-                };
+                // resource loaded flag
+                var resourceLoaded = false;
+                var request_timeout = false;
 
-                var handleError = function(error) {
+                // onload callback
+                var resourceOnload = function(error, returnData) {
                     if (resourceLoaded) {
-                        return;  // already processed
+                        return; // already processed
                     }
 
-                    if (typeof error === 'object' && error.status) {
-                        error = [error.status,error.statusText];
+                    resourceLoaded = true;
+
+                    if (request_timeout) {
+                        clearTimeout(request_timeout);
+                        request_timeout = false;
                     }
 
-                    // error
-                    resourceOnload(error);
+                    if (!error && returnData) {
+
+                        /**
+                         * localStorage appears to become buggy with large scripts
+                         *
+                         * Split data in chunks.
+                         */
+                        var dataSize = returnData.length;
+
+                        // calculate data size
+                        if (dataSize > self.MAX_CHUNK_SIZE) {
+                            returnData = self.CHUNK_DATA(returnData, self.MAX_CHUNK_SIZE);
+                        }
+                    }
+
+                    self.RESOURCE_LOAD_COMPLETED(file, error, returnData);
                 };
 
-                // fetch request
-                FETCH(file.url, fetchInit)
-                    .then(function(response) {
+                /**
+                 * Use Fetch API
+                 */
+                if (self.FETCH) {
+
+                    // fetch configuration
+                    var fetchInit = {
+                        method: 'GET',
+                        mode: 'cors',
+                        cache: 'default'
+                    };
+
+                    var handleError = function(error) {
                         if (resourceLoaded) {
-                            return;  // already processed
+                            return; // already processed
                         }
 
-                        // handle response
-                        if(response.ok) {
-
-                            // get text data
-                            response.text().then(function(data) {
-                                resourceOnload(false,data);
-                            });
-
-                        } else {
-
-                            // error
-                            resourceOnload([response.status,response.statusText]);
+                        if (typeof error === 'object' && error.status) {
+                            error = [error.status, error.statusText];
                         }
 
-                    }, handleError).catch(handleError);
+                        // error
+                        resourceOnload(error);
+                    };
 
-                // Fetch API does not support abort or cancel or timeout
-                // simply ignore the request on timeout
-                var timeout = file.timeout || DEFAULT_TIMEOUT;
-                if (isNaN(timeout)) {
-                    timeout = DEFAULT_TIMEOUT;
-                }
-                request_timeout = setTimeout( function requestTimeout() {
-                    if (resourceLoaded) {
-                        return; // already processed
+                    // fetch request
+                    self.FETCH(file.url, fetchInit)
+                        .then(function(response) {
+                            if (resourceLoaded) {
+                                return; // already processed
+                            }
+
+                            // handle response
+                            if (response.ok) {
+
+                                // get text data
+                                response.text().then(function(data) {
+                                    resourceOnload(false, data);
+                                });
+
+                            } else {
+
+                                // error
+                                resourceOnload([response.status, response.statusText]);
+                            }
+
+                        }, handleError).catch(handleError);
+
+                    // Fetch API does not support abort or cancel or timeout
+                    // simply ignore the request on timeout
+                    var timeout = file.timeout || self.DEFAULT_TIMEOUT;
+                    if (isNaN(timeout)) {
+                        timeout = self.DEFAULT_TIMEOUT;
                     }
-                    
-                   resourceOnload('timeout');
-                }, timeout );
-            } else {
+                    request_timeout = setTimeout(function requestTimeout() {
+                        if (resourceLoaded) {
+                            return; // already processed
+                        }
 
-                // start XHR request
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', file.url, true);
+                        resourceOnload('timeout');
+                    }, timeout);
+                } else {
 
-                /**
-                 * Set XHR response type
-                 */
-                xhr.responseType = 'text';
+                    // start XHR request
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', file.url, true);
 
-                // watch state change
-                xhr.onreadystatechange = function () {
-                    if (resourceLoaded) {
-                        return;  // already processed
+                    /**
+                     * Set XHR response type
+                     */
+                    xhr.responseType = 'text';
+
+                    // watch state change
+                    xhr.onreadystatechange = function() {
+                            if (resourceLoaded) {
+                                return; // already processed
+                            }
+
+                            // handle response
+                            if (xhr.readyState === 4) {
+
+                                if (xhr.status !== 200) {
+
+                                    // error
+                                    resourceOnload(xhr.statusText);
+                                } else {
+
+                                    /**
+                                     * Return text
+                                     */
+                                    resourceOnload(false, xhr.responseText);
+
+                                }
+                            }
+                        }
+                        /**
+                         * Resource load completed
+                         */
+                    xhr.onerror = function resourceError() {
+                        if (resourceLoaded) {
+                            return; // already processed
+                        }
+
+                        resourceOnload(xhr.statusText);
+                    };
+
+                    // By default XHRs never timeout, and even Chrome doesn't implement the
+                    // spec for xhr.timeout. So we do it ourselves.
+                    var timeout = file.timeout || self.DEFAULT_TIMEOUT;
+                    if (isNaN(timeout)) {
+                        timeout = self.DEFAULT_TIMEOUT;
                     }
-
-                    // handle response
-                    if (xhr.readyState === 4) {
-
-                        if (xhr.status !== 200) {
-
-                            // error
-                            resourceOnload(xhr.statusText);
-                        } else {
-
-                            /**
-                             * Return text
-                             */
-                            resourceOnload(false,xhr.responseText);
+                    request_timeout = setTimeout(function requestTimeout() {
+                        if (resourceLoaded) {
+                            return; // already processed
+                        }
+                        try {
+                            xhr.abort();
+                        } catch (e) {
 
                         }
-                    }
+                        resourceOnload('timeout');
+                    }, timeout);
+
+                    xhr.send(null);
+
                 }
-                /**
-                 * Resource load completed
-                 */
-                xhr.onerror = function resourceError() {
-                    if (resourceLoaded) {
-                        return; // already processed
+            };
+
+            /**
+             * Post back to UI after completion of specific resource
+             */
+            self.RESOURCE_LOAD_COMPLETED = function(file, error, returnData) {
+
+                if (error) {
+
+                    if (!(error instanceof Array) && typeof error === 'object') {
+                        error = error.toString();
                     }
 
-                    resourceOnload(xhr.statusText);
-                };
+                    // return error
+                    self.postMessage([2, file.i, error]);
+                } else {
 
-                // By default XHRs never timeout, and even Chrome doesn't implement the
-                // spec for xhr.timeout. So we do it ourselves.
-                var timeout = file.timeout || DEFAULT_TIMEOUT;
-                if (isNaN(timeout)) {
-                    timeout = DEFAULT_TIMEOUT;
-                }
-                request_timeout = setTimeout( function requestTimeout() {
-                    if (resourceLoaded) {
-                        return; // already processed
-                    }
-                    try {
-                        xhr.abort();
-                    } catch(e) {
-
-                    }
-                    resourceOnload('timeout');
-                }, timeout );
-
-                xhr.send(null);
-
-            }
-        };
-
-        /**
-         * Post back to UI after completion of specific resource
-         */
-        self.RESOURCE_LOAD_COMPLETED = function(file,error,returnData) {
-
-            if (error) {
-
-                if (!(error instanceof Array) && typeof error === 'object') {
-                    error = error.toString();
+                    // send back data to save in localStorage
+                    self.postMessage([1, file.i, returnData]);
                 }
 
-                // return error
-                self.postMessage([2,file.i,error]);
-            } else {
+            };
 
-                // send back data to save in localStorage
-                self.postMessage([1,file.i,returnData]);                
+            /**
+             * Handle load request for web worker
+             */
+            self.onmessage = function(oEvent) {
+
+                var files = oEvent.data;
+
+                // load multiple files
+                if (files instanceof Array) {
+                    var l = files.length;
+                    for (var i = 0; i < l; i++) {
+                        if (typeof files[i] === 'object' && typeof files[i].url !== 'undefined' && typeof files[i].i !== 'undefined') {
+                            self.LOAD_RESOURCE(files[i]);
+                        }
+                    }
+                } else if (typeof files === 'object' && typeof files.url !== 'undefined' && typeof files.i !== 'undefined') {
+                    self.LOAD_RESOURCE(files);
+                } else {
+                    throw new Error('Web Worker Script Loader: Invalid resource object');
+                }
             }
 
-        };
-
-        /**
-         * Handle load request for web worker
-         */
-        self.onmessage = function (oEvent) {
-
-            var files = oEvent.data;
-
-            // load multiple files
-            if (files instanceof Array) {
-                var l = files.length;
-                for (var i = 0; i < l; i++) {
-                    if (typeof files[i] === 'object' && typeof files[i].url !== 'undefined' && typeof files[i].i !== 'undefined') {
-                        LOAD_RESOURCE(files[i]);
-                    }
-                }
-            } else if (typeof files === 'object' && typeof files.url !== 'undefined' && typeof files.i !== 'undefined') {
-                LOAD_RESOURCE(files);
-            } else {
-                throw new Error('Web Worker Script Loader: Invalid resource object');
-            }
-        }
-
-    }).toString()
-        .replace(/^function\s*\(\s*\)\s*\{/,'')
-        .replace(/\}$/,'')
+        }).toString()
+        .replace(/^function\s*\(\s*\)\s*\{/, '')
+        .replace(/\}$/, '')
     );
 
     /**
@@ -648,7 +684,7 @@
     var WEBWORKER = {
 
         // web worker code
-        workerUri: createBlobUrl(WORKER_CODE,'application/javascript'),
+        workerUri: createBlobUrl(WORKER_CODE, 'application/javascript'),
 
         // web worker
         worker: false,
@@ -665,7 +701,7 @@
             this.worker.addEventListener('message', this.handleMessage);
 
             // listen for errors
-            this.worker.addEventListener('error',this.handleError);
+            this.worker.addEventListener('error', this.handleError);
         },
 
         /**
@@ -678,7 +714,7 @@
                 this.worker.removeEventListener('message', this.handleMessage);
 
                 // listen for errors
-                this.worker.removeEventListener('error',this.handleError);
+                this.worker.removeEventListener('error', this.handleError);
 
                 // terminate worker
                 this.worker.terminate();
@@ -702,7 +738,7 @@
 
                 // script not in queue
                 if (ABTFDEBUG) {
-                    console.error('Abtf.js() ➤ web worker script loader invalid response',response);
+                    console.error('Abtf.js() ➤ web worker script loader invalid response', response);
                 }
                 return;
             }
@@ -718,11 +754,11 @@
                 if (ABTFDEBUG) {
                     if (response[2] instanceof Array) {
                         if (parseInt(response[2][0]) > 200 && parseInt(response[2][0]) < 600) {
-                            console.error('Abtf.js() ➤ web worker ➤ '+response[2][0]+' '+response[2][1],WEBWORKER.scriptQueue[scriptIndex].url);
+                            console.error('Abtf.js() ➤ web worker ➤ ' + response[2][0] + ' ' + response[2][1], WEBWORKER.scriptQueue[scriptIndex].url);
                             return;
                         }
                     }
-                    console.error('Abtf.js() ➤ web worker script loader error',response[2]);
+                    console.error('Abtf.js() ➤ web worker script loader error', response[2]);
                 }
                 return;
             }
@@ -735,20 +771,20 @@
 
             // output error to console
             if (ABTFDEBUG) {
-                console.error('Abtf.js() ➤ web worker script loader error',error);
+                console.error('Abtf.js() ➤ web worker script loader error', error);
             }
         },
 
         /**
          * Load script
          */
-        loadScript: function(url,onData) {
+        loadScript: function(url, onData) {
 
             if (!this.worker) {
                 this.start();
             }
 
-            url = window['Abtf'].proxifyScript(url);
+            url = Abtf.pxs(url);
 
             var scriptIndex = parseInt(this.scriptIndex);
             this.scriptIndex++;
@@ -773,7 +809,7 @@
     /**
      * Clear memory
      */
-    window.addEventListener("beforeunload", function (e) {
+    window.addEventListener("beforeunload", function(e) {
 
         // stop web worker
         WEBWORKER.stop();
@@ -784,10 +820,10 @@
             for (var i = 0; i < l; i++) {
                 try {
                     URL.revokeObjectURL(OBJECT_URLS[i]);
-                } catch(err) {
+                } catch (err) {
                     if (ABTFDEBUG) {
-                        console.error('Abtf.js() ➤ failed to revoke script url',OBJECT_URLS[i],err);
-                    }   
+                        console.error('Abtf.js() ➤ failed to revoke script url', OBJECT_URLS[i], err);
+                    }
                 }
             }
         }
@@ -800,8 +836,10 @@
 
         // shedule for idle time
         IDLE(function() {
-            LS.clear( true );
-        }, { timeout: 3000 });
+            LS.clear(true);
+        }, {
+            timeout: 3000
+        });
 
     } else {
 
@@ -812,21 +850,21 @@
                 clearTimeout(clear_timeout);
             }
             clear_timeout = setTimeout(function() {
-                LS.clear( true );
-            },2000);
+                LS.clear(true);
+            }, 2000);
         };
 
         // set timeout
         initClearTimeout();
 
         // reset timeout on script load
-        Abtf.onScriptLoad(initClearTimeout);
+        Abtf.osl(initClearTimeout);
     }
 
     /**
      * Load cached script
      */
-    window['Abtf'].loadCachedScript = function (src, callback, onStart) {
+    Abtf.lcs = function(src, callback, onStart) {
 
         ASYNC(function() {
 
@@ -838,7 +876,7 @@
                 if (ABTFDEBUG) {
                     onStart(url);
                 }
-                Abtf.loadScript(url, callback);
+                Abtf.ls(url, callback);
                 return;
             }
 
@@ -850,7 +888,7 @@
             /**
              * Not in cache, start regular request and potentially use browser cache speed
              */
-            Abtf.loadScript(src, function scriptLoaded() {
+            Abtf.ls(src, function scriptLoaded() {
 
                 callback();
 
@@ -861,34 +899,34 @@
 
                     if (!scriptData) {
                         if (ABTFDEBUG) {
-                            console.error('Abtf.js() ➤ web worker script loader no data',Abtf.localUrl(src));
+                            console.error('Abtf.js() ➤ web worker script loader no data', Abtf.localUrl(src));
                         }
                         return;
                     }
 
                     if (ABTFDEBUG) {
                         if (scriptData instanceof Array) {
-                            console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked','(' + scriptData.length + ' chunks)', Abtf.localUrl(src));
+                            console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked', '(' + scriptData.length + ' chunks)', Abtf.localUrl(src));
                         } else {
-                            console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '('+scriptData.length+')', Abtf.localUrl(src));
+                            console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '(' + scriptData.length + ')', Abtf.localUrl(src));
                         }
                     }
 
                     // save script to local storage
-                    LS.saveScript(src,scriptData);
+                    LS.saveScript(src, scriptData);
 
                 });
 
             });
 
         });
-        
+
     };
 
     /**
      * Preload cached script
      */
-    window['Abtf'].preloadCachedScript = function(url) {
+    Abtf.pcs = function(url) {
         ASYNC(function() {
             LS.preloadScript(url);
         });
@@ -897,7 +935,7 @@
     /**
      * Load cached script url
      */
-    window['Abtf'].cachedScriptUrl = function (src) {
+    Abtf.csu = function(src) {
 
         /**
          * Try localStorage cache
@@ -914,27 +952,27 @@
 
             if (!scriptData) {
                 if (ABTFDEBUG) {
-                    console.error('Abtf.js() ➤ web worker script loader no data',Abtf.localUrl(src));
+                    console.error('Abtf.js() ➤ web worker script loader no data', Abtf.localUrl(src));
                 }
                 return;
             }
 
             if (ABTFDEBUG) {
                 if (scriptData instanceof Array) {
-                    console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked','(' + scriptData.length + ' chunks)', Abtf.localUrl(src));
+                    console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked', '(' + scriptData.length + ' chunks)', Abtf.localUrl(src));
                 } else {
-                    console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '('+scriptData.length+')', Abtf.localUrl(src));
+                    console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '(' + scriptData.length + ')', Abtf.localUrl(src));
                 }
             }
 
             // save script to local storage
-            LS.saveScript(src,scriptData);
+            LS.saveScript(src, scriptData);
 
         });
 
         // return original url 
         return src;
-        
+
     };
 
-})(window, window['Abtf']);
+})(window, window.Abtf);
