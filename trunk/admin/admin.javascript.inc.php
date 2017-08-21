@@ -171,7 +171,7 @@
 } ?>><?php if (isset($options['jsdelivery_idle'])) {
     echo $this->CTRL->admin->newline_array_string($options['jsdelivery_idle']);
 } ?></textarea>
-														<p class="description">Enter a list with <code>script_string[:timeout_ms]</code> entries (one per line) to execute scripts in CPU idle time within an optional timeout in milliseconds. This feature enables to prioritize script execution and in new browsers (Chrome 61) this appears to provide non-UI blocking / Web Worker-like background execution. (<a href="https://developers.google.com/web/updates/2015/08/using-requestidlecallback" target="_blank">more information</a>)</p>
+														<p class="description">Enter a list with <code>script_string[:timeout_ms]</code> entries (one per line) to execute scripts in CPU idle time within an optional timeout in milliseconds. This feature enables to prioritize script execution. (<a href="https://developers.google.com/web/updates/2015/08/using-requestidlecallback" target="_blank">more information</a>)</p>
 
 														<p class="info_yellow" style="margin-top:7px;">Example: <code>script.js:2000</code> (script.js should execute when CPU is available or within 2 seconds). Timeout is optional.</p>
 													</td>
