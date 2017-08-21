@@ -78,7 +78,6 @@
 																	<li style="padding:0px;margin:0px;">&nbsp;<span style="color: #666;">➤</span> abide WordPress dependencies</li>
 																	<li style="padding:0px;margin:0px;">&nbsp;<span style="color: #666;">➤</span> faster script loading than browser cache, especially on mobile</li>
 																</ul>
-																<p style="margin-top:10px;">Saving javascript requests will result in a faster load speed for returning visitors and therefor has several benefits for achieving a higher ranking in Google.</p>
 															</p>
 														</div>
 													</td>

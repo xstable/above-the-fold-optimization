@@ -330,7 +330,7 @@ class Abovethefold_Upgrade
             /**
              * Pre 2.8 update
              */
-            if (version_compare($current_version, '2.8.0', '<=')) {
+            if (version_compare($current_version, '2.8.0', '<')) {
                 $update_options = true;
                 
                 $options['html_minify'] = false;
