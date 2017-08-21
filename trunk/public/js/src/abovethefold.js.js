@@ -185,7 +185,6 @@
      * Javascript processing method
      */
     Abtf.j = function(config) {
-        console.log(config);
 
         if (typeof config !== 'object' || typeof config[0] === 'undefined' || !config[0]) {
             return;
@@ -199,7 +198,7 @@
         }
 
         var files = config[0];
-        console.log(files);
+
         // dependencies disabled
         if (config[1] === false) {
             ABIDE_DEPENDENCIES = false;
@@ -338,7 +337,7 @@
             }
 
         };
-        console.log('start s');
+
         // start with first script
         loadScript(0);
     };
