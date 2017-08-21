@@ -115,6 +115,9 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.8.1 =
+* Repair of previous incomplete update.
+
 = 2.8.0 =
 * Added: URL reference in HTML5 script loader cache blobs.
 * Added: HTML minification with selective comment removal.
