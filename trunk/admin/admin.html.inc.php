@@ -60,7 +60,7 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 
 <div class="info_yellow"><strong>Example:</strong> <code id="html_search_replace_example" class="clickselect" data-example-text="show string" title="<?php print esc_attr('Click to select', 'pagespeed'); ?>" style="cursor:copy;">{"search":"string to match","replace":"newstring"}</code> (<a href="javascript:void(0);" data-example="html_search_replace_example" data-example-html="<?php print esc_attr(__('{"search":"|string to (match)|i","replace":"newstring $1","regex":true}', 'pagespeed')); ?>">show regular expression</a>)</div>
 
-<p>You can also add a search and replace configuration using the WordPress filter <code>abtf_html_replace</code>.</p>
+<p>You can also add a search and replace configuration using the WordPress filter hook <code>abtf_html_replace</code>.</p>
 
 <div id="wp_html_search_replace_example">
 <pre style="padding:10px;border:solid 1px #efefef;">function your_html_search_and_replace( &amp;$search, &amp;$replace, &amp;$search_regex, &amp;$replace_regex ) {
