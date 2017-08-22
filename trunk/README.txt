@@ -113,7 +113,7 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 7. Full CSS Extraction
 8. Gulp.js Critical CSS Generator Task Manager
 
-== Changelog == 
+== Changelog ==
 
 = 2.8.2 =
 * Removed Closure Compiler source from plugin package to reduce size.
