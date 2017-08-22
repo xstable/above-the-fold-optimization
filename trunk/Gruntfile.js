@@ -20,7 +20,7 @@ module.exports = function(grunt) {
             continue;
         }
         CC[file] = {
-            closurePath: 'public/js/closure-compiler',
+            closurePath: '../closure-compiler',
             js: CCfiles[file],
             jsOutputFile: file,
             //reportFile: 'public/js/closure-compiler/reports/pagespeed+' + keys.join('+') + '.txt',
@@ -37,7 +37,7 @@ module.exports = function(grunt) {
         srcfile = CCfiles[file].replace('.js', '.debug.js');
         file = file.replace('.min.js', '.debug.min.js');
         CC[file] = {
-            closurePath: 'public/js/closure-compiler',
+            closurePath: '../closure-compiler',
             js: srcfile,
             jsOutputFile: file,
             //reportFile: 'public/js/closure-compiler/reports/pagespeed+' + keys.join('+') + '.txt',

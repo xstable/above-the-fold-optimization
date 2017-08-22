@@ -33,5 +33,18 @@ window.Abtf.js;
 window.Abtf.delay;
 window.Abtf.gwf;
 
+window.watch;
+window.unwatch;
+window.$;
+window.jQuery;
+window.$.noConflict;
+window.jQuery.noConflict;
+jQuery.noConflict;
+window.$.isStub;
+window.jQuery.isStub;
+jQuery.isStub;
+jQuery.fn;
+jQuery.each;
+
 // debug related
 window.Abtf.localUrl;
