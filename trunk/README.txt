@@ -115,6 +115,9 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.8.2 =
+* Removed Closure Compiler source from plugin package to reduce size.
+
 = 2.8.1 =
 * Repair of previous incomplete update.
 
