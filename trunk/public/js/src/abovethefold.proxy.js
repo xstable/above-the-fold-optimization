@@ -39,65 +39,65 @@
     /**
      * Proxy setup
      */
-    Abtf.ps = function(cnf) {
+    Abtf[CONFIG.PROXY_SETUP] = function(cnf) {
 
         if (typeof ajaxurl === 'undefined') {
             var ajaxurl = false;
         }
 
-        PROXY_URL = cnf.url || ajaxurl;
+        PROXY_URL = cnf[CONFIG.PROXY_URL] || ajaxurl;
         if (!PROXY_URL) {
             if (ABTFDEBUG) {
                 console.error('Abtf.proxy()', 'no proxy url', cnf);
             }
         }
 
-        PROXY_JS = cnf.js || false;
-        PROXY_CSS = cnf.css || false;
-        PROXY_CDN = cnf.cdn || false;
+        PROXY_JS = cnf[CONFIG.PROXY_JS] || false;
+        PROXY_CSS = cnf[CONFIG.PROXY_CSS] || false;
+        PROXY_CDN = cnf[CONFIG.PROXY_CDN] || false;
         if (PROXY_CDN) {
             CDN_URLS.push(PROXY_CDN);
         }
 
-        PROXY_JS_INCLUDE = cnf.js_include || false;
-        PROXY_JS_EXCLUDE = cnf.js_exclude || false;
-        PROXY_CSS_INCLUDE = cnf.css_include || false;
-        PROXY_CSS_EXCLUDE = cnf.css_exclude || false;
+        PROXY_JS_INCLUDE = cnf[CONFIG.PROXY_JS_INCLUDE] || false;
+        PROXY_JS_EXCLUDE = cnf[CONFIG.PROXY_JS_EXCLUDE] || false;
+        PROXY_CSS_INCLUDE = cnf[CONFIG.PROXY_CSS_INCLUDE] || false;
+        PROXY_CSS_EXCLUDE = cnf[CONFIG.PROXY_CSS_EXCLUDE] || false;
 
-        if (cnf.preload) {
+        if (cnf[CONFIG.PROXY_PRELOAD]) {
             PROXY_PRELOAD = true;
 
             var url;
-            for (var i = 0; i < cnf.preload.length; i++) {
+            for (var i = 0; i < cnf[CONFIG.PROXY_PRELOAD].length; i++) {
 
-                if (cnf.preload[i][0] === 'regex') {
+                if (cnf[CONFIG.PROXY_PRELOAD][i][0] === 'regex') {
 
-                    PROXY_PRELOAD_REGEX.push([cnf.preload[i][2], cnf.preload[i][3], cnf.preload[i][1]]);
+                    PROXY_PRELOAD_REGEX.push([cnf[CONFIG.PROXY_PRELOAD][i][2], cnf[CONFIG.PROXY_PRELOAD][i][3], cnf[CONFIG.PROXY_PRELOAD][i][1]]);
 
                     // resource specific CDN
-                    if (cnf.preload[i][4]) {
-                        PROXY_PRELOAD_CDN[cnf.preload[i][0]] = cnf.preload[i][4];
-                        if (CDN_URLS.indexOf(cnf.preload[i][4]) === -1) {
-                            CDN_URLS.push(cnf.preload[i][4]);
+                    if (cnf[CONFIG.PROXY_PRELOAD][i][4]) {
+                        PROXY_PRELOAD_CDN[cnf[CONFIG.PROXY_PRELOAD][i][0]] = cnf[CONFIG.PROXY_PRELOAD][i][4];
+                        if (CDN_URLS.indexOf(cnf[CONFIG.PROXY_PRELOAD][i][4]) === -1) {
+                            CDN_URLS.push(cnf[CONFIG.PROXY_PRELOAD][i][4]);
                         }
                     }
 
                 } else {
-                    PROXY_PRELOAD_URLS.push(cnf.preload[i][0]);
-                    PROXY_PRELOAD_HASHES.push(cnf.preload[i][1]);
+                    PROXY_PRELOAD_URLS.push(cnf[CONFIG.PROXY_PRELOAD][i][0]);
+                    PROXY_PRELOAD_HASHES.push(cnf[CONFIG.PROXY_PRELOAD][i][1]);
 
                     // resource specific CDN
-                    if (cnf.preload[i][4]) {
-                        PROXY_PRELOAD_CDN[cnf.preload[i][0]] = cnf.preload[i][4];
-                        if (CDN_URLS.indexOf(cnf.preload[i][4]) === -1) {
-                            CDN_URLS.push(cnf.preload[i][4]);
+                    if (cnf[CONFIG.PROXY_PRELOAD][i][4]) {
+                        PROXY_PRELOAD_CDN[cnf[CONFIG.PROXY_PRELOAD][i][0]] = cnf[CONFIG.PROXY_PRELOAD][i][4];
+                        if (CDN_URLS.indexOf(cnf[CONFIG.PROXY_PRELOAD][i][4]) === -1) {
+                            CDN_URLS.push(cnf[CONFIG.PROXY_PRELOAD][i][4]);
                         }
                     }
                 }
 
             }
 
-            PROXY_BASE = cnf.base || false;
+            PROXY_BASE = cnf[CONFIG.PROXY_BASE] || false;
         }
 
         if (CDN_URLS.length === 0) {
@@ -252,9 +252,9 @@
                     path += '.js';
 
                     // try Web Worker localStorage cache
-                    if (typeof Abtf.csu !== 'undefined') {
+                    if (typeof Abtf[CONFIG.LOAD_CACHED_SCRIPT_URL] !== 'undefined') {
                         var parsedPath = PARSE_URL(path).href;
-                        path = Abtf.csu(parsedPath);
+                        path = Abtf[CONFIG.LOAD_CACHED_SCRIPT_URL](parsedPath);
                         if (ABTFDEBUG) {
                             if (path !== parsedPath) {
                                 localStorageUrl = path;
@@ -269,15 +269,15 @@
                 if (ABTFDEBUG) {
                     if (localStorageUrl) {
                         if (regexmatch) {
-                            console.log('Abtf.proxy()', 'localStorage regex capture', Abtf.localUrl(originalUrl), '➤', 'cache:' + cachehash, '➤', localStorageUrl);
+                            console.log('Abtf.proxy()', 'localStorage regex capture', Abtf[CONFIG.LOCALURL](originalUrl), '➤', 'cache:' + cachehash, '➤', localStorageUrl);
                         } else {
-                            console.log('Abtf.proxy()', 'localStorage capture', Abtf.localUrl(url), '➤', 'cache:' + cachehash, '➤', localStorageUrl);
+                            console.log('Abtf.proxy()', 'localStorage capture', Abtf[CONFIG.LOCALURL](url), '➤', 'cache:' + cachehash, '➤', localStorageUrl);
                         }
                     } else {
                         if (regexmatch) {
-                            console.log('Abtf.proxy()', 'regex capture', Abtf.localUrl(originalUrl), '➤', 'cache:' + cachehash);
+                            console.log('Abtf.proxy()', 'regex capture', Abtf[CONFIG.LOCALURL](originalUrl), '➤', 'cache:' + cachehash);
                         } else {
-                            console.log('Abtf.proxy()', 'capture', Abtf.localUrl(url), '➤', 'cache:' + cachehash);
+                            console.log('Abtf.proxy()', 'capture', Abtf[CONFIG.LOCALURL](url), '➤', 'cache:' + cachehash);
                         }
                     }
 
@@ -290,16 +290,16 @@
         if (type === 'js') {
 
             // try Web Worker localStorage cache
-            if (typeof Abtf.csu !== 'undefined') {
+            if (typeof Abtf[CONFIG.LOAD_CACHED_SCRIPT_URL] !== 'undefined') {
                 var parsedUrl = PARSE_URL(url).href;
-                url = Abtf.csu(parsedUrl);
+                url = Abtf[CONFIG.LOAD_CACHED_SCRIPT_URL](parsedUrl);
                 if (url !== parsedUrl) {
 
                     if (ABTFDEBUG) {
                         if (regexmatch) {
-                            console.log('Abtf.proxy()', 'localStorage regex capture', Abtf.localUrl(originalUrl), 'regex', '➤', Abtf.localUrl(parsedUrl), '➤', url);
+                            console.log('Abtf.proxy()', 'localStorage regex capture', Abtf[CONFIG.LOCALURL](originalUrl), 'regex', '➤', Abtf[CONFIG.LOCALURL](parsedUrl), '➤', url);
                         } else {
-                            console.log('Abtf.proxy()', 'localStorage capture', Abtf.localUrl(parsedUrl), '➤', url);
+                            console.log('Abtf.proxy()', 'localStorage capture', Abtf[CONFIG.LOCALURL](parsedUrl), '➤', url);
                         }
                     }
 
@@ -310,9 +310,9 @@
 
         if (ABTFDEBUG) {
             if (regexmatch) {
-                console.log('Abtf.proxy()', 'capture', Abtf.localUrl(originalUrl), 'regex', '➤', url);
+                console.log('Abtf.proxy()', 'capture', Abtf[CONFIG.LOCALURL](originalUrl), 'regex', '➤', url);
             } else {
-                console.log('Abtf.proxy()', 'capture', Abtf.localUrl(url));
+                console.log('Abtf.proxy()', 'capture', Abtf[CONFIG.LOCALURL](url));
             }
         }
 
@@ -383,7 +383,7 @@
             if (!match) {
 
                 if (ABTFDEBUG) {
-                    console.log('Abtf.proxy()', 'ignore', Abtf.localUrl(parser.href), 'not on include list');
+                    console.log('Abtf.proxy()', 'ignore', Abtf[CONFIG.LOCALURL](parser.href), 'not on include list');
                 }
 
                 return true;
@@ -398,7 +398,7 @@
                 if (parser.href.indexOf(PROXY_JS_EXCLUDE[i]) !== -1) {
 
                     if (ABTFDEBUG) {
-                        console.log('Abtf.proxy()', 'ignore', Abtf.localUrl(parser.href), 'on exclude list:', PROXY_JS_EXCLUDE[i]);
+                        console.log('Abtf.proxy()', 'ignore', Abtf[CONFIG.LOCALURL](parser.href), 'on exclude list:', PROXY_JS_EXCLUDE[i]);
                     }
 
                     // ignore file
@@ -473,7 +473,7 @@
             if (!match) {
 
                 if (ABTFDEBUG) {
-                    console.log('Abtf.proxy()', 'ignore', Abtf.localUrl(parser.href), 'not on include list');
+                    console.log('Abtf.proxy()', 'ignore', Abtf[CONFIG.LOCALURL](parser.href), 'not on include list');
                 }
 
                 return true;
@@ -488,7 +488,7 @@
                 if (parser.href.indexOf(PROXY_CSS_EXCLUDE[i]) !== -1) {
 
                     if (ABTFDEBUG) {
-                        console.log('Abtf.proxy()', 'ignore', Abtf.localUrl(parser.href), 'on exclude list:', PROXY_CSS_EXCLUDE[i]);
+                        console.log('Abtf.proxy()', 'ignore', Abtf[CONFIG.LOCALURL](parser.href), 'on exclude list:', PROXY_CSS_EXCLUDE[i]);
                     }
 
                     // ignore file
@@ -512,8 +512,7 @@
                     return false;
                 }
 
-                if (node.getAttribute('rel') === 'abtf') {
-                    node.removeAttribute('rel');
+                if (node.hasAttribute('data-abtf')) {
                     return false;
                 }
 
@@ -531,23 +530,23 @@
 
 
                         // try Web Worker localStorage cache
-                        if (typeof Abtf.csu !== 'undefined') {
+                        if (typeof Abtf[CONFIG.LOAD_CACHED_SCRIPT_URL] !== 'undefined') {
                             if (parser.protocol === 'blob:') {
                                 return false;
                             }
-                            url = Abtf.csu(parser.href);
+                            url = Abtf[CONFIG.LOAD_CACHED_SCRIPT_URL](parser.href);
 
                             if (url !== parser.href) {
 
                                 if (ABTFDEBUG) {
-                                    console.log('Abtf.proxy()', 'localStorage local capture', Abtf.localUrl(parser.href), '➤', url);
+                                    console.log('Abtf.proxy()', 'localStorage local capture', Abtf[CONFIG.LOCALURL](parser.href), '➤', url);
                                 }
 
                                 node.src = url;
                             } else {
 
                                 if (ABTFDEBUG) {
-                                    console.log('Abtf.proxy()', 'localStorage local capture', Abtf.localUrl(parser.href), '➤', 'bypass cache', '➤', url);
+                                    console.log('Abtf.proxy()', 'localStorage local capture', Abtf[CONFIG.LOCALURL](parser.href), '➤', 'bypass cache', '➤', url);
                                 }
                             }
                         }
@@ -564,8 +563,7 @@
                     return false;
                 }
 
-                if (node.getAttribute('rel') === 'abtf') {
-                    node.removeAttribute('rel');
+                if (node.hasAttribute('data-abtf')) {
                     return false;
                 }
 
@@ -682,7 +680,7 @@
     /**
      * Proxify script
      */
-    Abtf.pxs = function(url) {
+    Abtf[CONFIG.PROXIFY] = function(url) {
         if (IS_EXTERNAL_SCRIPT(url, true)) {
             return GET_PROXY_URL(url, 'js');
         }

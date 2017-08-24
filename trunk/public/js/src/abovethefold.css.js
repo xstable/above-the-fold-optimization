@@ -16,10 +16,10 @@
 
     var timeset = false;
 
-    Abtf.c = function() {
+    Abtf[CONFIG.LOAD_CSS] = function() {
 
         var m;
-        var files = Abtf.css;
+        var files = Abtf[CONFIG.CSS];
 
         if (!files) {
             return;
@@ -47,7 +47,7 @@
                 continue;
             }
             m = files[i][0].join(',');
-            Abtf.lc(files[i][1], target, m);
+            Abtf[CONFIG.LOADCSS](files[i][1], target, m);
         }
     };
 

@@ -50,6 +50,7 @@ class Abovethefold_Admin
         'html' => 'HTML',
         'css' => 'CSS',
         'javascript' => 'Javascript',
+        'pwa' => 'PWA', // Google PWA Validation
         'proxy' => 'Proxy',
         'settings' => 'Settings',
         'build-tool' => 'Critical CSS Creator',
@@ -134,6 +135,7 @@ class Abovethefold_Admin
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.html.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.css.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.javascript.class.php';
+            require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.pwa.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.proxy.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.settings.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.build-tool.class.php';
@@ -158,6 +160,11 @@ class Abovethefold_Admin
              * Load Javascript management
              */
             $this->javascript = new Abovethefold_Admin_Javascript($CTRL);
+
+            /**
+             * Load PWA management
+             */
+            $this->pwa = new Abovethefold_Admin_PWA($CTRL);
 
             /**
              * Load proxy management
@@ -700,7 +707,7 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
     /**
      * Save settings
      */
-    public function save_settings($options, $notice)
+    public function save_settings($options, $notice = false)
     {
         if (!is_array($options) || empty($options)) {
             wp_die('No settings to save');
@@ -714,6 +721,10 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
 
         // update settings
         update_option('abovethefold', $options, true);
+
+        if (!$notice) {
+            return;
+        }
 
         // add notice
         $saved_notice = '<div style="font-size:18px;line-height:20px;margin:0px;">'.$notice.'</div>';
@@ -775,6 +786,7 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
             case "css":
             case "html":
             case "javascript":
+            case "pwa":
             case "proxy":
             case "settings":
             case "extract":

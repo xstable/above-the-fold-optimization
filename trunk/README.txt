@@ -89,6 +89,19 @@ Some of the features:
 * Remove fonts to enable local font loading.
 * Upload Google Web Font Packages from [google-webfonts-helper](https://google-webfonts-helper.herokuapp.com/) to the theme directory.
 
+### Google PWA Validation
+
+The plugin contains tools to achieve 100 / 100 / 100 / 100 score in the [Google Lighthouse Test](https://developers.google.com/web/tools/lighthouse/). Google has been promoting [Progressive Web Apps](https://developers.google.com/web/progressive-web-apps/) (PWA) as the future of the internet: a combination of the flexability and openness of the existing web with the user experience advantages of native mobile apps. In essence: a mobile app that can be indexed by Google and that can be managed by WordPress. 
+
+This plugin provides an advanced [HTML5 Service Worker](https://developers.google.com/web/fundamentals/getting-started/primers/service-workers) based solution to create a PWA with any website.
+
+Some of the features:
+
+* Offline availability management: default offline page, cache strategy and more.
+* Prefetch/preload resources for fast access and/or offline availability.
+* Event/click based offline cache (e.g. "click to read this page offline")
+* [Web App Manifest](https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/) management: add website to home screen on mobile devices, track app launches and more.
+
 ### Gulp.js Critical CSS Creator
 
 The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gulpjs.com/) tasks. The tool is based on [critical](https://github.com/addyosmani/critical) (by a Google engineer).
@@ -114,6 +127,11 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 8. Gulp.js Critical CSS Generator Task Manager
 
 == Changelog ==
+
+= 2.8.3 =
+* Improved: javascript client configuration based on JSON index reference to reduce size.
+* Added: Google [Progressive Web App](https://developers.google.com/web/progressive-web-apps/) (PWA) optimization tools to obtain a [Google PWA validation](https://developers.google.com/web/tools/lighthouse/).
+* Added: Offline access management using a [service worker](https://developers.google.com/web/fundamentals/getting-started/primers/service-workers).
 
 = 2.8.2 =
 * Removed Closure Compiler source from plugin package to reduce size.

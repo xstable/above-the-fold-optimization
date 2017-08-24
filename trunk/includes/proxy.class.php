@@ -1052,20 +1052,22 @@ class Abovethefold_Proxy
      */
     public function client_jssettings(&$jssettings, &$jsfiles, $jsdebug)
     {
+        $proxyindex = $this->CTRL->optimization->client_config_ref['proxy'];
+        $proxyindexsub = $this->CTRL->optimization->client_config_ref['proxy-sub'];
 
         /**
          * Proxy settings
          */
         $proxy_url = $this->url();
 
-        $jssettings['proxy'] = array(
-            'url' => $proxy_url,
-            'js' => (isset($this->CTRL->options['js_proxy']) && $this->CTRL->options['js_proxy']) ? true : false,
-            'css' => (isset($this->CTRL->options['css_proxy']) && $this->CTRL->options['css_proxy']) ? true : false
+        $jssettings[$proxyindex] = array(
+            $proxyindexsub['url'] => $proxy_url,
+            $proxyindexsub['js'] => (isset($this->CTRL->options['js_proxy']) && $this->CTRL->options['js_proxy']) ? true : false,
+            $proxyindexsub['css'] => (isset($this->CTRL->options['css_proxy']) && $this->CTRL->options['css_proxy']) ? true : false
         );
 
         if ($this->cdn) {
-            $jssettings['proxy']['cdn'] = $this->cdn;
+            $jssettings[$proxyindex][$proxyindexsub['cdn']] = $this->cdn;
         }
 
         /**
@@ -1084,17 +1086,26 @@ class Abovethefold_Proxy
         }
 
         if (!empty($preload)) {
-            $jssettings['proxy']['preload'] = $preload;
-            $jssettings['proxy']['base'] = $this->CTRL->cache_dir('proxy');
+            $jssettings[$proxyindex][$proxyindexsub['preload']] = $preload;
+            $jssettings[$proxyindex][$proxyindexsub['base']] = $this->CTRL->cache_dir('proxy');
         }
 
         $keys = array('js_include','css_include','js_exclude','css_exclude');
         foreach ($keys as $key) {
             $params = explode('_', $key);
             if ($this->CTRL->options[$params[0] . '_proxy'] && !empty($this->CTRL->proxy->$key)) {
-                $jssettings['proxy'][$key] = $this->CTRL->proxy->$key;
+                $jssettings[$proxyindex][$proxyindexsub[$key]] = $this->CTRL->proxy->$key;
             }
         }
+
+        ksort($jssettings[$proxyindex]);
+        $max = max(array_keys($jssettings[$proxyindex]));
+        for ($i = 0; $i <= $max; $i++) {
+            if (!isset($jssettings[$proxyindex][$i])) {
+                $jssettings[$proxyindex][$i] = 'ABTF-NULL';
+            }
+        }
+        ksort($jssettings[$proxyindex]);
 
         $jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-proxy'.$jsdebug.'.min.js';
     }

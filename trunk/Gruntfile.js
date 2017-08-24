@@ -1,17 +1,61 @@
 /* global module:false */
 module.exports = function(grunt) {
 
+    var TESTING = false; //true;
+
+    var merge = require('merge'); // merge objects
+
+    // config index
+    var CONFIG_INDEX = {};
+    var json_config_index = grunt.file.readJSON('public/js/src/config-index.json');
+    var len = json_config_index.length;
+    for (var i = 0; i < len; i++) {
+        if (typeof json_config_index[i] === 'string') {
+            CONFIG_INDEX['CONFIG.' + json_config_index[i].toUpperCase()] = i;
+        } else {
+            var key = Object.keys(json_config_index[i])[0];
+            CONFIG_INDEX['CONFIG.' + key.toUpperCase()] = i;
+            var sl = json_config_index[i][key].length;
+            for (var si = 0; si < sl; si++) {
+
+                if (typeof json_config_index[i][key][si] === 'string') {
+                    CONFIG_INDEX['CONFIG.' + key.toUpperCase() + '_' + json_config_index[i][key][si].toUpperCase()] = si;
+                } else {
+                    var _key = Object.keys(json_config_index[i][key][si])[0];
+                    CONFIG_INDEX['CONFIG.' + key.toUpperCase() + '_' + _key.toUpperCase()] = si;
+                    var _sl = json_config_index[i][key][si][_key].length;
+                    for (var _si = 0; _si < _sl; _si++) {
+                        CONFIG_INDEX['CONFIG.' + key.toUpperCase() + '_' + _key.toUpperCase() + '_' + json_config_index[i][key][si][_key][_si].toUpperCase()] = _si;
+                    }
+                }
+
+            }
+        }
+    }
+
     // closure compiler
     var CC = {}
     var CCfiles = {
+
+        /*
         'public/js/abovethefold.min.js': 'public/js/min/abovethefold.js',
+
         'public/js/abovethefold-proxy.min.js': 'public/js/min/abovethefold-proxy.js',
+
         'public/js/abovethefold-jquery-stub.min.js': 'public/js/min/abovethefold-jquery-stub.js',
-        'public/js/abovethefold-js.min.js': 'public/js/min/abovethefold-js.js',
+
+
         'public/js/abovethefold-js-localstorage.min.js': 'public/js/min/abovethefold-js-localstorage.js',
+
         'public/js/abovethefold-css.min.js': 'public/js/min/abovethefold-css.js',
         'public/js/abovethefold-loadcss-enhanced.min.js': 'public/js/min/abovethefold-loadcss-enhanced.js',
-        'public/js/abovethefold-loadcss.min.js': 'public/js/min/abovethefold-loadcss.js'
+        'public/js/abovethefold-loadcss.min.js': 'public/js/min/abovethefold-loadcss.js',
+
+        'public/js/abovethefold-js.min.js': 'public/js/min/abovethefold-js.js',
+        'public/js/pwa-serviceworker.js': 'public/js/min/pwa.serviceworker.js',
+        //*/
+        'public/js/abovethefold-pwa.min.js': 'public/js/min/abovethefold-pwa.js'
+
     };
 
     var srcfile;
@@ -19,6 +63,7 @@ module.exports = function(grunt) {
         if (!CCfiles.hasOwnProperty(file)) {
             continue;
         }
+
         CC[file] = {
             closurePath: '../closure-compiler',
             js: CCfiles[file],
@@ -33,9 +78,20 @@ module.exports = function(grunt) {
             }
         };
 
+        if (TESTING) {
+            continue;
+        }
+
         // debug
         srcfile = CCfiles[file].replace('.js', '.debug.js');
-        file = file.replace('.min.js', '.debug.min.js');
+
+        if (file.indexOf('pwa-serviceworker') !== -1) {
+            file = file.replace('.js', '.debug.js');
+        } else {
+            file = file.replace('.min.js', '.debug.min.js');
+        }
+
+
         CC[file] = {
             closurePath: '../closure-compiler',
             js: srcfile,
@@ -68,9 +124,9 @@ module.exports = function(grunt) {
             build: {
                 options: {
                     compress: {
-                        global_defs: {
+                        global_defs: merge({
                             "ABTFDEBUG": false
-                        }
+                        }, CONFIG_INDEX)
                     }
                 },
                 files: {
@@ -93,7 +149,8 @@ module.exports = function(grunt) {
                     // Javascript optimization
                     'public/js/min/abovethefold-js.js': [
                         'public/js/src/abovethefold.js.js',
-                        'public/js/src/abovethefold.loadscript.js'
+                        'public/js/src/abovethefold.loadscript.js',
+                        'public/js/src/abovethefold.pwa-unregister.js'
                     ],
 
                     // Javascript localstorage script loader
@@ -158,6 +215,11 @@ module.exports = function(grunt) {
                         'admin/js/admincp-html.js'
                     ],
 
+                    // admincp PWA
+                    'admin/js/admincp-pwa.min.js': [
+                        'admin/js/admincp-pwa.js'
+                    ],
+
                     // Codemirror
                     'admin/js/codemirror.min.js': [
                         'bower_components/codemirror/lib/codemirror.js',
@@ -178,9 +240,9 @@ module.exports = function(grunt) {
             build_debug: {
                 options: {
                     compress: {
-                        global_defs: {
+                        global_defs: merge({
                             "ABTFDEBUG": true
-                        }
+                        }, CONFIG_INDEX)
                     }
                 },
                 files: {
@@ -236,6 +298,50 @@ module.exports = function(grunt) {
 
                 }
             },
+
+            serviceworker: {
+                options: {
+                    compress: {
+                        global_defs: merge({
+                            "ABTFDEBUG": false
+                        }, CONFIG_INDEX)
+                    }
+                },
+                files: {
+
+                    // Google PWA controller
+                    'public/js/min/abovethefold-pwa.js': [
+                        'public/js/src/abovethefold.pwa.js'
+                    ],
+
+                    // Service Worker
+                    'public/js/min/pwa.serviceworker.js': [
+                        'public/js/src/pwa.serviceworker.js'
+                    ]
+                }
+            },
+
+            serviceworker_debug: {
+                options: {
+                    compress: {
+                        global_defs: merge({
+                            "ABTFDEBUG": true
+                        }, CONFIG_INDEX)
+                    }
+                },
+                files: {
+
+                    // Google PWA controller
+                    'public/js/min/abovethefold-pwa.debug.js': [
+                        'public/js/src/abovethefold.pwa.js'
+                    ],
+
+                    // Service Worker
+                    'public/js/min/pwa.serviceworker.debug.js': [
+                        'public/js/src/pwa.serviceworker.js'
+                    ]
+                }
+            }
         },
 
         cssmin: {
@@ -289,6 +395,30 @@ module.exports = function(grunt) {
             loadcss_package: {
                 src: 'bower_components/loadcss/package.json',
                 dest: 'public/js/src/loadcss_package.json'
+            },
+            serviceworker: {
+                src: 'public/js/pwa-serviceworker.js',
+                dest: '../test-blog/abtf-pwa.js'
+            },
+            serviceworker_debug: {
+                src: 'public/js/pwa-serviceworker.debug.js',
+                dest: '../test-blog/abtf-pwa.debug.js'
+            },
+            test_serviceworker: {
+                src: 'public/js/min/pwa.serviceworker.js',
+                dest: 'public/js/pwa-serviceworker.js'
+            },
+            test_serviceworker_debug: {
+                src: 'public/js/min/pwa.serviceworker.debug.js',
+                dest: 'public/js/pwa-serviceworker.debug.js'
+            },
+            test_serviceworkerx: {
+                src: 'public/js/min/pwa.serviceworker.js',
+                dest: '../test-blog/abtf-pwa.js'
+            },
+            test_serviceworkerx_debug: {
+                src: 'public/js/min/pwa.serviceworker.debug.js',
+                dest: '../test-blog/abtf-pwa.debug.js'
             }
         }
     });
@@ -296,7 +426,18 @@ module.exports = function(grunt) {
     // Load Dependencies
     require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
-    grunt.registerTask('build', ['uglify', 'closure-compiler', 'cssmin', 'copy']);
+    grunt.registerTask('build', ['uglify', 'closure-compiler', 'cssmin',
+        'copy:webfont_package',
+        'copy:jquery_lazyxt_package',
+        'copy:loadcss_package',
+        'copy:serviceworker',
+        'copy:serviceworker_debug'
+    ]);
+
+    grunt.registerTask('sw', ['uglify:serviceworker', 'uglify:serviceworker_debug',
+        'copy:test_serviceworker', 'copy:test_serviceworker_debug',
+        'copy:test_serviceworkerx', 'copy:test_serviceworkerx_debug'
+    ]);
 
     grunt.registerTask('default', ['uglify', 'cssmin']);
 };

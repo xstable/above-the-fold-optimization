@@ -139,8 +139,8 @@
                 /**
                  * Preload script
                  */
-                if (typeof Abtf.pcs !== 'undefined') {
-                    Abtf.pcs(PARSE_URL(script));
+                if (typeof Abtf[CONFIG.PRELOAD_CACHED_SCRIPT] !== 'undefined') {
+                    Abtf[CONFIG.PRELOAD_CACHED_SCRIPT](PARSE_URL(script));
                 }
 
                 // try again once a script is loaded
@@ -171,10 +171,10 @@
         }
 
         // HTML5 cached script loader
-        if (typeof Abtf.lcs !== 'undefined') {
-            Abtf.lcs(src, onLoad, onStart);
+        if (typeof Abtf[CONFIG.LOAD_CACHED_SCRIPT] !== 'undefined') {
+            Abtf[CONFIG.LOAD_CACHED_SCRIPT](src, onLoad, onStart);
         } else {
-            Abtf.ls(src, onLoad);
+            Abtf[CONFIG.LOAD_SCRIPT](src, onLoad);
             if (ABTFDEBUG) {
                 onStart();
             }
@@ -184,7 +184,7 @@
     /**
      * Javascript processing method
      */
-    Abtf.j = function(config) {
+    Abtf[CONFIG.LOAD_JS] = function(config) {
 
         if (typeof config !== 'object' || typeof config[0] === 'undefined' || !config[0]) {
             return;
@@ -193,8 +193,8 @@
         /**
          * Javascript proxy enabled, mark scripts
          */
-        if (typeof Abtf.proxy !== 'undefined' && Abtf.proxy.js) {
-            Abtf.mls = true;
+        if (typeof Abtf[CONFIG.PROXY] !== 'undefined' && Abtf[CONFIG.PROXY][CONFIG.PROXY_JS]) {
+            Abtf[CONFIG.LOAD_SCRIPT_MARK] = true;
         }
 
         var files = config[0];
@@ -274,15 +274,15 @@
                     if (ABTFDEBUG) {
                         if (deps.length > 0) {
                             if (cached) {
-                                console.info('Abtf.js() ➤ localStorage loaded', Abtf.localUrl(script), (DEPENDENCIES[handle] || handle), depnames, '➤', cached);
+                                console.info('Abtf.js() ➤ localStorage loaded', Abtf[CONFIG.LOCALURL](script), (DEPENDENCIES[handle] || handle), depnames, '➤', cached);
                             } else {
-                                console.info('Abtf.js() ➤ loaded', Abtf.localUrl(script), (DEPENDENCIES[handle] || handle), depnames);
+                                console.info('Abtf.js() ➤ loaded', Abtf[CONFIG.LOCALURL](script), (DEPENDENCIES[handle] || handle), depnames);
                             }
                         } else {
                             if (cached) {
-                                console.info('Abtf.js() ➤ localStorage loaded', Abtf.localUrl(script), '➤', cached);
+                                console.info('Abtf.js() ➤ localStorage loaded', Abtf[CONFIG.LOCALURL](script), '➤', cached);
                             } else {
-                                console.info('Abtf.js() ➤ loaded', Abtf.localUrl(script));
+                                console.info('Abtf.js() ➤ loaded', Abtf[CONFIG.LOCALURL](script));
                             }
                         }
                     }
@@ -307,15 +307,15 @@
                     if (ABTFDEBUG) {
                         if (deps.length > 0) {
                             if (cached) {
-                                console.info('Abtf.js() ➤ localStorage ' + ((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached, (DEPENDENCIES[handle] || handle), depnames);
+                                console.info('Abtf.js() ➤ localStorage ' + ((async) ? 'async ' : '') + 'load start', Abtf[CONFIG.LOCALURL](script), '➤', cached, (DEPENDENCIES[handle] || handle), depnames);
                             } else {
-                                console.info('Abtf.js() ➤ ' + ((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script), (DEPENDENCIES[handle] || handle), depnames);
+                                console.info('Abtf.js() ➤ ' + ((async) ? 'async ' : '') + 'download start', Abtf[CONFIG.LOCALURL](script), (DEPENDENCIES[handle] || handle), depnames);
                             }
                         } else {
                             if (cached) {
-                                console.info('Abtf.js() ➤ localStorage ' + ((async) ? 'async ' : '') + 'load start', Abtf.localUrl(script), '➤', cached);
+                                console.info('Abtf.js() ➤ localStorage ' + ((async) ? 'async ' : '') + 'load start', Abtf[CONFIG.LOCALURL](script), '➤', cached);
                             } else {
-                                console.info('Abtf.js() ➤ ' + ((async) ? 'async ' : '') + 'download start', Abtf.localUrl(script));
+                                console.info('Abtf.js() ➤ ' + ((async) ? 'async ' : '') + 'download start', Abtf[CONFIG.LOCALURL](script));
                             }
                         }
                     };
@@ -345,6 +345,6 @@
     /**
      * On script load
      */
-    Abtf.osl = ON_SCRIPT_LOAD;
+    Abtf[CONFIG.ON_SCRIPT_LOAD] = ON_SCRIPT_LOAD;
 
 })(window.Abtf, Object);

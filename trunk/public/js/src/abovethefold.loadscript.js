@@ -35,16 +35,16 @@
     };
 
     // mark loadScript injections
-    Abtf.mls = false;
+    Abtf[CONFIG.LOAD_SCRIPT_MARK] = false;
 
-    Abtf.ls = function(src, callback) {
+    Abtf[CONFIG.LOAD_SCRIPT] = function(src, callback) {
 
         var script = document.createElement("script");
 
-        if (Abtf.mls) {
+        if (Abtf[CONFIG.LOAD_SCRIPT_MARK]) {
 
             // mark Above The Fold
-            script.setAttribute('rel', 'abtf');
+            script.setAttribute('data-abtf', '');
         }
 
         var done = false;

@@ -100,6 +100,7 @@ class Abovethefold_Admin_HTML
         wp_redirect(add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'html' ), admin_url('admin.php')));
         exit;
     }
+    
     /**
      * Enqueue scripts and styles
      */

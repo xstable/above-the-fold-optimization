@@ -55,6 +55,10 @@ class Abovethefold_Optimization
      */
     public $preserve_comments;
 
+    // client config key references
+    public $client_config_index;
+    public $client_config_ref;
+
     /**
      * Initialize the class and set its properties
      */
@@ -99,6 +103,45 @@ class Abovethefold_Optimization
             /**
              * Standard view
              */
+
+            // load client config index
+            $config_index = WPABTF_PATH . 'public/js/src/config-index.json';
+            try {
+                if (file_exists($config_index)) {
+                    $this->client_config_index = json_decode(file_get_contents($config_index), true);
+                }
+            } catch (Exception $err) {
+                $this->client_config_index = false;
+            }
+            if (!$this->client_config_index) {
+                wp_die('Failed to read ' . str_replace(ABSPATH, '', WPABTF_PATH . 'public/js/src/config.index.json'));
+            }
+
+            // set key index references
+            $this->client_config_ref = array();
+            foreach ($this->client_config_index as $position => $key) {
+                if (is_string($key)) {
+                    $this->client_config_ref[$key] = $position;
+                } else {
+                    $_key = array_keys($key)[0];
+                    $subkeys = $key[$_key];
+                    $this->client_config_ref[$_key] = $position;
+                    $this->client_config_ref[$_key . '-sub'] = array();
+                    foreach ($subkeys as $subposition => $subkey) {
+                        if (is_string($subkey)) {
+                            $this->client_config_ref[$_key . '-sub'][$subkey] = $subposition;
+                        } else {
+                            $__key = array_keys($subkey)[0];
+                            $_subkeys = $subkey[$__key];
+                            $this->client_config_ref[$_key . '-sub'][$__key] = $subposition;
+                            $this->client_config_ref[$_key . '-sub'][$__key . '-sub'] = array();
+                            foreach ($_subkeys as $_subposition => $_subkey) {
+                                $this->client_config_ref[$_key . '-sub'][$__key . '-sub'][$_subkey] = $_subposition;
+                            }
+                        }
+                    }
+                }
+            }
 
             /**
              * Check if an optimization module offers an output buffer hook
@@ -207,6 +250,13 @@ class Abovethefold_Optimization
 
             $ob_callbacks = ob_list_handlers();
         }
+    }
+
+    /**
+     * Return config index
+     */
+    public function config_index($key, $subkey = false)
+    {
     }
 
     /**
@@ -1016,6 +1066,15 @@ class Abovethefold_Optimization
         /** main client controller */
         $jsfiles[] = WPABTF_PATH . 'public/js/abovethefold'.$jsdebug.'.min.js';
 
+        /**
+         * Google PWA Optimization
+         */
+        if ($this->CTRL->options['pwa']) {
+            
+            // get Google PWA client
+            $this->CTRL->pwa->client_jssettings($jssettings, $jsfiles, $inlineJS, $jsdebug);
+        }
+
         // Proxy external files
         if ($this->CTRL->options['js_proxy'] || $this->CTRL->options['css_proxy']) {
 
@@ -1077,9 +1136,9 @@ class Abovethefold_Optimization
          * Optimize Javascript delivery
          */
         if ($this->optimize_js_delivery) {
-            $jssettings['js'] = array($this->js_replacement_string,($this->CTRL->options['jsdelivery_position'] === 'footer') ? true : false);
+            $jssettings[$this->client_config_ref['js']] = array($this->js_replacement_string,($this->CTRL->options['jsdelivery_position'] === 'footer') ? true : false);
             if (isset($this->CTRL->options['jsdelivery_idle']) && !empty($this->CTRL->options['jsdelivery_idle'])) {
-                $jssettings['js'][] = $this->CTRL->options['jsdelivery_idle'];
+                $jssettings[$this->client_config_ref['js']][] = $this->CTRL->options['jsdelivery_idle'];
             }
         } else {
 
@@ -1091,10 +1150,10 @@ class Abovethefold_Optimization
          * Optimize CSS delivery
          */
         if ($this->optimize_css_delivery) {
-            $jssettings['css'] = $this->criticalcss_replacement_string;
+            $jssettings[$this->client_config_ref['css']] = $this->criticalcss_replacement_string;
 
             if (isset($this->CTRL->options['cssdelivery_renderdelay']) && intval($this->CTRL->options['cssdelivery_renderdelay']) > 0) {
-                $jssettings['delay'] = intval($this->CTRL->options['cssdelivery_renderdelay']);
+                $jssettings[$this->client_config_ref['css_delay']] = intval($this->CTRL->options['cssdelivery_renderdelay']);
             }
 
             $headCSS = ($this->CTRL->options['cssdelivery_position'] === 'header') ? true : false;
@@ -1104,8 +1163,17 @@ class Abovethefold_Optimization
             $headCSS = false;
         }
 
+        ksort($jssettings);
+        $max = max(array_keys($jssettings));
+        for ($i = 0; $i <= $max; $i++) {
+            if (!isset($jssettings[$i])) {
+                $jssettings[$i] = 'ABTF-NULL';
+            }
+        }
+        ksort($jssettings);
+
         // client javascript
-        print '<script '.((!defined('ABTF_NOREF') || !ABTF_NOREF) ? 'data-abtf="https://goo.gl/C1gw96"' : 'data-abtf').'>window.Abtf='.json_encode($jssettings).';' . $inlineJS . 'Abtf.h();</script>';
+        print '<script '.((!defined('ABTF_NOREF') || !ABTF_NOREF) ? 'data-abtf="https://goo.gl/C1gw96"' : 'data-abtf').'>window.Abtf='.str_replace('"ABTF-NULL"', '', json_encode($jssettings)).';' . $inlineJS . 'Abtf['.$this->client_config_ref['header'].']();</script>';
 
         // above the fold CSS
         print '<style type="text/css" id="AbtfCSS" data-abtf>' . $inlineCSS . '</style>';
@@ -1114,7 +1182,7 @@ class Abovethefold_Optimization
          * Start async loading of CSS
          */
         if ($this->optimize_css_delivery && $headCSS) {
-            print '<script data-abtf>Abtf.c();</script>';
+            print '<script data-abtf>Abtf['.$this->client_config_ref['load_css'].']();</script>';
         }
     }
 
@@ -1144,7 +1212,7 @@ class Abovethefold_Optimization
 
             // start loading CSS from footer position
             
-            print "<script data-abtf>Abtf.f(".json_encode($footCSS).");</script>";
+            print "<script data-abtf>Abtf[".$this->client_config_ref['footer']."](".json_encode($footCSS).");</script>";
         }
     }
 

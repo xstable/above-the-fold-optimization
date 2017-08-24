@@ -12,18 +12,12 @@
 (function(window, Abtf) {
 
     // test availability of localStorage
-    try {
-        if ('localStorage' in window && window['localStorage'] !== null) {
-            // ok
-        } else {
-            return;
-        }
-    } catch (e) {
+    if (!window.localStorage) {
         return;
     }
 
     // test availability Web Workers
-    if (typeof(window.Worker) === "undefined" || !window.Worker) {
+    if (!window.Worker) {
         return;
     }
 
@@ -31,9 +25,6 @@
      * Object urls to revoke on unload
      */
     var OBJECT_URLS = [];
-
-    // requestIdleCallback, run tasks in CPU idle time
-    var IDLE = ('requestIdleCallback' in window && window.requestIdleCallback !== null) ? window.requestIdleCallback : false;
 
     // async
     var ASYNC = function(fn) {
@@ -72,10 +63,10 @@
         // process task when idle
         execWhenIdle: function(task, timeframe) {
 
-            if (IDLE) {
+            if (Abtf[CONFIG.IDLE]) {
 
                 // shedule for idle time
-                IDLE(task, {
+                Abtf[CONFIG.IDLE](task, {
                     timeout: timeframe
                 });
 
@@ -168,24 +159,24 @@
                 cacheObject.data = data.join('');
             }
 
-            var scriptData = '/* Above The Fold Optimization HTML5 Script Loader\n * @url ' + url + ' */\n';
+            var scriptData = '/* @source ' + url + ' */\n';
 
             var idle = false,
                 idle_timeframe;
 
             /** requestIdleCallback */
-            if (IDLE && typeof Abtf.js[2] !== 'undefined' && Abtf.js[2]) {
+            if (Abtf[CONFIG.IDLE] && typeof Abtf[CONFIG.JS][2] !== 'undefined' && Abtf[CONFIG.JS][2]) {
 
-                var l = Abtf.js[2].length,
+                var l = Abtf[CONFIG.JS][2].length,
                     str;
                 for (var i = 0; i < l; i++) {
-                    if (typeof Abtf.js[2][i] !== 'object') {
+                    if (typeof Abtf[CONFIG.JS][2][i] !== 'object') {
                         continue;
                     }
-                    if (url.indexOf(Abtf.js[2][i][0]) !== -1) {
+                    if (url.indexOf(Abtf[CONFIG.JS][2][i][0]) !== -1) {
                         idle = true;
-                        if (Abtf.js[2][i][1]) {
-                            idle_timeframe = Abtf.js[2][i][1];
+                        if (Abtf[CONFIG.JS][2][i][1]) {
+                            idle_timeframe = Abtf[CONFIG.JS][2][i][1];
                         }
                         break;
                     }
@@ -784,7 +775,7 @@
                 this.start();
             }
 
-            url = Abtf.pxs(url);
+            url = Abtf[CONFIG.PROXIFY](url);
 
             var scriptIndex = parseInt(this.scriptIndex);
             this.scriptIndex++;
@@ -832,10 +823,10 @@
     /**
      * Clear expired entries
      */
-    if (IDLE) {
+    if (Abtf[CONFIG.IDLE]) {
 
         // shedule for idle time
-        IDLE(function() {
+        Abtf[CONFIG.IDLE](function() {
             LS.clear(true);
         }, {
             timeout: 3000
@@ -858,13 +849,13 @@
         initClearTimeout();
 
         // reset timeout on script load
-        Abtf.osl(initClearTimeout);
+        Abtf[CONFIG.ON_SCRIPT_LOAD](initClearTimeout);
     }
 
     /**
      * Load cached script
      */
-    Abtf.lcs = function(src, callback, onStart) {
+    Abtf[CONFIG.LOAD_CACHED_SCRIPT] = function(src, callback, onStart) {
 
         ASYNC(function() {
 
@@ -876,7 +867,7 @@
                 if (ABTFDEBUG) {
                     onStart(url);
                 }
-                Abtf.ls(url, callback);
+                Abtf[CONFIG.LOAD_SCRIPT](url, callback);
                 return;
             }
 
@@ -888,7 +879,7 @@
             /**
              * Not in cache, start regular request and potentially use browser cache speed
              */
-            Abtf.ls(src, function scriptLoaded() {
+            Abtf[CONFIG.LOAD_SCRIPT](src, function scriptLoaded() {
 
                 callback();
 
@@ -899,16 +890,16 @@
 
                     if (!scriptData) {
                         if (ABTFDEBUG) {
-                            console.error('Abtf.js() ➤ web worker script loader no data', Abtf.localUrl(src));
+                            console.error('Abtf.js() ➤ web worker script loader no data', Abtf[CONFIG.LOCALURL](src));
                         }
                         return;
                     }
 
                     if (ABTFDEBUG) {
                         if (scriptData instanceof Array) {
-                            console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked', '(' + scriptData.length + ' chunks)', Abtf.localUrl(src));
+                            console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked', '(' + scriptData.length + ' chunks)', Abtf[CONFIG.LOCALURL](src));
                         } else {
-                            console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '(' + scriptData.length + ')', Abtf.localUrl(src));
+                            console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '(' + scriptData.length + ')', Abtf[CONFIG.LOCALURL](src));
                         }
                     }
 
@@ -926,7 +917,7 @@
     /**
      * Preload cached script
      */
-    Abtf.pcs = function(url) {
+    Abtf[CONFIG.PRELOAD_CACHED_SCRIPT] = function(url) {
         ASYNC(function() {
             LS.preloadScript(url);
         });
@@ -935,7 +926,7 @@
     /**
      * Load cached script url
      */
-    Abtf.csu = function(src) {
+    Abtf[CONFIG.LOAD_CACHED_SCRIPT_URL] = function(src) {
 
         /**
          * Try localStorage cache
@@ -952,16 +943,16 @@
 
             if (!scriptData) {
                 if (ABTFDEBUG) {
-                    console.error('Abtf.js() ➤ web worker script loader no data', Abtf.localUrl(src));
+                    console.error('Abtf.js() ➤ web worker script loader no data', Abtf[CONFIG.LOCALURL](src));
                 }
                 return;
             }
 
             if (ABTFDEBUG) {
                 if (scriptData instanceof Array) {
-                    console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked', '(' + scriptData.length + ' chunks)', Abtf.localUrl(src));
+                    console.info('Abtf.js() ➤ web worker ➤ localStorage saved chunked', '(' + scriptData.length + ' chunks)', Abtf[CONFIG.LOCALURL](src));
                 } else {
-                    console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '(' + scriptData.length + ')', Abtf.localUrl(src));
+                    console.info('Abtf.js() ➤ web worker ➤ localStorage saved', '(' + scriptData.length + ')', Abtf[CONFIG.LOCALURL](src));
                 }
             }
 

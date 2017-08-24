@@ -569,31 +569,32 @@ REGEX;
                 // empty, do not load webfont.js
                 $this->CTRL->options['gwfo'] = false;
             } else {
+                $gfwindex = $this->CTRL->optimization->client_config_ref['gfw'];
 
                 /**
                  * Load webfont.js inline
                  */
                 if ($this->CTRL->options['gwfo_loadmethod'] === 'inline') {
                     $jsfiles[] = WPABTF_PATH . 'public/js/webfont.js';
-                    $jssettings['gwf'] = array($this->webfont_inline_replacement_string);
+                    $jssettings[$gfwindex] = array($this->webfont_inline_replacement_string);
                     if ($this->CTRL->options['gwfo_loadposition'] === 'footer') {
-                        $jssettings['gwf'][] = true;
+                        $jssettings[$gfwindex][] = true;
                     }
                 } elseif ($this->CTRL->options['gwfo_loadmethod'] === 'async' || $this->CTRL->options['gwfo_loadmethod'] === 'async_cdn') {
 
                     /**
                      * Load async
                      */
-                    $jssettings['gwf'] = array('a');
+                    $jssettings[$gfwindex] = array('a');
 
-                    $jssettings['gwf'][] = ($this->CTRL->options['gwfo_loadposition'] === 'footer') ? true : false;
+                    $jssettings[$gfwindex][] = ($this->CTRL->options['gwfo_loadposition'] === 'footer') ? true : false;
 
                     if ($this->CTRL->options['gwfo_loadmethod'] === 'async') {
-                        $jssettings['gwf'][] = WPABTF_URI . 'public/js/webfont.js';
+                        $jssettings[$gfwindex][] = WPABTF_URI . 'public/js/webfont.js';
                     } else {
 
                         // load from Google CDN
-                        $jssettings['gwf'][] = $this->cdn_url;
+                        $jssettings[$gfwindex][] = $this->cdn_url;
                     }
 
                     // WebFontConfig variable

@@ -31,7 +31,7 @@
 			<p class="description">Remove HTML comments from HTML, e.g. <code>&lt;!-- comment --&gt;</code>.</p>
 		</td>
 	</tr>
-	<tr valign="top" data-ns="html.remove_comments">
+	<tr valign="top">
 		<th scope="row">&nbsp;</th>
 		<td style="padding-top:0px;">
 			<h5 class="h">&nbsp;Preserve List</h5>
@@ -41,7 +41,7 @@
 			<p class="description">Enter (parts of) HTML comments to exclude from removal. One string per line.</p>
 		</td>
 	</tr>
-	<tr valign="top" data-ns="html.api">
+	<tr valign="top">
 		<td colspan="2" style="padding:0px;">
 <?php
 submit_button(__('Save'), 'primary large', 'is_submit', false);

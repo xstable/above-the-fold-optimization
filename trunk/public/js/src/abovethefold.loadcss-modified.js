@@ -13,19 +13,10 @@
 
     var doc = window.document;
 
-    // request animation frame
-    var raf = window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.msRequestAnimationFrame ||
-        function(callback) {
-            window.setTimeout(callback, 1000 / 60);
-        };
-
-    Abtf.lc = function(href, before, media, callback) {
+    Abtf[CONFIG.LOADCSS] = function(href, before, media, callback) {
 
         if (ABTFDEBUG) {
-            console.info('Abtf.css() ➤ loadCSS()[RAF] async download start', Abtf.localUrl(href));
+            console.info('Abtf.css() ➤ loadCSS()[RAF] async download start', Abtf[CONFIG.LOCALURL](href));
         }
 
         // Arguments explained:
@@ -107,10 +98,11 @@
                  *
                  * @link https://developers.google.com/speed/docs/insights/OptimizeCSSDelivery
                  */
-                raf(function() {
+                Abtf[CONFIG.RAF](function() {
+
                     el.media = media || "all";
                     if (ABTFDEBUG) {
-                        console.info('Abtf.css() ➤ loadCSS()[RAF] render', Abtf.localUrl(href));
+                        console.info('Abtf.css() ➤ loadCSS()[RAF] render', Abtf[CONFIG.LOCALURL](href));
                     }
 
                     /**
@@ -122,16 +114,16 @@
                 });
             }
 
-            if (typeof Abtf.delay !== 'undefined' && parseInt(Abtf.delay) > 0) {
+            if (typeof Abtf[CONFIG.CSS_DELAY] !== 'undefined' && parseInt(Abtf[CONFIG.CSS_DELAY]) > 0) {
 
                 if (ABTFDEBUG) {
-                    console.info('Abtf.css() ➤ loadCSS()[RAF] render delay', Abtf.delay, Abtf.localUrl(href));
+                    console.info('Abtf.css() ➤ loadCSS()[RAF] render delay', Abtf[CONFIG.CSS_DELAY], Abtf[CONFIG.LOCALURL](href));
                 }
 
                 /**
                  * Delayed rendering
                  */
-                setTimeout(render, Abtf.delay);
+                setTimeout(render, Abtf[CONFIG.CSS_DELAY]);
             } else {
                 render();
             }

@@ -10,14 +10,14 @@
 
 (function(Abtf) {
 
-    Abtf.lc = (typeof loadCSS !== 'undefined') ? function(href, before, media, callback) {
+    Abtf[CONFIG.LOADCSS] = (typeof window.loadCSS !== 'undefined') ? function(href, before, media, callback) {
 
         if (ABTFDEBUG) {
-            console.info('Abtf.css() ➤ loadCSS() async download start', Abtf.localUrl(href));
+            console.info('Abtf.css() ➤ loadCSS() async download start', Abtf[CONFIG.LOCALURL](href));
         }
-        loadCSS(href, before, media, function() {
+        window.loadCSS(href, before, media, function() {
             if (ABTFDEBUG) {
-                console.info('Abtf.css() ➤ loadCSS() render', Abtf.localUrl(href));
+                console.info('Abtf.css() ➤ loadCSS() render', Abtf[CONFIG.LOCALURL](href));
             }
             if (callback) {
                 callback();

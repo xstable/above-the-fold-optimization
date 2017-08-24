@@ -7,6 +7,8 @@ jQuery(function($) {
 
         $('#html_search_replace').html('');
 
+        var changeTimeout;
+
         var options = {
             name: "html.replace",
             mode: 'code',
@@ -17,9 +19,21 @@ jQuery(function($) {
             },
             onChange: function() {
                 var t = editor.getText();
+
                 if ($.trim(t) === '') {
-                    editor.set([]);
-                    jQuery('#html_search_replace_src').val('[]');
+                    if (changeTimeout) {
+                        clearTimeout(changeTimeout);
+                    }
+                    // wait for copy past action
+                    changeTimeout = setTimeout(function() {
+                        changeTimeout = false;
+                        var t = editor.getText();
+                        if ($.trim(t) === '') {
+                            editor.set([]);
+                            jQuery('#html_search_replace_src').val('[]');
+                        }
+                    }, 25);
+
                     return;
                 }
 

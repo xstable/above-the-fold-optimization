@@ -151,6 +151,9 @@ class Abovethefold
          */
         $this->options = get_option('abovethefold');
 
+        // load Google PWA optimization controller
+        $this->pwa = new Abovethefold_PWA($this);
+
         // load webfont optimization controller
         $this->gwfo = new Abovethefold_WebFonts($this);
 
@@ -322,6 +325,11 @@ class Abovethefold
          * of the plugin
          */
         require_once WPABTF_PATH . 'includes/i18n.class.php';
+
+        /**
+         * The class responsible for defining all actions related to Google PWA optimization
+         */
+        require_once WPABTF_PATH . 'includes/pwa.class.php';
 
         /**
          * The class responsible for defining all actions related to Web Font optimization
