@@ -287,7 +287,7 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 </table>
 
 	<br /><br />
-						<p class="info_yellow" style="margin-bottom:.5em;font-size:14px;" id="edit"><strong>Note:</strong> When installing/updating a Service Worker there sometimes is an issue in Chrome that can only be resolved by restarting the browser. If you are experiencing inexpected behaviour, try to clear the cache and restart the browser. An incognito screen may be sufficient.<br /><br />
+						<p class="info_yellow" style="margin-bottom:.5em;font-size:14px;" id="edit"><strong>Note:</strong> When installing/updating a Service Worker (as a developer who makes changes / switches to debug mode etc.) there sometimes is an issue in Chrome that can only be resolved by restarting the browser. If you are experiencing inexpected behaviour, try to clear the cache and restart the browser. An incognito screen may be sufficient.<br /><br />
 						For debugging see: <strong>chrome://serviceworker-internals</strong> (copy in the address bar)</p>
 
 
