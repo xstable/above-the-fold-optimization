@@ -1,8 +1,6 @@
 /* global module:false */
 module.exports = function(grunt) {
 
-    var TESTING = false; //true;
-
     var merge = require('merge'); // merge objects
 
     // config index
@@ -37,23 +35,15 @@ module.exports = function(grunt) {
     var CC = {}
     var CCfiles = {
 
-        /*
         'public/js/abovethefold.min.js': 'public/js/min/abovethefold.js',
-
         'public/js/abovethefold-proxy.min.js': 'public/js/min/abovethefold-proxy.js',
-
         'public/js/abovethefold-jquery-stub.min.js': 'public/js/min/abovethefold-jquery-stub.js',
-
-
         'public/js/abovethefold-js-localstorage.min.js': 'public/js/min/abovethefold-js-localstorage.js',
-
         'public/js/abovethefold-css.min.js': 'public/js/min/abovethefold-css.js',
         'public/js/abovethefold-loadcss-enhanced.min.js': 'public/js/min/abovethefold-loadcss-enhanced.js',
         'public/js/abovethefold-loadcss.min.js': 'public/js/min/abovethefold-loadcss.js',
-
         'public/js/abovethefold-js.min.js': 'public/js/min/abovethefold-js.js',
         'public/js/pwa-serviceworker.js': 'public/js/min/pwa.serviceworker.js',
-        //*/
         'public/js/abovethefold-pwa.min.js': 'public/js/min/abovethefold-pwa.js'
 
     };
@@ -77,10 +67,6 @@ module.exports = function(grunt) {
                 externs: ['public/js/closure-compiler/abtf-externs.js']
             }
         };
-
-        if (TESTING) {
-            continue;
-        }
 
         // debug
         srcfile = CCfiles[file].replace('.js', '.debug.js');
@@ -157,11 +143,6 @@ module.exports = function(grunt) {
                     'public/js/min/abovethefold-js-localstorage.js': [
                         'public/js/src/abovethefold.loadscript-localstorage.js'
                     ],
-
-                    // Javascript cached script loader
-                    /*'public/js/abovethefold-js-cached.min.js' : [
-                    	'public/js/src/abovethefold.loadscript-cached.js'
-                    ],*/
 
                     // CSS optimization
                     'public/js/min/abovethefold-css.js': [
@@ -267,13 +248,6 @@ module.exports = function(grunt) {
                     'public/js/min/abovethefold-js-localstorage.debug.js': [
                         'public/js/src/abovethefold.loadscript-localstorage.js'
                     ],
-
-                    // Javascript cached script loader
-                    /*'public/js/abovethefold-js-cached.debug.min.js' : [
-                    	'public/js/src/promise-polyfill.js',
-                    	'public/js/src/async-local-storage.js',
-                    	'public/js/src/abovethefold.loadscript-cached.js'
-                    ],*/
 
                     // jQuery Stub
                     'public/js/min/abovethefold-jquery-stub.debug.js': [
