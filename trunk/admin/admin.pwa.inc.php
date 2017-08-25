@@ -167,7 +167,7 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 			<label><input type="checkbox" name="abovethefold[pwa_cache_assets]" value="1"<?php if (isset($options['pwa_cache_assets']) && intval($options['pwa_cache_assets']) === 1) {
     print ' checked';
 } ?> /> Enabled</label>
-			<p class="description" style="margin-bottom:1em;">Cache assets such as scripts and styles. Use a mime-type filter to restrict the cache to specific types.</p>
+			<p class="description" style="margin-bottom:1em;">Cache assets such as scripts and styles. Use a request and/or response filter to apply a cache strategy and enable or disable caching for specific assets.</p>
 
 			<div id="cache_assets"><div class="loading-json-editor"><?php print __('Loading JSON editor...', 'pagespeed'); ?></div></div>
 <input type="hidden" name="abovethefold[pwa_cache_assets_policy]" id="cache_assets_src" value="<?php echo esc_attr(json_encode($asset_policy)); ?>"  />
