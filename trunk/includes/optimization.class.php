@@ -134,7 +134,7 @@ class Abovethefold_Optimization
                     }
                 }
             }
-
+            
             /**
              * Check if an optimization module offers an output buffer hook
              */
