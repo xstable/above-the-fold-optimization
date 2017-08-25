@@ -1098,14 +1098,20 @@ class Abovethefold_Proxy
             }
         }
 
-        ksort($jssettings[$proxyindex]);
-        $max = max(array_keys($jssettings[$proxyindex]));
-        for ($i = 0; $i <= $max; $i++) {
-            if (!isset($jssettings[$proxyindex][$i])) {
-                $jssettings[$proxyindex][$i] = 'ABTF-NULL';
+        $max = 0;
+        foreach ($jssettings[$proxyindex] as $index => $value) {
+            if ($index > $max) {
+                $max = $index;
             }
         }
-        ksort($jssettings[$proxyindex]);
+        if ($max > 0) {
+            for ($i = 0; $i <= $max; $i++) {
+                if (!isset($jssettings[$proxyindex][$i])) {
+                    $jssettings[$proxyindex][$i] = 'ABTF-NULL';
+                }
+            }
+            ksort($jssettings[$proxyindex]);
+        }
 
         $jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-proxy'.$jsdebug.'.min.js';
     }

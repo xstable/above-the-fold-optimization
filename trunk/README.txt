@@ -132,6 +132,9 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.8.6 =
+* Bugfix: PHP 5.3 support.
+
 = 2.8.5 =
 * Improved: moved Google PWA preload list to abtf-pwa-config.json.
 

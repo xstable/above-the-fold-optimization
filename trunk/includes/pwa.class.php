@@ -427,14 +427,20 @@ class Abovethefold_PWA
             $jssettings[$pwaindex][$this->CTRL->optimization->client_config_ref['pwa-sub'][$key]] = $value;
         }
 
-        ksort($jssettings[$pwaindex]);
-        $max = max(array_keys($jssettings[$pwaindex]));
-        for ($i = 0; $i <= $max; $i++) {
-            if (!isset($jssettings[$pwaindex][$i])) {
-                $jssettings[$pwaindex][$i] = 'ABTF-NULL';
+        $max = 0;
+        foreach ($jssettings[$pwaindex] as $index => $value) {
+            if ($index > $max) {
+                $max = $index;
             }
         }
-        ksort($jssettings[$pwaindex]);
+        if ($max > 0) {
+            for ($i = 0; $i <= $max; $i++) {
+                if (!isset($jssettings[$pwaindex][$i])) {
+                    $jssettings[$pwaindex][$i] = 'ABTF-NULL';
+                }
+            }
+            ksort($jssettings[$pwaindex]);
+        }
   
         $jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-pwa'.$jsdebug.'.min.js';
     }

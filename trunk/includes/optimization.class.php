@@ -123,22 +123,14 @@ class Abovethefold_Optimization
                 if (is_string($key)) {
                     $this->client_config_ref[$key] = $position;
                 } else {
-                    $_key = array_keys($key)[0];
-                    $subkeys = $key[$_key];
-                    $this->client_config_ref[$_key] = $position;
-                    $this->client_config_ref[$_key . '-sub'] = array();
+                    $keys = array_keys($key);
+                    $subkeys = $key[$keys[0]];
+                    $key = $keys[0];
+
+                    $this->client_config_ref[$key] = $position;
+                    $this->client_config_ref[$key . '-sub'] = array();
                     foreach ($subkeys as $subposition => $subkey) {
-                        if (is_string($subkey)) {
-                            $this->client_config_ref[$_key . '-sub'][$subkey] = $subposition;
-                        } else {
-                            $__key = array_keys($subkey)[0];
-                            $_subkeys = $subkey[$__key];
-                            $this->client_config_ref[$_key . '-sub'][$__key] = $subposition;
-                            $this->client_config_ref[$_key . '-sub'][$__key . '-sub'] = array();
-                            foreach ($_subkeys as $_subposition => $_subkey) {
-                                $this->client_config_ref[$_key . '-sub'][$__key . '-sub'][$_subkey] = $_subposition;
-                            }
-                        }
+                        $this->client_config_ref[$key . '-sub'][$subkey] = $subposition;
                     }
                 }
             }
@@ -1163,14 +1155,20 @@ class Abovethefold_Optimization
             $headCSS = false;
         }
 
-        ksort($jssettings);
-        $max = max(array_keys($jssettings));
-        for ($i = 0; $i <= $max; $i++) {
-            if (!isset($jssettings[$i])) {
-                $jssettings[$i] = 'ABTF-NULL';
+        $max = 0;
+        foreach ($jssettings as $index => $value) {
+            if ($index > $max) {
+                $max = $index;
             }
         }
-        ksort($jssettings);
+        if ($max > 0) {
+            for ($i = 0; $i <= $max; $i++) {
+                if (!isset($jssettings[$i])) {
+                    $jssettings[$i] = 'ABTF-NULL';
+                }
+            }
+            ksort($jssettings);
+        }
 
         // client javascript
         print '<script '.((!defined('ABTF_NOREF') || !ABTF_NOREF) ? 'data-abtf="https://goo.gl/C1gw96"' : 'data-abtf').'>window.Abtf='.str_replace('"ABTF-NULL"', '', json_encode($jssettings)).';' . $inlineJS . 'Abtf['.$this->client_config_ref['header'].']();</script>';
