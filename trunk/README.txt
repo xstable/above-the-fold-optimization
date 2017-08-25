@@ -1,7 +1,7 @@
 === Above The Fold Optimization ===
 Contributors: optimalisatie
 Donate link: https://pagespeed.pro/
-Tags: optimization, above the fold, pagespeed, css, performance, critical css, localization, javascript, minification, minify, minify css, minify stylesheet, optimize, speed, stylesheet, google, web font, webfont
+Tags: optimization, above the fold, pagespeed, css, performance, critical css, pwa, web app, javascript, minification, minify, minify css, minify stylesheet, progressive, progressive web app, optimize, speed, stylesheet, google, web font, webfont, seo
 Requires at least: 3.0.1
 Tested up to: 4.8.1
 Stable tag: 4.4
@@ -124,21 +124,25 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 2. CSS delivery optimization
 3. Google Web Font optimization
 4. Javascript Optimization
-5. Above The Fold Quality Test
+5. Google PWA validation
 6. Critical CSS Quality Test
 7. Full CSS Extraction
 8. Gulp.js Critical CSS Generator Task Manager
+9. Google Progressive Web App settings
 
 == Changelog ==
+
+= 2.8.5 =
+* Improved: Moved Google PWA preload list to abtf-pwa-config.json.
 
 = 2.8.4 =
 * Added: Google PWA preload list for offline cache.
 * Added: Google PWA meta ([add to home screen](https://developer.chrome.com/multidevice/android/installtohomescreen), manifest.json and more).
 * Added: Web App meta for legacy browsers.
-* Improved: added support for serving offline image for offline HTML pages.
+* Improved: Added support for serving offline image for offline HTML pages.
 
 = 2.8.3 =
-* Improved: javascript client configuration based on JSON index reference to reduce size.
+* Improved: Javascript client configuration based on JSON index reference to reduce size.
 * Added: Google [Progressive Web App](https://developers.google.com/web/progressive-web-apps/) (PWA) optimization tools to obtain a [Google PWA validation](https://developers.google.com/web/tools/lighthouse/).
 * Added: Offline access management using a [service worker](https://developers.google.com/web/fundamentals/getting-started/primers/service-workers).
 

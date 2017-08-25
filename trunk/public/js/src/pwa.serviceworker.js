@@ -9,8 +9,8 @@
 
     // ABTF Service Worker / PWA config
     var PWA_POLICY = false;
-    var PWA_POLICY_TIMESTAMP = false;
-    var PWA_POLICY_URL = './abtf-pwa-policy.json';
+    var PWA_CONFIG_TIMESTAMP = false;
+    var PWA_CONFIG_URL = './abtf-pwa-config.json';
     var PWA_CACHE;
     var PWA_CACHE_MAX_SIZE = 1000; // default
 
@@ -106,7 +106,7 @@
 
         // fetch policy config
         event.waitUntil(
-            UPDATE_POLICY().then(function() {
+            UPDATE_CONFIG().then(function() {
                 self.skipWaiting();
             }).catch(function() {
                 self.skipWaiting();
@@ -131,12 +131,12 @@
             }
 
             // Update config
-            if (!PWA_POLICY || !PWA_POLICY_TIMESTAMP || (timestamp && timestamp > PWA_POLICY_TIMESTAMP)) {
+            if (!PWA_POLICY || !PWA_CONFIG_TIMESTAMP || (timestamp && timestamp > PWA_CONFIG_TIMESTAMP)) {
 
                 // resolve after update?
                 var doResolve = (PWA_POLICY) ? false : true;
 
-                UPDATE_POLICY().then(function() {
+                UPDATE_CONFIG().then(function() {
                     if (doResolve) {
                         if (PWA_POLICY) {
                             resolve(PWA_POLICY);
@@ -150,11 +150,11 @@
                     }
                 });
 
-            } else if (PWA_POLICY_TIMESTAMP < (TIMESTAMP() - 300)) {
+            } else if (PWA_CONFIG_TIMESTAMP < (TIMESTAMP() - 300)) {
 
                 // verify last-modified header once per 5 minutes
                 // HEAD request
-                var headRequest = new Request(PWA_POLICY_URL, {
+                var headRequest = new Request(PWA_CONFIG_URL, {
                     method: 'HEAD',
                     mode: 'no-cors'
                 });
@@ -164,76 +164,102 @@
                         var update = true;
                         if (headResponse && headResponse.ok) {
                             var lastModified = headResponse.headers.get('last-modified');
-                            if (lastModified && lastModified <= PWA_POLICY_TIMESTAMP) {
+                            if (lastModified && lastModified <= PWA_CONFIG_TIMESTAMP) {
                                 update = false;
                             }
                         }
 
                         if (update) {
                             // config modified, update
-                            UPDATE_POLICY();
+                            UPDATE_CONFIG();
                         }
                     }).catch(function(error) {
-                        UPDATE_POLICY();
+                        UPDATE_CONFIG();
                     });
             }
 
+        }).catch(function(error) {
+            throw error;
         });
     }
 
     /* 
-     * Update policy config
+     * Update config
      */
-    var UPDATE_POLICY_LAST = false;
-    var UPDATE_POLICY = function() {
+    var UPDATE_CONFIG_LAST = false;
+    var UPDATE_CONFIG = function() {
 
         // retry once per 10 seconds
-        if (UPDATE_POLICY_LAST && UPDATE_POLICY_LAST > (TIMESTAMP() - 10)) {
+        if (UPDATE_CONFIG_LAST && UPDATE_CONFIG_LAST > (TIMESTAMP() - 10)) {
             if (PWA_POLICY) {
                 return Promise.resolve(PWA_POLICY);
             }
             return Promise.reject();
         }
 
-        return fetch(PWA_POLICY_URL, {
+        return fetch(PWA_CONFIG_URL, {
                 mode: 'no-cors'
             })
             .then(function(response) {
                 if (response && response.ok && response.status < 400) {
-                    return response.json().then(function(json) {
+                    return response.json().then(function(pwaConfig) {
 
                         if (ABTFDEBUG) {
-                            console.info('Abtf.sw() ➤ policy ' + ((!PWA_POLICY) ? 'loaded' : 'updated'), json);
+                            console.info('Abtf.sw() ➤ config ' + ((!PWA_POLICY) ? 'loaded' : 'updated'), pwaConfig);
                         }
 
-                        PWA_POLICY = json;
-                        PWA_POLICY_TIMESTAMP = TIMESTAMP();
+                        if (!pwaConfig) {
+                            return;
+                        }
 
-                        // Process new policy, precache offline pages etc.
-                        if (PWA_POLICY && PWA_POLICY.length > 0) {
+                        // < v2.8.5 abtf-pwa-policy.json
+                        if (pwaConfig instanceof Array) {
+                            pwaConfig = {
+                                policy: pwaConfig
+                            };
+                        }
 
-                            var offlinePages = [];
-                            PWA_POLICY.forEach(function(policy) {
+                        // setup policy
+                        if (pwaConfig.policy) {
+                            PWA_POLICY = pwaConfig.policy;
+                            PWA_CONFIG_TIMESTAMP = TIMESTAMP();
+                        }
+
+                        // preload
+                        var preload = [];
+
+                        // precache offline pages
+                        if (pwaConfig.policy) {
+                            pwaConfig.policy.forEach(function(policy) {
                                 if (!policy.offline) {
                                     return;
                                 }
-                                if (offlinePages.indexOf(policy.offline) === -1) {
-                                    offlinePages.push(policy.offline);
+                                if (preload.indexOf(policy.offline) === -1) {
+                                    preload.push(policy.offline);
                                 }
                             });
+                        }
 
-                            // preload offline pages
-                            offlinePages.forEach(function(page) {
-                                CACHE_PRELOAD(page);
+                        // preload list
+                        if (pwaConfig.preload) {
+                            pwaConfig.preload.forEach(function(url) {
+                                if (preload.indexOf(url) === -1) {
+                                    preload.push(url);
+                                }
                             });
                         }
+
+                        // preload resources
+                        preload.forEach(function(url) {
+                            CACHE_PRELOAD(url);
+                        });
 
                     });
                 }
 
                 PWA_POLICY = false;
 
-                throw new Error('cache policy not found: ' + PWA_POLICY_URL);
+                throw new Error('service worker config not found: ' + PWA_CONFIG_URL);
 
             }).catch(function(error) {
                 PWA_POLICY = false;

@@ -42,7 +42,7 @@ class Abovethefold_PWA
 
         $sw_filename = 'abtf-pwa.js';
         $sw_filename_debug = 'abtf-pwa.debug.js';
-        $sw_policy_filename = 'abtf-pwa-policy.json';
+        $sw_policy_filename = 'abtf-pwa-config.json';
 
         return array(
             'filename' => $sw_filename,
@@ -55,9 +55,9 @@ class Abovethefold_PWA
     }
 
     /**
-     * Get Service Worker cache policy
+     * Get Service Worker config
      */
-    public function get_sw_policy()
+    public function get_sw_config()
     {
         $cache_policy = array();
 
@@ -118,7 +118,92 @@ class Abovethefold_PWA
             $cache_policy[] = $page_cache_policy;
         }
 
-        return $cache_policy;
+        $config = array(
+            'policy' => $cache_policy
+        );
+
+        // preload assets
+        if (isset($this->CTRL->options['pwa_cache_preload']) && $this->CTRL->options['pwa_cache_preload']) {
+            $config['preload'] = $this->CTRL->options['pwa_cache_preload'];
+        }
+
+        return $config;
+    }
+
+    /**
+     * Update Service Worker file
+     */
+    public function update_sw()
+    {
+        $sw_ok = false;
+        $sw = $this->get_sw();
+        $sources = array(
+            'pwa-serviceworker.js' => $sw['file'],
+            'pwa-serviceworker.debug.js' => $sw['file_debug']
+        );
+        foreach ($sources as $sourcefile => $sw_path) {
+            $source = trailingslashit(WPABTF_PATH) . 'public/js/' . $sourcefile;
+            if (!file_exists($source)) {
+                $this->CTRL->admin->set_notice('The service worker source file (above-the-fold-optimization/public/js/'.$sourcefile.') is missing.', 'ERROR');
+            } else {
+                $sw_ok = true;
+                if (!file_exists($sw_path) || md5_file($source) !== md5_file($sw_path)) {
+                    try {
+                        @file_put_contents($sw_path, file_get_contents($source));
+                    } catch (Exception $error) {
+                        $sw_ok = false;
+                    }
+                    if (!file_exists($sw_path)) {
+                        $sw_ok = false;
+                    } elseif ($sw_ok && md5_file($source) !== md5_file($sw_path)) {
+                        $sw_ok = false;
+                    }
+                }
+
+                if (!$sw_ok) {
+                    if (isset($this->CTRL->admin)) {
+                        $this->CTRL->admin->set_notice('Failed to install the Service Worker on <strong>' . esc_html(str_replace(ABSPATH, '[ABSPATH]/', $sw_path)) . '</strong>. Please check the permissions or copy the file manually from ' . esc_html(str_replace(ABSPATH, '[ABSPATH]/', trailingslashit(WPABTF_PATH) . 'public/js/'.$sourcefile)) . ' (<a href="' . esc_attr(trailingslashit(WPABTF_URI) . 'public/js/'.$sourcefile) . '" download="'.$sourcefile.'">download</a>).', 'ERROR');
+                    }
+                }
+            }
+        }
+
+        if (!$sw_ok) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Update Service Worker config
+     */
+    public function update_sw_config()
+    {
+        $sw = $this->get_sw();
+        $config = $this->get_sw_config();
+        $config_json = json_encode($config);
+
+        $sw_policy_ok = true;
+        $current_config = (file_exists($sw['file_policy'])) ? file_get_contents($sw['file_policy']) : false;
+        if (!$current_config || md5($current_config) !== md5($config_json)) {
+            try {
+                @file_put_contents($sw['file_policy'], $config_json);
+            } catch (Exception $error) {
+                $sw_policy_ok = false;
+            }
+            if (!file_exists($sw['file_policy'])) {
+                $sw_policy_ok = false;
+            } elseif ($sw_policy_ok && md5(file_get_contents($sw['file_policy'])) !== md5($config_json)) {
+                $sw_policy_ok = false;
+            }
+        }
+
+        if (!$sw_policy_ok) {
+            return false;
+        }
+        
+        return true;
     }
 
     /**
@@ -333,10 +418,6 @@ class Abovethefold_PWA
             $pwasettings['max_size'] = $this->CTRL->options['pwa_cache_max_size'];
         }
 
-        if (isset($this->CTRL->options['pwa_cache_preload']) && $this->CTRL->options['pwa_cache_preload']) {
-            $pwasettings['preload'] = $this->CTRL->options['pwa_cache_preload'];
-        }
-        
         $jssettings[$pwaindex] = array();
         foreach ($pwasettings as $key => $value) {
             if (!isset($this->CTRL->optimization->client_config_ref['pwa-sub'][$key])) {

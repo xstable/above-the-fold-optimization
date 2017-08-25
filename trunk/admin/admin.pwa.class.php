@@ -216,53 +216,14 @@ class Abovethefold_Admin_PWA
         // get service worker path
         $sw = $this->CTRL->pwa->get_sw();
 
-        $sources = array(
-            'pwa-serviceworker.js' => $sw['file'],
-            'pwa-serviceworker.debug.js' => $sw['file_debug']
-        );
-        foreach ($sources as $sourcefile => $sw_path) {
-            $source = trailingslashit(WPABTF_PATH) . 'public/js/' . $sourcefile;
-            if (!file_exists($source)) {
-                $this->CTRL->admin->set_notice('The service worker source file (above-the-fold-optimization/public/js/'.$sourcefile.') is missing.', 'ERROR');
-            } else {
-                $sw_ok = true;
-                if (!file_exists($sw_path) || md5_file($source) !== md5_file($sw_path)) {
-                    try {
-                        @file_put_contents($sw_path, file_get_contents($source));
-                    } catch (Exception $error) {
-                        $sw_ok = false;
-                    }
-                    if (!file_exists($sw_path)) {
-                        $sw_ok = false;
-                    } elseif ($sw_ok && md5_file($source) !== md5_file($sw_path)) {
-                        $sw_ok = false;
-                    }
-                }
-
-                if (!$sw_ok) {
-                    $this->CTRL->admin->set_notice('Failed to install the Service Worker on <strong>' . esc_html(str_replace(ABSPATH, '[ABSPATH]/', $sw_path)) . '</strong>. Please check the permissions or copy the file manually from ' . esc_html(str_replace(ABSPATH, '[ABSPATH]/', trailingslashit(WPABTF_PATH) . 'public/js/'.$sourcefile)) . ' (<a href="' . esc_attr(trailingslashit(WPABTF_URI) . 'public/js/'.$sourcefile) . '" download="'.$sourcefile.'">download</a>).', 'ERROR');
-                }
-            }
+        // update service worker files
+        if (!$this->CTRL->pwa->update_sw()) {
+            $this->CTRL->admin->set_notice('Failed to install the Service Worker. Please copy the file manually from plugins/above-the-fold-optimization/public/js/pwa-serviceworker.js (and .debug.js) to the root directory of the WordPress installation.', 'ERROR');
         }
 
-        // get policy
-        $sw_policy = json_encode($this->CTRL->pwa->get_sw_policy());
-        $sw_policy_ok = true;
-        $current_policy = (file_exists($sw['file_policy'])) ? file_get_contents($sw['file_policy']) : false;
-        if (!$current_policy || md5($current_policy) !== md5($sw_policy)) {
-            try {
-                @file_put_contents($sw['file_policy'], $sw_policy);
-            } catch (Exception $error) {
-                $sw_policy_ok = false;
-            }
-            if (!file_exists($sw['file_policy'])) {
-                $sw_policy_ok = false;
-            } elseif ($sw_policy_ok && md5(file_get_contents($sw['file_policy'])) !== md5($sw_policy)) {
-                $sw_policy_ok = false;
-            }
-        }
-        if (!$sw_policy_ok) {
-            $this->CTRL->admin->set_notice('Failed to install the Service Worker Cache Policy on <strong>' . esc_html(str_replace(ABSPATH, '[ABSPATH]/', $sw['file_policy'])) . '</strong>. Please check the permissions or create the file manually with the following JSON content: <div style="padding:10px;"><textarea style="width:100%;height:100px;">'.esc_html($sw_policy).'</textarea></div>', 'ERROR');
+        // update abtf-pwa-policy.json config
+        if (!$this->CTRL->pwa->update_sw_config()) {
+            $this->CTRL->admin->set_notice('Failed to install the Service Worker Cache Policy on <strong>' . esc_html(str_replace(ABSPATH, '[ABSPATH]/', $sw['file_policy'])) . '</strong>. Please check the permissions or create the file manually with the following JSON content: <div style="padding:10px;"><textarea style="width:100%;height:100px;">'.esc_html(json_encode($this->CTRL->pwa->get_sw_config())).'</textarea></div>', 'ERROR');
         }
     }
     /**

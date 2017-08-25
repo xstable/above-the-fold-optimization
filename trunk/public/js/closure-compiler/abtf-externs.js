@@ -25,6 +25,9 @@ jQuery.removeClass;
 // debug related
 window.Abtf.localUrl;
 
+pwaConfig.policy;
+pwaConfig.preload;
+
 policyMatch.strategy;
 policyMatch.offline;
 policyMatch.match;

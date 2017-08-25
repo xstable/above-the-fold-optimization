@@ -333,6 +333,7 @@ class Abovethefold_Upgrade
             if (version_compare($current_version, '2.8.0', '<')) {
                 $update_options = true;
                 
+                $options['pwa'] = false;
                 $options['html_minify'] = false;
                 $options['html_comments'] = false;
                 $options['html_comments_preserve'] = array();
@@ -341,6 +342,35 @@ class Abovethefold_Upgrade
 
                 delete_option('abtf-pageoptions');
                 delete_option('abtf-conditionoptions');
+            }
+
+
+            /**
+             * Pre 2.8.5 update
+             */
+            if (version_compare($current_version, '2.8.5', '<')) {
+                
+                // update new abtf-pwa-policy.json format
+                if (isset($options['pwa']) && $options['pwa']) {
+
+                    // update service worker
+                    try {
+                        $this->CTRL->pwa->update_sw();
+                    } catch (Exception $error) {
+                    }
+
+                    // update abtf-pwa-policy.json to latest format
+                    try {
+                        $this->CTRL->pwa->update_sw_config();
+                    } catch (Exception $error) {
+                    }
+
+                    // delete old config
+                    $old_sw_config = trailingslashit(ABSPATH) . 'abtf-pwa-policy.json';
+                    if (file_exists($old_sw_config)) {
+                        @unlink($old_sw_config);
+                    }
+                }
             }
 
             // remove old options
