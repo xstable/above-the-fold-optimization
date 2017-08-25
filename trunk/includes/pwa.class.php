@@ -79,7 +79,6 @@ class Abovethefold_PWA
                 ),
                 'strategy' => $this->CTRL->options['pwa_cache_pages_strategy'],
                 'cache' => array(
-                    'store' => 'pages',
                     'conditions' => array(
                         array(
                             'type' => 'header',
@@ -157,7 +156,6 @@ class Abovethefold_PWA
                 ),
                 'strategy' => 'cache',
                 'cache' => array(
-                    'store' => 'images',
                     'update_interval' => 3600,
                     'head_update' => true,
                     'conditions' => array(
@@ -181,7 +179,6 @@ class Abovethefold_PWA
                 ),
                 'strategy' => 'cache',
                 'cache' => array(
-                    'store' => 'assets',
                     'update_interval' => 300,
                     'head_update' => true,
                     'max_age' => 86400

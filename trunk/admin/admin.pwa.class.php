@@ -42,9 +42,6 @@ class Abovethefold_Admin_PWA
 
             // add scripts/styles
             $this->CTRL->loader->add_action('admin_enqueue_scripts', $this, 'enqueue_scripts', 30);
-
-            // AJAX page search
-            $this->CTRL->loader->add_action('wp_ajax_abtf_offline_page_search', $this, 'ajax_offline_page_search');
         }
     }
 
@@ -251,75 +248,5 @@ class Abovethefold_Admin_PWA
         // add general admin javascript
         wp_enqueue_script('abtf_admincp_jsoneditor', plugin_dir_url(__FILE__) . 'js/jsoneditor/jsoneditor.min.js', array( 'jquery' ), WPABTF_VERSION);
         wp_enqueue_script('abtf_admincp_pwa', plugin_dir_url(__FILE__) . 'js/admincp-pwa.min.js', array( 'jquery', 'abtf_admincp_jsoneditor' ), WPABTF_VERSION);
-    }
-
-    /**
-     * Return options for page selection menu
-     */
-    public function ajax_offline_page_search()
-    {
-        global $wpdb; // this is how you get access to the database
-
-        $query = (isset($_POST['query'])) ? trim($_POST['query']) : '';
-        $limit = (isset($_POST['maxresults']) && intval($_POST['maxresults']) > 10 && intval($_POST['maxresults']) < 30) ? intval($_POST['maxresults']) : 10;
-
-        $results = array();
-
-        $post_types = get_post_types();
-        foreach ($post_types as $pt) {
-            if (in_array($pt, array('revision','nav_menu_item'))) {
-                continue 1;
-            }
-            if (count($results) >= $limit) {
-                break;
-            }
-            
-            // Get random post
-            $args = array( 'post_type' => $pt, 'posts_per_page' => $limit, 's' => $query );
-            query_posts($args);
-            if (have_posts()) {
-                while (have_posts()) {
-                    the_post();
-                    switch ($pt) {
-                        case "page":
-                            $results[] = array(
-                                'value' => 'is_'.$pt.'():' . get_the_ID(),
-                                'title' => get_the_ID(),
-                                'titlelong' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title(),
-                                'optgroup' => 'page',
-                                'class' => 'page'
-                            );
-                        break;
-                        case "attachment":
-                            // ignore
-                        break;
-                        default:
-                            $results[] = array(
-                                'value' => 'is_single():' . get_the_ID(),
-                                'title' => get_the_ID(),
-                                'titlelong' => get_the_ID() . '. ' . str_replace(home_url(), '', get_permalink(get_the_ID())) . ' - ' . get_the_title(),
-                                'optgroup' => 'post',
-                                'class' => 'post'
-                            );
-                        break;
-                    }
-                    if (count($results) >= $limit) {
-                        break;
-                    }
-                }
-            }
-        }
-
-        if ($returnSingle) {
-            return (!empty($results)) ? $results[0] : false;
-        }
-
-        $json = json_encode($results);
-
-        header('Content-Type: application/json');
-        header('Content-Length: ' . strlen($json));
-        print $json;
-
-        wp_die(); // this is required to terminate immediately and return a proper response
     }
 }
