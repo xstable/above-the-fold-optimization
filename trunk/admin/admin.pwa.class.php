@@ -148,12 +148,17 @@ class Abovethefold_Admin_PWA
                 if ($json && is_array($json)) {
                     $home = parse_url(home_url());
 
+                    // get service worker path
+                    $sw = $this->CTRL->pwa->get_sw();
+
                     // add service worker
                     $json['serviceworker'] = array(
-                        'src' => trailingslashit((isset($home['path'])) ? $home['path'] : '/') . 'abtf-sw.js',
-                        'scope' => $input['pwa_scope'],
+                        'src' => trailingslashit((isset($home['path'])) ? $home['path'] : '/') . $sw['filename'],
                         'use_cache' => true
                     );
+                    if (isset($input['pwa_scope']) && trim($input['pwa_scope']) !== '') {
+                        $json['serviceworker']['scope'] = $input['pwa_scope'];
+                    }
 
                     $json = (defined('JSON_PRETTY_PRINT')) ? json_encode($json, JSON_PRETTY_PRINT) : json_encode($json);
                     @file_put_contents($manifest, $json);
