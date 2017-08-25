@@ -167,7 +167,8 @@ class Abovethefold_PWA
                             'pattern' => array( 'operator' => '<',  'value' => 35840 )
                         )
                     )
-                )
+                ),
+                'offline' => '/path/to/offline.png'
             ),
             array(
                 'title' => 'Match assets',
