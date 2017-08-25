@@ -133,16 +133,16 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 == Changelog ==
 
 = 2.8.5 =
-* Improved: Moved Google PWA preload list to abtf-pwa-config.json.
+* Improved: moved Google PWA preload list to abtf-pwa-config.json.
 
 = 2.8.4 =
 * Added: Google PWA preload list for offline cache.
 * Added: Google PWA meta ([add to home screen](https://developer.chrome.com/multidevice/android/installtohomescreen), manifest.json and more).
 * Added: Web App meta for legacy browsers.
-* Improved: Added support for serving offline image for offline HTML pages.
+* Improved: added support for serving offline image for offline HTML pages.
 
 = 2.8.3 =
-* Improved: Javascript client configuration based on JSON index reference to reduce size.
+* Improved: javascript client configuration based on JSON index reference to reduce size.
 * Added: Google [Progressive Web App](https://developers.google.com/web/progressive-web-apps/) (PWA) optimization tools to obtain a [Google PWA validation](https://developers.google.com/web/tools/lighthouse/).
 * Added: Offline access management using a [service worker](https://developers.google.com/web/fundamentals/getting-started/primers/service-workers).
 
