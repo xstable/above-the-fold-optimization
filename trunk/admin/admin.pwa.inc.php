@@ -263,8 +263,7 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 			<label><input type="checkbox" name="abovethefold[pwa_meta]" value="1"<?php if (isset($options['pwa_meta']) && intval($options['pwa_meta']) === 1) {
     print ' checked';
 } ?> /> Enabled</label>
-			<p class="description">Add Google PWA essential meta in the header such as a link to manifest.json and <code>mobile-web-app-capable</code>.</p>
-
+			<p class="description">Add Google PWA essential meta in the header such as a link to manifest.json and <code>mobile-web-app-capable</code>. If you do not use this feature, make sure to add the correct link to your manifest.json.</p>
 		</td>
 	</tr>
 	<tr valign="top">
@@ -274,6 +273,7 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
     print ' checked';
 } ?> /> Enabled</label>
 			<p class="description">Add Web App meta in the page header for legacy browsers.</p>
+			<p class="info_yellow" style="margin-top:1em;"><strong>Tip:</strong> It is advised to add the meta manually in <code>header.php</code>. There are many <a href="https://encrypted.google.com/search?q=<?php print urlencode('web app icon generators'); ?>" target="_blank">Web App Icon/Meta Generators</a> that enable you to fine tune the settings for an optimal mobile representation.</p> 
 
 		</td>
 	</tr>
