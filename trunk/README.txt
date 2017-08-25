@@ -134,8 +134,8 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 = 2.8.4 =
 * Added: Google PWA preload list for offline cache.
 * Added: Google PWA meta ([add to home screen](https://developer.chrome.com/multidevice/android/installtohomescreen), manifest.json and more).
-* Added: Option to add Web App meta for legacy browsers.
-* Improved: Offline resource: added support for serving offline image for offline HTML pages.
+* Added: Web App meta for legacy browsers.
+* Improved: added support for serving offline image for offline HTML pages.
 
 = 2.8.3 =
 * Improved: javascript client configuration based on JSON index reference to reduce size.
