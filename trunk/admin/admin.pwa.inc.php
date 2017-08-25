@@ -184,7 +184,7 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 	<tr valign="top">
 		<th scope="row">CSS online/offline class</th>
 		<td>
-			<label><input type="checkbox" name="abovethefold[pwa_offline_class]" value="1"<?php if (isset($options['pwa_offline_class']) && intval($options['pwa_offline_class']) === 1) {
+			<label><input type="checkbox" name="abovethefold[pwa_offline_class]" value="1"<?php if (!isset($options['pwa_offline_class']) || intval($options['pwa_offline_class']) === 1) {
     print ' checked';
 } ?> /> Enabled</label>
 			<p class="description">Add the class <code>offline</code> to <code>&lt;body&gt;</code> based on <a href="https://developer.mozilla.org/en-US/docs/Online_and_offline_events" target="_blank">HTML5 online/offline events</a>. This feature enables to add a user friendly notice via CSS when the connection is offline.</p>
@@ -250,7 +250,7 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 ?>
 			<p>There are several online tools that can help with Web App Manifest creation. <a href="https://app-manifest.firebaseapp.com/" target="_blank">https://app-manifest.firebaseapp.com/</a> is a simple one. <a href="https://encrypted.google.com/search?q=<?php print urlencode('webapp manifest creator'); ?>" target="_blank">Search Google</a> for more creators.</p>
 
-			<p style="margin-top:1em;"><label><input type="checkbox" name="abovethefold[manifest_json_update]" value="1"<?php if (isset($options['manifest_json_update']) && intval($options['manifest_json_update']) === 1) {
+			<p style="margin-top:1em;"><label><input type="checkbox" name="abovethefold[manifest_json_update]" value="1"<?php if (!isset($options['manifest_json_update']) || intval($options['manifest_json_update']) === 1) {
     print ' checked';
 } ?> /> Update manifest.json</label></p>
 			<p class="description">Update manifest.json when saving settings.</p>
@@ -260,7 +260,7 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 	<tr valign="top">
 		<th scope="row">PWA Meta</th>
 		<td>
-			<label><input type="checkbox" name="abovethefold[pwa_meta]" value="1"<?php if (isset($options['pwa_meta']) && intval($options['pwa_meta']) === 1) {
+			<label><input type="checkbox" name="abovethefold[pwa_meta]" value="1"<?php if (!isset($options['pwa_meta']) || intval($options['pwa_meta']) === 1) {
     print ' checked';
 } ?> /> Enabled</label>
 			<p class="description">Add Google PWA essential meta in the header such as a link to manifest.json and <code>mobile-web-app-capable</code>. If you do not use this feature, make sure to add the correct link to your manifest.json.</p>

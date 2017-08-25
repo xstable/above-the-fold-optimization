@@ -334,6 +334,9 @@ class Abovethefold_Upgrade
                 $update_options = true;
                 
                 $options['pwa'] = false;
+                $options['manifest_json_update'] = true;
+                $options['pwa_offline_class'] = true;
+                $options['pwa_meta'] = true;
                 $options['html_minify'] = false;
                 $options['html_comments'] = false;
                 $options['html_comments_preserve'] = array();
@@ -349,6 +352,12 @@ class Abovethefold_Upgrade
              * Pre 2.8.5 update
              */
             if (version_compare($current_version, '2.8.5', '<')) {
+                $update_options = true;
+
+                if (!isset($options['pwa'])) {
+                    $options['manifest_json_update'] = true;
+                    $options['pwa_meta'] = true;
+                }
                 
                 // update new abtf-pwa-policy.json format
                 if (isset($options['pwa']) && $options['pwa']) {
