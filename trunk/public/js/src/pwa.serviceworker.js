@@ -161,12 +161,20 @@
 
                 fetch(headRequest)
                     .then(function(headResponse) {
-                        var lastModified = headResponse.headers.get('last-modified');
-                        if (!lastModified || (lastModified && lastModified > PWA_POLICY_TIMESTAMP)) {
-
-                            // config modified, update
-                            UPDATE_POLICY()
+                        var update = true;
+                        if (headResponse && headResponse.ok) {
+                            var lastModified = headResponse.headers.get('last-modified');
+                            if (lastModified && lastModified <= PWA_POLICY_TIMESTAMP) {
+                                update = false;
+                            }
                         }
+
+                        if (update) {
+                            // config modified, update
+                            UPDATE_POLICY();
+                        }
+                    }).catch(function(error) {
+                        UPDATE_POLICY();
                     });
             }
 
@@ -612,7 +620,7 @@
         offline = new Request(offline);
         return CACHE_GET(offline).then(function(response) {
             if (response) {
-                return response.text().then(function(body) {
+                return response.blob().then(function(body) {
                     return new Response(body, {
                         status: 503,
                         statusText: 'Offline',
@@ -713,8 +721,11 @@
                     headers['x-abtf-sw-expire'] = cachePolicy.max_age;
                 }
 
-                // store cache
-                var storeCache = function(body) {
+                // body contains text
+                /*if (response.headers.get('content-type').match(/text/i)) {
+                    response.text().then(storeCache);
+                } else {*/
+                response.blob().then(function(body) {
 
                     // create cache response with modified headers
                     var cacheResponse = new Response(body, {
@@ -724,14 +735,8 @@
                     });
 
                     cache.put(request, cacheResponse);
-                }
-
-                // body contains text
-                if (response.headers.get('content-type').match(/text/i)) {
-                    response.text().then(storeCache);
-                } else {
-                    response.blob().then(storeCache);
-                }
+                });
+                //}
 
             });
     }

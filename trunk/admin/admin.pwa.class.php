@@ -93,10 +93,12 @@ class Abovethefold_Admin_PWA
         $input = (isset($_POST['abovethefold']) && is_array($_POST['abovethefold'])) ? $_POST['abovethefold'] : array();
 
         /**
-         * Optimize Javascript delivery
+         * Google PWA optimization
          */
         $options['pwa'] = (isset($input['pwa']) && intval($input['pwa']) === 1) ? true : false;
         $options['pwa_scope'] = (isset($input['pwa_scope']) && trim($input['pwa_scope']) !== '') ? $input['pwa_scope'] : '';
+        $options['pwa_meta'] = (isset($input['pwa_meta']) && intval($input['pwa_meta']) === 1) ? true : false;
+        $options['pwa_legacy_meta'] = (isset($input['pwa_legacy_meta']) && intval($input['pwa_legacy_meta']) === 1) ? true : false;
 
         // General
         $options['pwa_offline_class'] = (isset($input['pwa_offline_class']) && intval($input['pwa_offline_class']) === 1) ? true : false;
@@ -109,11 +111,13 @@ class Abovethefold_Admin_PWA
         $options['pwa_cache_pages_head_update'] = (isset($input['pwa_cache_pages_head_update']) && intval($input['pwa_cache_pages_head_update']) === 1) ? true : false;
         $options['pwa_cache_pages_update_notify'] = (isset($input['pwa_cache_pages_update_notify']) && intval($input['pwa_cache_pages_update_notify']) === 1) ? true : false;
         $options['pwa_cache_pages_include'] = $this->CTRL->admin->newline_array($input['pwa_cache_pages_include']);
-        $options['pwa_cache_pages_preload'] = $this->CTRL->admin->newline_array((!isset($input['pwa_cache_pages_preload'])) ? $input['pwa_cache_pages_preload'] : '');
         $options['pwa_cache_pages_offline'] = (isset($input['pwa_cache_pages_offline']) && trim($input['pwa_cache_pages_offline']) !== '') ? $input['pwa_cache_pages_offline'] : '';
         $options['pwa_cache_version'] = (isset($input['pwa_cache_version']) && trim($input['pwa_cache_version']) !== '') ? trim($input['pwa_cache_version']) : '';
 
-        // Page cache
+        // Preload
+        $options['pwa_cache_preload'] = $this->CTRL->admin->newline_array((isset($input['pwa_cache_preload'])) ? $input['pwa_cache_preload'] : '');
+
+        // Asset cache
         $options['pwa_cache_assets'] = (isset($input['pwa_cache_assets']) && intval($input['pwa_cache_assets']) === 1) ? true : false;
         $options['pwa_cache_assets_policy'] = (isset($input['pwa_cache_assets_policy']) && trim($input['pwa_cache_assets_policy']) !== '') ? $input['pwa_cache_assets_policy'] : '';
         if ($options['pwa_cache_assets_policy']) {
@@ -129,36 +133,65 @@ class Abovethefold_Admin_PWA
             }
         }
 
-        // install service worker
-
-        if (isset($input['manifest_json']) && trim($input['manifest_json']) !== '') {
+        // install manifest json
+        $options['manifest_json_update'] = (isset($input['manifest_json_update']) && intval($input['manifest_json_update']) === 1) ? true : false;
+        if ($options['manifest_json_update'] && isset($input['manifest_json']) && trim($input['manifest_json']) !== '') {
             $manifest = trailingslashit(ABSPATH) . 'manifest.json';
             if (!file_exists($manifest) || !is_writeable($manifest)) {
                 $this->CTRL->admin->set_notice('The Web App Manifest <strong>manifest.json</strong> is not writeable.', 'ERROR');
             } else {
                 try {
-                    $json = json_decode(trim($input['manifest_json']), true);
+                    $manifestjson = json_decode(trim($input['manifest_json']), true);
                 } catch (Exception $err) {
                     $this->CTRL->admin->set_notice('The Web App Manifest contains invalid JSON.', 'ERROR');
-                    $json = false;
+                    $manifestjson = false;
                 }
-                if ($json && is_array($json)) {
+                if ($manifestjson && is_array($manifestjson)) {
                     $home = parse_url(home_url());
 
                     // get service worker path
                     $sw = $this->CTRL->pwa->get_sw();
 
                     // add service worker
-                    $json['serviceworker'] = array(
+                    $manifestjson['serviceworker'] = array(
                         'src' => trailingslashit((isset($home['path'])) ? $home['path'] : '/') . $sw['filename'],
                         'use_cache' => true
                     );
                     if (isset($input['pwa_scope']) && trim($input['pwa_scope']) !== '') {
-                        $json['serviceworker']['scope'] = $input['pwa_scope'];
+                        $manifestjson['serviceworker']['scope'] = $input['pwa_scope'];
                     }
 
-                    $json = (defined('JSON_PRETTY_PRINT')) ? json_encode($json, JSON_PRETTY_PRINT) : json_encode($json);
+                    $json = (defined('JSON_PRETTY_PRINT')) ? json_encode($manifestjson, JSON_PRETTY_PRINT) : json_encode($manifestjson);
                     @file_put_contents($manifest, $json);
+                }
+            }
+        }
+
+        if ($options['pwa_meta']) {
+            if (!isset($manifestjson) || !is_array($manifestjson)) {
+                if (isset($input['manifest_json']) && $input['manifest_json']) {
+                    try {
+                        $manifestjson = json_decode(trim($input['manifest_json']), true);
+                    } catch (Exception $err) {
+                        $manifestjson = false;
+                    }
+                } else {
+                    $manifestjson = false;
+                }
+            }
+
+            if ($manifestjson && is_array($manifestjson)) {
+                if (isset($manifestjson['theme_color'])) {
+                    $options['pwa_meta_theme_color'] = $manifestjson['theme_color'];
+                }
+                if (isset($manifestjson['icons'])) {
+                    $options['pwa_meta_icons'] = $manifestjson['icons'];
+                }
+                if (isset($manifestjson['start_url'])) {
+                    $options['pwa_meta_start_url'] = $manifestjson['start_url'];
+                }
+                if (isset($manifestjson['name']) || isset($manifestjson['short_name'])) {
+                    $options['pwa_meta_name'] = ($manifestjson['short_name']) ? $manifestjson['short_name'] : $manifestjson['name'];
                 }
             }
         }

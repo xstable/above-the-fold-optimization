@@ -74,6 +74,15 @@
             Abtf[CONFIG.PWA][CONFIG.PWA_VERSION],
             Abtf[CONFIG.PWA][CONFIG.PWA_MAX_SIZE]
         ]);
+
+        // preload assets
+        if (PWA_CONFIG[CONFIG.PWA_PRELOAD]) {
+            if (ABTFDEBUG) {
+                console.info('Abtf.pwa() ➤ preload', PWA_CONFIG[CONFIG.PWA_PRELOAD]);
+            }
+
+            navigator.serviceWorker.controller.postMessage([2, PWA_CONFIG[CONFIG.PWA_PRELOAD]]);
+        }
     }
 
     /**

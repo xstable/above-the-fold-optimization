@@ -19,7 +19,8 @@
             "policy",
             "offline_class",
             "version",
-            "max_size"
+            "max_size",
+            "preload"
         ]
     },
     "header", "footer", "load_css",

@@ -114,11 +114,6 @@ class Abovethefold_PWA
 
                 $page_cache_policy['cache']['notify'] = (isset($this->CTRL->options['pwa_cache_pages_update_notify']) && $this->CTRL->options['pwa_cache_pages_update_notify']) ? true : false;
             }
-/*
-            if (isset($this->CTRL->options['pwa_cache_pages_preload']) && $this->CTRL->options['pwa_cache_pages_preload']) {
-                $pwasettings['pages']['preload'] = $this->CTRL->options['pwa_cache_pages_preload'];
-            }
-            */
 
             $cache_policy[] = $page_cache_policy;
         }
@@ -198,6 +193,96 @@ class Abovethefold_PWA
             return;
         }
 
+        // essential PWA meta
+        if (isset($this->CTRL->options['pwa_meta']) && $this->CTRL->options['pwa_meta']) {
+            print '<meta name="mobile-web-app-capable" content="yes">';
+            print '<link rel="manifest" href="' . esc_attr(trailingslashit(parse_url(site_url(), PHP_URL_PATH)).'manifest.json') . '">';
+
+            // theme color
+            if (isset($this->CTRL->options['pwa_meta_theme_color']) && $this->CTRL->options['pwa_meta_theme_color']) {
+                print '<meta name="theme-color" content="'.esc_attr($this->CTRL->options['pwa_meta_theme_color']).'">';
+            }
+        }
+
+        // legacy Web App meta
+        if (isset($this->CTRL->options['pwa_legacy_meta']) && $this->CTRL->options['pwa_legacy_meta']) {
+
+            // apple meta
+            $apple = array();
+
+            // microsoft meta
+            $microsoft = array();
+
+            // legacy browsers
+            $legacy = array();
+
+            // apple
+            $apple[] = '<meta name="apple-mobile-web-app-capable" content="yes">';
+
+            //$apple[] = '<meta name="apple-mobile-web-app-status-bar-style" content="black">';
+
+            // start url
+            if (isset($this->CTRL->options['pwa_meta_starturl']) && $this->CTRL->options['pwa_meta_starturl']) {
+                $microsoft[] = '<meta name="msapplication-starturl" content="'.esc_attr($this->CTRL->options['pwa_meta_starturl']).'">';
+            }
+
+            // application name
+            if (isset($this->CTRL->options['pwa_meta_name']) && $this->CTRL->options['pwa_meta_name']) {
+                $legacy[] ='<meta name="application-name" content="'.esc_attr($this->CTRL->options['pwa_meta_name']).'">';
+                $apple[] = '<meta name="apple-mobile-web-app-title" content="'.esc_attr($this->CTRL->options['pwa_meta_name']).'">';
+                $microsoft[] = '<meta name="msapplication-tooltip" content="'.esc_attr($this->CTRL->options['pwa_meta_name']).'">';
+            }
+
+            // theme color
+            if (isset($this->CTRL->options['pwa_meta_theme_color']) && $this->CTRL->options['pwa_meta_theme_color']) {
+                $microsoft[] = '<meta name="msapplication-TileColor" content="'.esc_attr($this->CTRL->options['pwa_meta_theme_color']).'">';
+            }
+
+            // icons
+            if (isset($this->CTRL->options['pwa_meta_icons']) && is_array($this->CTRL->options['pwa_meta_icons'])) {
+                $sizes = array();
+
+                $ms_tile = false;
+                $max_size = 0;
+                $max_size_icon = false;
+
+                foreach ($this->CTRL->options['pwa_meta_icons'] as $icon) {
+                    if (is_array($icon) && isset($icon['sizes'])) {
+                        $size = explode('x', $icon['sizes']);
+                        if (count($size) === 2 && is_numeric($size[0]) && intval($size[0]) > $max_size) {
+                            $max_size = intval($size[0]);
+                            $max_size_icon = $icon;
+                        }
+
+                        $apple[] = '<link rel="apple-touch-icon" sizes="'.esc_attr($icon['sizes']).'" href="'.esc_attr($icon['src']).'">';
+
+                        $legacy[] = '<link rel="icon" type="image/png" sizes="'.esc_attr($icon['sizes']).'" href="'.esc_attr($icon['src']).'">';
+
+                        switch ($icon['sizes']) {
+                            case "144x144":
+
+                                // microsoft
+                                if (!$ms_tile) {
+                                    $microsoft[] = '<meta name="msapplication-TileImage" content="'.esc_attr($icon['src']).'">';
+                                    $ms_tile = true;
+                                }
+                            break;
+                        }
+                    } else {
+                        $apple[] = '';
+                    }
+                }
+
+                if ($max_size_icon) {
+                    $apple[] = '<link rel="apple-touch-startup-image" href="'.esc_attr($max_size_icon['src']).'">';
+                }
+
+                print implode('', $apple);
+                print implode('', $legacy);
+                print implode('', $microsoft);
+            }
+        }
+
         // verify if service worker exists
         $sw = $this->get_sw();
 
@@ -248,7 +333,10 @@ class Abovethefold_PWA
             $pwasettings['max_size'] = $this->CTRL->options['pwa_cache_max_size'];
         }
 
-
+        if (isset($this->CTRL->options['pwa_cache_preload']) && $this->CTRL->options['pwa_cache_preload']) {
+            $pwasettings['preload'] = $this->CTRL->options['pwa_cache_preload'];
+        }
+        
         $jssettings[$pwaindex] = array();
         foreach ($pwasettings as $key => $value) {
             if (!isset($this->CTRL->optimization->client_config_ref['pwa-sub'][$key])) {

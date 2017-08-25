@@ -132,16 +132,6 @@
 			<p class="description">Enter (parts of) page URL's to cache, e.g. <code>category/</code> to match all pages in a category.</p>
 		</td>
 	</tr>
-	<!--tr valign="top">
-		<th scope="row">&nbsp;</th>
-		<td style="padding-top:0px;">
-			<h5 class="h">&nbsp;HTML Cache Preload List</h5>
-			<textarea class="json-array-lines" name="abovethefold[pwa_cache_pages_preload]"><?php if (isset($options['pwa_cache_pages_preload'])) {
-    echo $this->CTRL->admin->newline_array_string($options['pwa_cache_pages_preload']);
-} ?></textarea>
-			<p class="description">Enter absolute path's to preload, e.g. <code>/path/to/page.html</code>. Pages are preloaded on the first page load making them available offline.</p>
-		</td>
-	</tr-->
 	<tr valign="top">
 		<th scope="row">&nbsp;</th>
 		<td style="padding-top:0px;">
@@ -220,10 +210,20 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 		</td>
 	</tr>
 	<tr valign="top">
+		<th scope="row">Cache Preload</th>
+		<td>
+			<textarea class="json-array-lines" name="abovethefold[pwa_cache_preload]"><?php if (isset($options['pwa_cache_preload'])) {
+    echo $this->CTRL->admin->newline_array_string($options['pwa_cache_preload']);
+} ?></textarea>
+			<p class="description">Enter URLs or absolute path's to preload for offline availability, e.g. <code>/path/to/page.html</code> or <code>/path/to/image.jpg</code>.</p>
+		</td>
+	</tr>
+	<tr valign="top">
 		<th scope="row">Web App Manifest<a name="manifest">&nbsp;</a></th>
 		<td>
 
 			<p style="margin-bottom:1em;">The <a href="https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/" target="_blank">Web App Manifest</a> is a JSON document that enables to control how a website app appears to the user in areas where they would expect to see apps. It is required to validate as Google PWA. (<a href="https://w3c.github.io/manifest/" target="_blank">W3C documentation</a>)</p>
+
 <?php
     $manifestjson = array();
     $manifest = trailingslashit(ABSPATH) . 'manifest.json';
@@ -250,18 +250,33 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 ?>
 			<p>There are several online tools that can help with Web App Manifest creation. <a href="https://app-manifest.firebaseapp.com/" target="_blank">https://app-manifest.firebaseapp.com/</a> is a simple one. <a href="https://encrypted.google.com/search?q=<?php print urlencode('webapp manifest creator'); ?>" target="_blank">Search Google</a> for more creators.</p>
 
+			<p style="margin-top:1em;"><label><input type="checkbox" name="abovethefold[manifest_json_update]" value="1"<?php if (isset($options['manifest_json_update']) && intval($options['manifest_json_update']) === 1) {
+    print ' checked';
+} ?> /> Update manifest.json</label></p>
+			<p class="description">Update manifest.json when saving settings.</p>
+
 		</td>
 	</tr>
-	<!--tr valign="top">
-		<th scope="row">Web App Meta</th>
+	<tr valign="top">
+		<th scope="row">PWA Meta</th>
 		<td>
 			<label><input type="checkbox" name="abovethefold[pwa_meta]" value="1"<?php if (isset($options['pwa_meta']) && intval($options['pwa_meta']) === 1) {
+    print ' checked';
+} ?> /> Enabled</label>
+			<p class="description">Add Google PWA essential meta in the header such as a link to manifest.json and <code>mobile-web-app-capable</code>.</p>
+
+		</td>
+	</tr>
+	<tr valign="top">
+		<th scope="row">Web App Legacy Meta</th>
+		<td>
+			<label><input type="checkbox" name="abovethefold[pwa_legacy_meta]" value="1"<?php if (isset($options['pwa_legacy_meta']) && intval($options['pwa_legacy_meta']) === 1) {
     print ' checked';
 } ?> /> Enabled</label>
 			<p class="description">Add Web App meta in the page header for legacy browsers.</p>
 
 		</td>
-	</tr-->
+	</tr>
 	<tr valign="top">
 		<td colspan="2" style="padding:0px;">
 <?php
