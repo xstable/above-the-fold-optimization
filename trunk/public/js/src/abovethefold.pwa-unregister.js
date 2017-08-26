@@ -24,7 +24,7 @@
             try {
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
                     for (var registration in registrations) {
-                        if (registrations.hasOwnProperty(registration)) {
+                        if (registrations.hasOwnProperty(registration) && typeof registration.unregister === 'function') {
 
                             if (ABTFDEBUG) {
                                 console.warn('Abtf.pwa() ➤ unregister Service Worker', registration);

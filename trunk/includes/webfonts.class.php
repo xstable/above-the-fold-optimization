@@ -569,7 +569,7 @@ REGEX;
                 // empty, do not load webfont.js
                 $this->CTRL->options['gwfo'] = false;
             } else {
-                $gfwindex = $this->CTRL->optimization->client_config_ref['gfw'];
+                $gfwindex = $this->CTRL->optimization->client_config_ref['gwf'];
 
                 /**
                  * Load webfont.js inline

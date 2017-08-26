@@ -132,7 +132,10 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
-= 2.8.8 =
+= 2.8.10 =
+* Bugfix: Google Web Font optimization broken when using custom `WebFontConfig` since v2.8.2 (@eek2425).
+
+= 2.8.9 =
 * Improved: Added support for websites without jQuery.
 
 = 2.8.8 =

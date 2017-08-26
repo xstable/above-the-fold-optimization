@@ -2,6 +2,7 @@
 window.Abtf;
 window.Abtf.offline
 CustomEvent;
+window.document;
 
 // config
 window.loadCSS;
