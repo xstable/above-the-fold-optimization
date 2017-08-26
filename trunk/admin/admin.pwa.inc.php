@@ -111,9 +111,9 @@
 } ?> /> Enabled</label>
 				<p class="description">Send a notification to the client when the cache is updated. The API is <code>jQuery('body').on('sw-update',fn);</code> (<a href="javascript:void(0);" onclick="jQuery('#update_notify_example').fadeToggle();">show example</a>).</p>
 				
-				<pre style="display:none;padding:10px;border:solid 1px #efefef;" id="update_notify_example">jQuery('body').on('sw-update',function(e,url){
-	if (url === '/my/ajax-feed.json') {
-		/* the Service Worker detected new content, update view
+				<pre style="display:none;padding:10px;border:solid 1px #efefef;" id="update_notify_example">jQuery('body').on('sw-update',function(e){
+	if (e.detail.url === '/my/ajax-feed.json') {
+		/* the Service Worker detected new content, update view */
 		updateFeedView();
 	}
 });</pre>

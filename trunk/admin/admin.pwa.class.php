@@ -162,7 +162,14 @@ class Abovethefold_Admin_PWA
                     }
 
                     $json = (defined('JSON_PRETTY_PRINT')) ? json_encode($manifestjson, JSON_PRETTY_PRINT) : json_encode($manifestjson);
-                    @file_put_contents($manifest, $json);
+                    try {
+                        @file_put_contents($manifest, $json);
+                    } catch (Exception $error) {
+                    }
+
+                    if (!file_exists($manifest) || file_get_contents($manifest) !== $json) {
+                        $this->CTRL->admin->set_notice('Failed to write to Web App Manifest <strong>manifest.json</strong>. Please check the permissions.', 'ERROR');
+                    }
                 }
             }
         }

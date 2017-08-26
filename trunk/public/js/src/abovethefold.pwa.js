@@ -20,6 +20,8 @@
         return;
     }
 
+    var document = window.document;
+
     // Google PWA config
     var PWA_CONFIG = Abtf[CONFIG.PWA];
 
@@ -34,7 +36,7 @@
         var ONLINE;
         var UPDATE_ONLINE_STATUS = function() {
             Abtf[CONFIG.RAF](function() {
-                if (ONLINE === navigator.onLine) {
+                if (ONLINE === navigator.onLine || !document.body) {
                     return;
                 }
 
@@ -47,15 +49,14 @@
                     if (ABTFDEBUG) {
                         console.info('Abtf.offline() ➤ connection restored');
                     }
-
-                    window.jQuery('body').removeClass('offline');
+                    document.body.classList.remove('offline');
                 } else {
 
                     if (ABTFDEBUG) {
                         console.warn('Abtf.offline() ➤ connection offline');
                     }
 
-                    window.jQuery('body').addClass('offline');
+                    document.body.classList.add('offline');
                 }
                 ONLINE = (navigator.onLine) ? true : false;
             });
@@ -130,7 +131,16 @@
 
             // asset updated
             if (event.data[0] === 2) {
-                window.jQuery('body').trigger('sw-update', event.data[1]);
+                if (!document.body) {
+                    return;
+                }
+
+                var event = new CustomEvent('sw-update', {
+                    detail: {
+                        url: event.data[1]
+                    }
+                });
+                document.body.dispatchEvent(event);
             }
         }
 

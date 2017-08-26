@@ -133,6 +133,9 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 == Changelog ==
 
 = 2.8.8 =
+* Improved: Added support for websites without jQuery.
+
+= 2.8.8 =
 * Improved: Web App Meta HTML input field to fine tune the meta configuration.
 
 = 2.8.7 =

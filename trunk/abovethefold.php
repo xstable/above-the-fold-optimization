@@ -19,7 +19,7 @@
  * Domain Path:       /languages
  */
 
-define('WPABTF_VERSION', '2.8.8');
+define('WPABTF_VERSION', '2.8.9');
 define('WPABTF_URI', plugin_dir_url(__FILE__));
 define('WPABTF_PATH', plugin_dir_path(__FILE__));
 define('WPABTF_SELF', __FILE__);
