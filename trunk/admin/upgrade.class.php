@@ -510,7 +510,7 @@ class Abovethefold_Upgrade
                 } catch (Exception $error) {
                 }
 
-                // update abtf-pwa-policy.json to latest format
+                // update abtf-pwa-config.json to latest format
                 try {
                     $this->CTRL->pwa->update_sw_config();
                 } catch (Exception $error) {
