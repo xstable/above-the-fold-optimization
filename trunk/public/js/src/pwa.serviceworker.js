@@ -310,7 +310,7 @@
             return;
         }
 
-        // start cache clean
+        // start cache cleanup
         if (!CLEAN_CACHE_LAST_TIMESTAMP || CLEAN_CACHE_LAST_TIMESTAMP < (TIMESTAMP() - 10)) {
             CLEAN_CACHE_RUNNING = true;
             CLEAN_CACHE_LAST_TIMESTAMP = TIMESTAMP();
@@ -344,7 +344,7 @@
 
                                                 // prune cache when over max size
                                                 if (keys.length < PWA_CACHE_MAX_SIZE) {
-                                                    return this;
+                                                    return;
                                                 }
 
                                                 var sorted = [];
@@ -352,62 +352,65 @@
                                                 var cacheRequests = [];
                                                 var cacheResponses = [];
 
-                                                // clear expired assets
+                                                // read responses from cache for header verification
                                                 keys.forEach(function(request) {
                                                     cacheRequests.push(request);
                                                     cacheResponses.push(cache.match(request));
                                                 });
 
                                                 // process response data
-                                                return Promise.all(cacheResponses).then(function(responses) {
+                                                return Promise.all(cacheResponses)
+                                                    .then(function(responses) {
 
-                                                    var now = TIMESTAMP();
+                                                        var now = TIMESTAMP();
 
-                                                    responses.forEach(function(response, key) {
+                                                        responses.forEach(function(response, key) {
 
-                                                        if (response && response.headers) {
-                                                            var timestamp = response.headers.get('x-abtf-sw');
+                                                            if (response && response.headers) {
+                                                                var timestamp = response.headers.get('x-abtf-sw');
 
-                                                            if (timestamp) {
-                                                                var max_age = response.headers.get('x-abtf-sw-expire');
-                                                                if (max_age) {
-                                                                    if (timestamp && timestamp < (TIMESTAMP() - max_age)) {
-                                                                        if (ABTFDEBUG) {
-                                                                            console.info('Abtf.sw() ➤ cache ➤ expired', response.url);
+                                                                if (timestamp) {
+                                                                    var max_age = response.headers.get('x-abtf-sw-expire');
+                                                                    if (max_age) {
+                                                                        if (timestamp && timestamp < (TIMESTAMP() - max_age)) {
+                                                                            if (ABTFDEBUG) {
+                                                                                console.info('Abtf.sw() ➤ cache ➤ expired', response.url);
+                                                                            }
+                                                                            cache.delete(cacheRequests[key]);
+                                                                            return;
                                                                         }
-                                                                        cache.delete(cacheRequests[key]);
-                                                                        return;
                                                                     }
+                                                                } else {
+                                                                    timestamp = now;
                                                                 }
-                                                            } else {
-                                                                timestamp = now;
+                                                                if (sorted !== false) {
+                                                                    sorted.push({
+                                                                        t: timestamp,
+                                                                        r: cacheRequests[key]
+                                                                    });
+                                                                }
                                                             }
-                                                            if (sorted !== false) {
-                                                                sorted.push({
-                                                                    t: timestamp,
-                                                                    r: cacheRequests[key]
-                                                                });
-                                                            }
+                                                        });
+
+                                                        if (sorted && sorted.length > PWA_CACHE_MAX_SIZE) {
+
+                                                            // sort based on timestamp
+                                                            sorted.sort(function(a, b) {
+                                                                if (a.t > b.t) {
+                                                                    return -1
+                                                                } else if (a.t < b.t) {
+                                                                    return 1
+                                                                }
+                                                                return 0;
+                                                            });
+                                                            var prune = sorted.slice(PWA_CACHE_MAX_SIZE);
+                                                            prune.forEach(function(obj) {
+                                                                cache.delete(obj.r);
+                                                            });
                                                         }
+
+                                                        return;
                                                     });
-
-                                                    if (sorted && sorted.length > PWA_CACHE_MAX_SIZE) {
-                                                        sorted.sort(function(a, b) {
-                                                            if (a.t > b.t) {
-                                                                return -1
-                                                            } else if (a.t < b.t) {
-                                                                return 1
-                                                            }
-                                                            return 0;
-                                                        });
-                                                        var prune = sorted.slice(PWA_CACHE_MAX_SIZE);
-                                                        prune.forEach(function(obj) {
-                                                            cache.delete(obj.r);
-                                                        });
-                                                    }
-
-                                                    return this;
-                                                });
                                             });
                                     });
                             }
@@ -784,7 +787,7 @@
                 return;
             }
             var regex = new RegExp('^([^/]+)?//' + self.location.host + '(:[0-9]+)?/' + path);
-            if (regex.test(event.request.url) || regex.test(event.request.referrer)) {
+            if (regex.test(event.request.url) || (event.request.referrer && regex.test(event.request.referrer))) {
                 wp_ignore = true;
             }
         });
@@ -796,7 +799,6 @@
             // preview pages
             event.request.url.match(/\&preview=true/) ||
             event.request.url.match(/\&preview_nonce=/)
-
         ) {
             return;
         }

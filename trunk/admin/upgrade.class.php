@@ -362,18 +362,6 @@ class Abovethefold_Upgrade
                 // update new abtf-pwa-policy.json format
                 if (isset($options['pwa']) && $options['pwa']) {
 
-                    // update service worker
-                    try {
-                        $this->CTRL->pwa->update_sw();
-                    } catch (Exception $error) {
-                    }
-
-                    // update abtf-pwa-policy.json to latest format
-                    try {
-                        $this->CTRL->pwa->update_sw_config();
-                    } catch (Exception $error) {
-                    }
-
                     // delete old config
                     $old_sw_config = trailingslashit(ABSPATH) . 'abtf-pwa-policy.json';
                     if (file_exists($old_sw_config)) {
@@ -513,6 +501,21 @@ class Abovethefold_Upgrade
                 }
             }
 
+            // update new abtf-pwa-policy.json format
+            if (isset($options['pwa']) && $options['pwa']) {
+
+                // update service worker
+                try {
+                    $this->CTRL->pwa->update_sw();
+                } catch (Exception $error) {
+                }
+
+                // update abtf-pwa-policy.json to latest format
+                try {
+                    $this->CTRL->pwa->update_sw_config();
+                } catch (Exception $error) {
+                }
+            }
 
             // remove old options
             $old_options = array(

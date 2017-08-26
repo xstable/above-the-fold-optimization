@@ -44,7 +44,6 @@ module.exports = function(grunt) {
         'public/js/abovethefold-js.min.js': 'public/js/min/abovethefold-js.js',
         'public/js/abovethefold-pwa.min.js': 'public/js/min/abovethefold-pwa.js',
         'public/js/pwa-serviceworker.js': 'public/js/min/pwa.serviceworker.js'
-
     };
 
     var srcfile;
