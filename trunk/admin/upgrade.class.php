@@ -421,6 +421,99 @@ class Abovethefold_Upgrade
                 }
             }
 
+
+            /**
+             * Pre 2.8.8 update
+             */
+            if (version_compare($current_version, '2.8.8', '<')) {
+                $update_options = true;
+
+                if (isset($options['pwa']) && $options['pwa']) {
+                    $options['pwa_manifest_meta'] = true;
+                }
+                
+                // convert meta checkbox to HTML input field
+                if (isset($options['pwa_meta']) && $options['pwa_meta'] === true) {
+                    $meta = array();
+                    $meta[] = '<meta name="mobile-web-app-capable" content="yes">';
+
+                    if (isset($options['pwa_meta_name']) && $options['pwa_meta_name']) {
+                        $meta[] = '<meta name="application-name" content="'.esc_attr($options['pwa_meta_name']).'">';
+                    }
+
+                    // theme color
+                    if (isset($options['pwa_meta_theme_color']) && $options['pwa_meta_theme_color']) {
+                        $meta[] = '<meta name="theme-color" content="'.esc_attr($options['pwa_meta_theme_color']).'">';
+                    }
+
+                    
+                    // legacy Web App meta
+                    if (isset($options['pwa_legacy_meta']) && $options['pwa_legacy_meta']) {
+                        $meta[] = '<meta name="apple-mobile-web-app-capable" content="yes">';
+                        $meta[] = '<meta name="apple-mobile-web-app-status-bar-style" content="black">';
+
+                        // start url
+                        if (isset($options['pwa_meta_starturl']) && $options['pwa_meta_starturl']) {
+                            $meta[] = '<meta name="msapplication-starturl" content="'.esc_attr($options['pwa_meta_starturl']).'">';
+                        }
+
+                        // application name
+                        if (isset($options['pwa_meta_name']) && $options['pwa_meta_name']) {
+                            $meta[] = '<meta name="application-name" content="'.esc_attr($options['pwa_meta_name']).'">';
+                            $meta[] = '<meta name="apple-mobile-web-app-title" content="'.esc_attr($options['pwa_meta_name']).'">';
+                            $meta[] = '<meta name="msapplication-tooltip" content="'.esc_attr($options['pwa_meta_name']).'">';
+                        }
+
+                        // theme color
+                        if (isset($options['pwa_meta_theme_color']) && $options['pwa_meta_theme_color']) {
+                            $meta[] = '<meta name="msapplication-TileColor" content="'.esc_attr($options['pwa_meta_theme_color']).'">';
+                        }
+
+                        // icons
+                        if (isset($options['pwa_meta_icons']) && is_array($options['pwa_meta_icons'])) {
+                            $sizes = array();
+
+                            $ms_tile = false;
+                            $max_size = 0;
+                            $max_size_icon = false;
+
+                            foreach ($options['pwa_meta_icons'] as $icon) {
+                                if (is_array($icon) && isset($icon['sizes'])) {
+                                    $size = explode('x', $icon['sizes']);
+                                    if (count($size) === 2 && is_numeric($size[0]) && intval($size[0]) > $max_size) {
+                                        $max_size = intval($size[0]);
+                                        $max_size_icon = $icon;
+                                    }
+
+                                    $meta[] = '<link rel="apple-touch-icon" sizes="'.esc_attr($icon['sizes']).'" href="'.esc_attr($icon['src']).'">';
+
+                                    $meta[] =  '<link rel="icon" type="image/png" sizes="'.esc_attr($icon['sizes']).'" href="'.esc_attr($icon['src']).'">';
+
+                                    switch ($icon['sizes']) {
+                                        case "144x144":
+
+                                            // microsoft
+                                            if (!$ms_tile) {
+                                                $meta[] = '<meta name="msapplication-TileImage" content="'.esc_attr($icon['src']).'">';
+                                                $ms_tile = true;
+                                            }
+                                        break;
+                                    }
+                                } else {
+                                    $meta[] = '';
+                                }
+                            }
+
+                            if ($max_size_icon) {
+                                $meta[] = '<link rel="apple-touch-startup-image" href="'.esc_attr($max_size_icon['src']).'">';
+                            }
+                        }
+                    }
+                    $options['pwa_meta'] = implode("\n", $meta);
+                }
+            }
+
+
             // remove old options
             $old_options = array(
                 'dimensions',
@@ -431,7 +524,14 @@ class Abovethefold_Upgrade
                 'genurls',
                 'localizejs_enabled',
                 'conditionalcss_enabled',
-                'conditional_css'
+                'conditional_css',
+
+                'pwa_meta_theme_color',
+                'pwa_legacy_meta',
+                'pwa_meta_starturl',
+                'pwa_meta_name',
+                'pwa_meta_theme_color',
+                'pwa_meta_icons'
             );
             foreach ($old_options as $opt) {
                 if (isset($options[$opt])) {

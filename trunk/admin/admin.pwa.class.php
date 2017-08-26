@@ -97,8 +97,7 @@ class Abovethefold_Admin_PWA
          */
         $options['pwa'] = (isset($input['pwa']) && intval($input['pwa']) === 1) ? true : false;
         $options['pwa_scope'] = (isset($input['pwa_scope']) && trim($input['pwa_scope']) !== '') ? $input['pwa_scope'] : '';
-        $options['pwa_meta'] = (isset($input['pwa_meta']) && intval($input['pwa_meta']) === 1) ? true : false;
-        $options['pwa_legacy_meta'] = (isset($input['pwa_legacy_meta']) && intval($input['pwa_legacy_meta']) === 1) ? true : false;
+        $options['pwa_meta'] = (isset($input['pwa_meta']) && trim($input['pwa_meta']) !== '') ? trim($input['pwa_meta']) : '';
 
         // General
         $options['pwa_offline_class'] = (isset($input['pwa_offline_class']) && intval($input['pwa_offline_class']) === 1) ? true : false;
@@ -134,6 +133,7 @@ class Abovethefold_Admin_PWA
         }
 
         // install manifest json
+        $options['pwa_manifest_meta'] = (isset($input['pwa_manifest_meta']) && intval($input['pwa_manifest_meta']) === 1) ? true : false;
         $options['manifest_json_update'] = (isset($input['manifest_json_update']) && intval($input['manifest_json_update']) === 1) ? true : false;
         if ($options['manifest_json_update'] && isset($input['manifest_json']) && trim($input['manifest_json']) !== '') {
             $manifest = trailingslashit(ABSPATH) . 'manifest.json';
@@ -163,35 +163,6 @@ class Abovethefold_Admin_PWA
 
                     $json = (defined('JSON_PRETTY_PRINT')) ? json_encode($manifestjson, JSON_PRETTY_PRINT) : json_encode($manifestjson);
                     @file_put_contents($manifest, $json);
-                }
-            }
-        }
-
-        if ($options['pwa_meta']) {
-            if (!isset($manifestjson) || !is_array($manifestjson)) {
-                if (isset($input['manifest_json']) && $input['manifest_json']) {
-                    try {
-                        $manifestjson = json_decode(trim($input['manifest_json']), true);
-                    } catch (Exception $err) {
-                        $manifestjson = false;
-                    }
-                } else {
-                    $manifestjson = false;
-                }
-            }
-
-            if ($manifestjson && is_array($manifestjson)) {
-                if (isset($manifestjson['theme_color'])) {
-                    $options['pwa_meta_theme_color'] = $manifestjson['theme_color'];
-                }
-                if (isset($manifestjson['icons'])) {
-                    $options['pwa_meta_icons'] = $manifestjson['icons'];
-                }
-                if (isset($manifestjson['start_url'])) {
-                    $options['pwa_meta_start_url'] = $manifestjson['start_url'];
-                }
-                if (isset($manifestjson['name']) || isset($manifestjson['short_name'])) {
-                    $options['pwa_meta_name'] = ($manifestjson['short_name']) ? $manifestjson['short_name'] : $manifestjson['name'];
                 }
             }
         }
@@ -236,8 +207,8 @@ class Abovethefold_Admin_PWA
         }
 
         // add global admin CSS
-        wp_enqueue_style('abtf_admincp_jsoneditor', plugin_dir_url(__FILE__) . 'js/jsoneditor/jsoneditor.min.css', false, WPABTF_VERSION);
-        wp_enqueue_style('abtf_admincp_html', plugin_dir_url(__FILE__) . 'css/admincp-jsoneditor.min.css', false, WPABTF_VERSION);
+        wp_enqueue_style('abtf_admincp_jsoneditor_editor', plugin_dir_url(__FILE__) . 'js/jsoneditor/jsoneditor.min.css', false, WPABTF_VERSION);
+        wp_enqueue_style('abtf_admincp_jsoneditor', plugin_dir_url(__FILE__) . 'css/admincp-jsoneditor.min.css', false, WPABTF_VERSION);
 
         // add general admin javascript
         wp_enqueue_script('abtf_admincp_jsoneditor', plugin_dir_url(__FILE__) . 'js/jsoneditor/jsoneditor.min.js', array( 'jquery' ), WPABTF_VERSION);

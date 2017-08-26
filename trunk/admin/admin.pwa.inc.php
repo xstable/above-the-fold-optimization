@@ -51,6 +51,8 @@
     echo esc_attr($options['pwa_scope']);
 } ?>" placeholder="Leave blank for global scope" title="Global scope: <?php echo esc_attr($scope); ?>">
 			<p class="description">Enter an optional <a href="https://developers.google.com/web/fundamentals/getting-started/primers/service-workers#register_a_service_worker" target="_blank">scope</a> for the service worker, e.g. <code>/blog/</code>. The scope restricts the PWA functionality to a path.</p>
+			
+			<p class="info_yellow" style="margin-top:1em;font-size:14px;" id="edit"><strong>Tip:</strong> For debugging the Service Worker see: <strong>chrome://serviceworker-internals</strong> (copy in the address bar)</p>
 		</td>
 	</tr>
 	<tr valign="top">
@@ -254,25 +256,24 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 } ?> /> Update manifest.json</label></p>
 			<p class="description">Update manifest.json when saving settings.</p>
 
+			<p style="margin-top:1em;"><label><input type="checkbox" name="abovethefold[pwa_manifest_meta]" value="1"<?php if (!isset($options['pwa_manifest_meta']) || intval($options['pwa_manifest_meta']) === 1) {
+    print ' checked';
+} ?> /> Link to manifest.json</label></p>
+			<p class="description">Add a link to manifest.json in the <code>&lt;head&gt;</code> of the page.</p>
+
 		</td>
 	</tr>
 	<tr valign="top">
-		<th scope="row">PWA Meta</th>
+		<th scope="row">Web App Meta</th>
 		<td>
-			<label><input type="checkbox" name="abovethefold[pwa_meta]" value="1"<?php if (!isset($options['pwa_meta']) || intval($options['pwa_meta']) === 1) {
-    print ' checked';
-} ?> /> Enabled</label>
-			<p class="description">Add Google PWA essential meta in the header such as a link to manifest.json and <code>mobile-web-app-capable</code>. If you do not use this feature, make sure to add the correct link to your manifest.json.</p>
-		</td>
-	</tr>
-	<tr valign="top">
-		<th scope="row">Web App Legacy Meta</th>
-		<td>
-			<label><input type="checkbox" name="abovethefold[pwa_legacy_meta]" value="1"<?php if (isset($options['pwa_legacy_meta']) && intval($options['pwa_legacy_meta']) === 1) {
-    print ' checked';
-} ?> /> Enabled</label>
-			<p class="description">Add Web App meta in the page header for legacy browsers.</p>
-			<p class="info_yellow" style="margin-top:1em;"><strong>Tip:</strong> It is advised to add the meta manually in <code>header.php</code>. There are many <a href="https://encrypted.google.com/search?q=<?php print urlencode('web app icon generators'); ?>" target="_blank">Web App Icon/Meta Generators</a> that enable you to fine tune the settings for an optimal mobile representation.</p> 
+			<textarea class="json-array-lines" name="abovethefold[pwa_meta]" style="<?php if (isset($options['pwa_meta']) && $options['pwa_meta']) {
+    print 'height:200px;';
+} ?>"><?php if (isset($options['pwa_meta'])) {
+    echo esc_html($options['pwa_meta']);
+} ?></textarea>
+			<p class="description">Enter Google PWA essential and Web App related meta tags to include in the <code>&lt;head&gt;</code> of the page. (<a href="https://developers.google.com/web/ilt/pwa/lab-auditing-with-lighthouse#43_add_tags_for_other_browsers" target="_blank">documentation</a>). There are many <a href="https://encrypted.google.com/search?q=<?php print urlencode('web app icon generators'); ?>" target="_blank">Web App Meta Generators</a> that enable you to fine tune the settings for an optimal mobile representation.</p>
+
+			<p class="info_yellow" style="margin-top:1em;"><strong>Tip:</strong> Use the Google Chrome <strong>Application &gt; Manifest</strong> tab to debug the settings and simulate <em>Add to homescreen</em>.</p> 
 
 		</td>
 	</tr>
@@ -284,10 +285,6 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 		</td>
 	</tr>
 </table>
-
-	<br /><br />
-						<p class="info_yellow" style="margin-bottom:.5em;font-size:14px;" id="edit"><strong>Note:</strong> When installing/updating a Service Worker (as a developer who makes changes / switches to debug mode etc.) there sometimes is an issue in Chrome that can only be resolved by restarting the browser. If you are experiencing inexpected behaviour, try to clear the cache and restart the browser. An incognito screen may be sufficient.<br /><br />
-						For debugging see: <strong>chrome://serviceworker-internals</strong> (copy in the address bar)</p>
 
 
 						</div>
