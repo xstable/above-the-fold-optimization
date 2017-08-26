@@ -30,9 +30,6 @@
 						<p>This tool enables to score 100 / 100 / 100 / 100 in the lighthouse test and validate a website as Progressive Web App for improved mobile user experiences and findability.</p>
 						<p>At the core of the features of a Progressive Web App is a <a href="https://developers.google.com/web/fundamentals/getting-started/primers/service-workers" target="_blank">HTML5 Service Worker</a>. It's not supported by Internet Explorer and Opera (<a href="https://jakearchibald.github.io/isserviceworkerready/" target="_blank">browser compatibility</a>). Our <a href="https://www.fastestwebsite.co/" target="_blank">Instant App technology</a> could provide many of the features for old browsers. It is now being developed by a separate company (Instant App Ltd.).</p>
 
-
-						<p class="warning_red" style="margin-bottom:.5em;font-size:14px;" id="edit"><strong>Warning:</strong> This is a beta feature.</p>
-
 <table class="form-table">
 	<tr valign="top">
 		<th scope="row">Enable PWA</th>
