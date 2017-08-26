@@ -132,6 +132,10 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.8.11 =
+* Added: support for HTTP referer header matching (request.referrer) in Google PWA cache policy.
+* Added: referrer based exclusion of WordPress admin panel in Service Worker.
+
 = 2.8.10 =
 * Bugfix: Google Web Font optimization broken when using custom `WebFontConfig` since v2.8.2 (@eek2425).
 

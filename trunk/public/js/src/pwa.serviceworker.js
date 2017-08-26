@@ -778,9 +778,12 @@
         if (
             event.request.url.match(/wp-admin/) // wp-admin
             ||
+            event.request.referrer.match(/wp-admin/) // wp-admin referrer
+            ||
             event.request.url.match(/preview=true/) // preview pages
             ||
             event.request.url.match(/\/wp-login\./) // wp-login page
+
         ) {
             return;
         }
@@ -874,7 +877,20 @@
                                 }
                                 break;
                             case "header":
-                                var value = event.request.headers.get(rule.name);
+
+                                // process special headers
+                                switch (rule.name.toLowerCase()) {
+
+                                    // allow HTTP referer matching
+                                    case "referer":
+                                    case "referrer":
+                                        var value = event.request.referrer;
+                                        break;
+                                    default:
+                                        var value = event.request.headers.get(rule.name);
+                                        break;
+                                }
+
                                 if (!value) {
                                     if (!rule.not) {
                                         isMatch = false;
