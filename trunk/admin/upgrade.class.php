@@ -382,6 +382,45 @@ class Abovethefold_Upgrade
                 }
             }
 
+            /**
+             * Pre 2.8.7 update
+             */
+            if (version_compare($current_version, '2.8.7', '<')) {
+                
+                // fix invalid default manifest.json
+                $manifest_file = trailingslashit(ABSPATH) . 'manifest.json';
+                if (file_exists($manifest_file)) {
+                    $manifest = file_get_contents($manifest_file);
+                    if ($manifest) {
+                        $json = @json_decode($manifest, true);
+
+                        $updated_json = false;
+
+                        // fix invalid default start url
+                        if (is_array($json) && isset($json['start_url']) && $json['start_url'] === '.\\/?utm_source=web_app_manifest') {
+                            $json['start_url'] = '/?utm_source=web_app_manifest';
+                            $updated_json = true;
+                        }
+
+                        if (isset($options['pwa']) && $options['pwa']) {
+
+                            // fix invalid service worker src
+                            if (is_array($json) && isset($json['serviceworker']) && isset($json['serviceworker']['src']) && $json['serviceworker']['src'] !== '/abtf-pwa.js') {
+                                $json['start_url'] = '/abtf-pwa.js';
+                                $updated_json = true;
+                            }
+                        }
+
+                        if ($updated_json) {
+                            try {
+                                file_put_contents($manifest_file, json_encode($json));
+                            } catch (Exception $error) {
+                            }
+                        }
+                    }
+                }
+            }
+
             // remove old options
             $old_options = array(
                 'dimensions',

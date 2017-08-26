@@ -61,7 +61,7 @@ class Abovethefold_Admin_PWA
                         "short_name" => "",
                         "name" => "",
                         "icons" => [],
-                        "start_url" => ".\/?utm_source=web_app_manifest",
+                        "start_url" => "/?utm_source=web_app_manifest",
                         "background_color" => "#f0f3e9",
                         "theme_color" => "#3da508",
                         "display" => "standalone",

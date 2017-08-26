@@ -10,7 +10,6 @@
 
     // asset cache policy
     $asset_policy = (isset($options['pwa_cache_assets_policy']) && is_array($options['pwa_cache_assets_policy'])) ? $options['pwa_cache_assets_policy'] : $this->CTRL->pwa->get_sw_default_policy();
-    //$asset_policy = $this->CTRL->pwa->get_sw_default_policy();
 ?>
 <form method="post" action="<?php echo admin_url('admin-post.php?action=abtf_pwa_update'); ?>" class="clearfix">
 	<?php wp_nonce_field('abovethefold'); ?>

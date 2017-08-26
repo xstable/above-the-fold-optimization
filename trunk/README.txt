@@ -132,6 +132,9 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.8.7 =
+* Bugfix: Admin panel: invalid Web App Manifest JSON schema for editor (cache.store has been removed).
+
 = 2.8.6 =
 * Bugfix: PHP 5.3 support.
 
