@@ -181,35 +181,6 @@ module.exports = function(grunt) {
                         'node_modules/lazyloadxt/dist/jquery.lazyloadxt.widget.min.js'
                     ],
 
-                    // Original loadCSS
-                    'admin/js/admincp.min.js': [
-                        'admin/js/jquery.debounce.js',
-                        'admin/js/admincp.js',
-                        'admin/js/admincp.build-tool.js',
-                        'admin/js/admincp.add-conditional.js',
-                        'admin/js/admincp.criticalcss-editor.js',
-                        'bower_components/selectize/dist/js/standalone/selectize.min.js'
-                    ],
-
-                    // admincp html
-                    'admin/js/admincp-html.min.js': [
-                        'admin/js/admincp-html.js'
-                    ],
-
-                    // admincp PWA
-                    'admin/js/admincp-pwa.min.js': [
-                        'admin/js/admincp-pwa.js'
-                    ],
-
-                    // Codemirror
-                    'admin/js/codemirror.min.js': [
-                        'bower_components/codemirror/lib/codemirror.js',
-                        'bower_components/codemirror/mode/css/css.js',
-                        'admin/js/csslint.js',
-                        'bower_components/codemirror/addon/lint/lint.js',
-                        'bower_components/codemirror/addon/lint/css-lint.js'
-                    ],
-
                     // Extract full CSS view
                     'public/js/webfont.js': [
                         'node_modules/webfontloader/webfontloader.js',
@@ -270,6 +241,46 @@ module.exports = function(grunt) {
                         'public/js/src/abovethefold.loadcss.js'
                     ]
 
+                }
+            },
+            admin: {
+                options: {
+                    compress: {
+                        global_defs: merge({
+                            "ABTFDEBUG": false
+                        }, CONFIG_INDEX)
+                    }
+                },
+                files: {
+
+                    // Original loadCSS
+                    'admin/js/admincp.min.js': [
+                        'admin/js/jquery.debounce.js',
+                        'admin/js/admincp.js',
+                        'admin/js/admincp.build-tool.js',
+                        'admin/js/admincp.add-conditional.js',
+                        'admin/js/admincp.criticalcss-editor.js',
+                        'bower_components/selectize/dist/js/standalone/selectize.min.js'
+                    ],
+
+                    // admincp html
+                    'admin/js/admincp-html.min.js': [
+                        'admin/js/admincp-html.js'
+                    ],
+
+                    // admincp PWA
+                    'admin/js/admincp-pwa.min.js': [
+                        'admin/js/admincp-pwa.js'
+                    ],
+
+                    // Codemirror
+                    'admin/js/codemirror.min.js': [
+                        'bower_components/codemirror/lib/codemirror.js',
+                        'bower_components/codemirror/mode/css/css.js',
+                        'admin/js/csslint.js',
+                        'bower_components/codemirror/addon/lint/lint.js',
+                        'bower_components/codemirror/addon/lint/css-lint.js'
+                    ]
                 }
             },
 

@@ -160,10 +160,6 @@ jQuery(function($) {
                             "title": "Cache configuration",
                             "type": "object",
                             "properties": {
-                                "store": {
-                                    "type": "string",
-                                    "minLength": 1
-                                },
                                 "update_interval": {
                                     "title": "Enter a time in seconds to update the cache.",
                                     "type": "number",
@@ -266,12 +262,12 @@ jQuery(function($) {
                                     "uniqueItems": true
                                 }
                             },
-                            "required": ["store"],
+                            "required": [],
                             "additionalProperties": false
                         }
                     },
                     "additionalProperties": false,
-                    "required": ["match", "strategy", "cache"]
+                    "required": ["match", "strategy"]
                 },
                 "uniqueItems": true
             }
