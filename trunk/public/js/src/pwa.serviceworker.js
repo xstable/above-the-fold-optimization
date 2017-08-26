@@ -774,6 +774,13 @@
             return;
         }
 
+        // paths to ignore from root
+        var root_paths = ['wp-admin/', 'wp-login.'];
+        root_paths.forEach(function(k, path) {
+            var regex = new new RegExp('^[^/]+//' + self.location.host + '(:[0-9]+)?/' + path);
+            console.log(regex);
+        });
+
         // wordpress admin / login / preview etc.
         if (
             event.request.url.match(/wp-admin/) // wp-admin

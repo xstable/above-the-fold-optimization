@@ -34,7 +34,7 @@ module.exports = function(grunt) {
     // closure compiler
     var CC = {}
     var CCfiles = {
-        'public/js/abovethefold.min.js': 'public/js/min/abovethefold.js',
+        /*'public/js/abovethefold.min.js': 'public/js/min/abovethefold.js',
         'public/js/abovethefold-proxy.min.js': 'public/js/min/abovethefold-proxy.js',
         'public/js/abovethefold-jquery-stub.min.js': 'public/js/min/abovethefold-jquery-stub.js',
         'public/js/abovethefold-js-localstorage.min.js': 'public/js/min/abovethefold-js-localstorage.js',
@@ -42,7 +42,7 @@ module.exports = function(grunt) {
         'public/js/abovethefold-loadcss-enhanced.min.js': 'public/js/min/abovethefold-loadcss-enhanced.js',
         'public/js/abovethefold-loadcss.min.js': 'public/js/min/abovethefold-loadcss.js',
         'public/js/abovethefold-js.min.js': 'public/js/min/abovethefold-js.js',
-        'public/js/abovethefold-pwa.min.js': 'public/js/min/abovethefold-pwa.js',
+        'public/js/abovethefold-pwa.min.js': 'public/js/min/abovethefold-pwa.js',*/
         'public/js/pwa-serviceworker.js': 'public/js/min/pwa.serviceworker.js'
 
     };
