@@ -774,22 +774,28 @@
             return;
         }
 
+        // ignore WordPress admin / login pages
+        var wp_ignore = false;
+
         // paths to ignore from root
         var root_paths = ['wp-admin/', 'wp-login.'];
-        root_paths.forEach(function(k, path) {
-            var regex = new new RegExp('^[^/]+//' + self.location.host + '(:[0-9]+)?/' + path);
-            console.log(regex);
+        root_paths.forEach(function(path) {
+            if (wp_ignore) {
+                return;
+            }
+            var regex = new RegExp('^([^/]+)?//' + self.location.host + '(:[0-9]+)?/' + path);
+            if (regex.test(event.request.url) || regex.test(event.request.referrer)) {
+                wp_ignore = true;
+            }
         });
 
-        // wordpress admin / login / preview etc.
+        // ignore
         if (
-            event.request.url.match(/wp-admin/) // wp-admin
-            ||
-            event.request.referrer.match(/wp-admin/) // wp-admin referrer
-            ||
-            event.request.url.match(/preview=true/) // preview pages
-            ||
-            event.request.url.match(/\/wp-login\./) // wp-login page
+            wp_ignore ||
+
+            // preview pages
+            event.request.url.match(/\&preview=true/) ||
+            event.request.url.match(/\&preview_nonce=/)
 
         ) {
             return;
