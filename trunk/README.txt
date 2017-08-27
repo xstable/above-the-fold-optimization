@@ -135,7 +135,7 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 = 2.8.12 =
 * Added: optional Service Worker registration to support other service workers by importing the PWA Service Worker via `includeScript`.
 * Added: option to unregister (remove) the PWA Service Worker after disabling PWA.
-* Improved: `Abtf.offline` API returns promise that resolves with a status after preloading in the Service Worker completes.
+* Improved: `Abtf.offline` API returns a promise that resolves with a status after preloading in the Service Worker completes.
 
 = 2.8.11 =
 * Added: support for HTTP referer header matching (request.referrer) in Google PWA cache policy.
