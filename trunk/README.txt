@@ -132,6 +132,11 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.8.15 =
+* Added: JSON validity check for manifest.json. (@VidyutK)
+* Improved: service worker cache policy: unmatched requests and `never` cache strategy are now efficiently returned to the client without service worker interference.
+* Improved: service worker cache policy: last-modified header date string is converted to unix timestamp.
+
 = 2.8.14 =
 * Improved: javascript client optimized for further size reduction and compatibility with Content Security Policy. Configuration is moved to a data-attribute.
 * Added: the ability to white list the javascript client using a [Content Security Policy](https://content-security-policy.com/faq/) hash (available on Settings-tab).

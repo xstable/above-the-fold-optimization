@@ -258,11 +258,11 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
         print '<p class="warning_red" style="margin-bottom:1em;"><strong>' . trailingslashit(home_url()) . 'manifest.json</strong> is not writeable. Please make the file writeale for WordPress (PHP) to enable online editing and automatic <code>serviceworker</code> configuration.</p>';
     } else {
         $json = file_get_contents(trailingslashit(ABSPATH) . 'manifest.json');
-        $json = @json_decode($json, true);
-        if (is_array($json)) {
-            $manifestjson = $json;
+        $manifestjson = @json_decode(trim($json), true);
+        if (!is_array($manifestjson)) {
+            $manifestjson = array();
+            print '<div class="warning_red" style="margin-bottom:1em;"><strong>' . trailingslashit(home_url()) . 'manifest.json</strong> does not contain valid JSON. <hr /><textarea style="width:100%;height:70px;">'.esc_html($json).'</textarea></div>';
         } ?>
-
 			<div id="webapp_manifest"><div class="loading-json-editor"><?php print __('Loading JSON editor...', 'pagespeed'); ?></div></div>
 <input type="hidden" name="abovethefold[manifest_json]" id="webapp_manifest_src" value="<?php echo esc_attr(json_encode($manifestjson)); ?>"  />
 <?php

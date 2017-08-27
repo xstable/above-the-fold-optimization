@@ -340,11 +340,15 @@ class Abovethefold_PWA
         // version
         if (isset($this->CTRL->options['pwa_cache_version']) && $this->CTRL->options['pwa_cache_version'] !== '') {
             $pwasettings['version'] = $this->CTRL->options['pwa_cache_version'];
+        } else {
+            $pwasettings['version'] = '';
         }
 
         // version
         if (isset($this->CTRL->options['pwa_cache_max_size']) && $this->CTRL->options['pwa_cache_max_size'] !== '') {
             $pwasettings['max_size'] = $this->CTRL->options['pwa_cache_max_size'];
+        } else {
+            $pwasettings['max_size'] = '';
         }
 
         $jssettings[$pwaindex] = array();
@@ -370,7 +374,7 @@ class Abovethefold_PWA
             }
             ksort($jssettings[$pwaindex]);
         }
-  
+
         $jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-pwa'.$jsdebug.'.min.js';
     }
 }

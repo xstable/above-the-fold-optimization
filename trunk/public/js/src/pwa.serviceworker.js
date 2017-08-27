@@ -122,13 +122,9 @@
     /* 
      * Get policy config
      */
+    var PWA_CONFIG_UPDATE_RUNNING;
     var GET_POLICY = function(timestamp) {
         return new Promise(function(resolve, reject) {
-
-            if (PWA_POLICY) {
-                // instantly resolve
-                resolve(PWA_POLICY);
-            }
 
             // Update config
             if (!PWA_POLICY || !PWA_CONFIG_TIMESTAMP || (timestamp && timestamp > PWA_CONFIG_TIMESTAMP)) {
@@ -141,29 +137,41 @@
                         if (PWA_POLICY) {
                             resolve(PWA_POLICY);
                         } else {
-                            reject();
+                            resolve(false);
                         }
                     }
                 }).catch(function() {
                     if (doResolve) {
-                        reject();
+                        resolve(false);
                     }
                 });
 
-            } else if (PWA_CONFIG_TIMESTAMP < (TIMESTAMP() - 300)) {
+            } else if (!PWA_CONFIG_UPDATE_RUNNING && PWA_CONFIG_TIMESTAMP < (TIMESTAMP() - 300)) {
+
+                // HTTP HEAD based update
+
+                PWA_CONFIG_UPDATE_RUNNING = true;
+
+                // no cache headers
+                var headers = new Headers();
+                headers.append('pragma', 'no-cache');
+                headers.append('cache-control', 'no-cache');
 
                 // verify last-modified header once per 5 minutes
                 // HEAD request
                 var headRequest = new Request(PWA_CONFIG_URL, {
                     method: 'HEAD',
-                    mode: 'no-cors'
+                    mode: 'no-cors',
+                    headers: headers
                 });
 
                 fetch(headRequest)
                     .then(function(headResponse) {
+                        PWA_CONFIG_UPDATE_RUNNING = false;
+
                         var update = true;
                         if (headResponse && headResponse.ok) {
-                            var lastModified = headResponse.headers.get('last-modified');
+                            var lastModified = LAST_MODIFIED(headResponse.headers.get('last-modified'));
                             if (lastModified && lastModified <= PWA_CONFIG_TIMESTAMP) {
                                 update = false;
                             }
@@ -174,12 +182,19 @@
                             UPDATE_CONFIG();
                         }
                     }).catch(function(error) {
+                        PWA_CONFIG_UPDATE_RUNNING = false;
                         UPDATE_CONFIG();
                     });
+            } else {
+
+                // instantly resolve
+                resolve(PWA_POLICY);
             }
 
         }).catch(function(error) {
-            throw error;
+            setTimeout(function() {
+                throw error;
+            });
         });
     }
 
@@ -190,17 +205,17 @@
     var UPDATE_CONFIG = function() {
 
         // retry once per 10 seconds
-        if (UPDATE_CONFIG_LAST && UPDATE_CONFIG_LAST > (TIMESTAMP() - 10)) {
-            if (PWA_POLICY) {
-                return Promise.resolve(PWA_POLICY);
-            }
-            return Promise.reject();
+        if (PWA_CONFIG_UPDATE_RUNNING || (UPDATE_CONFIG_LAST && UPDATE_CONFIG_LAST > (TIMESTAMP() - 10))) {
+            return Promise.resolve();
         }
+
+        PWA_CONFIG_UPDATE_RUNNING = true;
 
         return fetch(PWA_CONFIG_URL, {
                 mode: 'no-cors'
             })
             .then(function(response) {
+                PWA_CONFIG_UPDATE_RUNNING = false;
                 if (response && response.ok && response.status < 400) {
                     return response.json().then(function(pwaConfig) {
 
@@ -262,14 +277,33 @@
                 throw new Error('service worker config not found: ' + PWA_CONFIG_URL);
 
             }).catch(function(error) {
+                PWA_CONFIG_UPDATE_RUNNING = false;
                 PWA_POLICY = false;
-                throw error;
+                setTimeout(function() {
+                    throw error;
+                });
             });
     }
 
     // return timestamp
     var TIMESTAMP = function() {
         return Math.round(Date.now() / 1000);
+    }
+
+    // parse last-modified header
+    var LAST_MODIFIED = function(value) {
+        if (!value) {
+            return;
+        }
+        if (isNaN(parseInt(value))) {
+            value = Date.parse(value);
+            if (!isNaN(value)) {
+                return Math.round(value / 1000);
+            } else {
+                return;
+            }
+        }
+        return value;
     }
 
     /**
@@ -572,7 +606,7 @@
 
         // verify if cache entry has verifyable headers
         var etag = cacheResponse.headers.get('etag');
-        var lastmodified = cacheResponse.headers.get('last-modified');
+        var lastmodified = LAST_MODIFIED(cacheResponse.headers.get('last-modified'));
         if (!etag && !lastmodified) {
 
             if (ABTFDEBUG) {
@@ -603,7 +637,7 @@
 
                 // verify headers
                 var headEtag = headResponse.headers.get('etag');
-                var headLastmodified = headResponse.headers.get('last-modified');
+                var headLastmodified = LAST_MODIFIED(headResponse.headers.get('last-modified'));
                 if (headEtag && headEtag !== etag) {
                     update = true;
                 } else if (headLastmodified && headLastmodified !== lastmodified) {
@@ -770,6 +804,7 @@
             });
     }
 
+    // process fetch request
     self.addEventListener('fetch', function(event) {
 
         // don't touch non-get requests
@@ -781,7 +816,7 @@
         var wp_ignore = false;
 
         // paths to ignore from root
-        var root_paths = ['wp-admin/', 'wp-login.'];
+        var root_paths = ['wp-admin/', 'wp-login.php'];
         root_paths.forEach(function(path) {
             if (wp_ignore) {
                 return;
@@ -803,52 +838,118 @@
             return;
         }
 
-        // no cache policy available, request update
+        // init config
+        GET_POLICY();
+
+        // not yet configured / get policy config
         if (!PWA_POLICY || !PWA_CACHE) {
-            GET_POLICY();
             return;
         }
 
-        // process request
-        return event.respondWith(
-            GET_POLICY()
-            .then(function(policyList) {
+        // match request against policy list
+        var matchPolicy = function(event, policyList) {
 
-                // no cache policy
-                if (!policyList || policyList.length === 0) {
-                    return fetch(event.request).catch(function(error) {
-                        throw error;
-                    });;
+            // no cache policy
+            if (!policyList || policyList.length === 0) {
+                return false;
+            }
+
+            // cache maintenance
+            INIT_CLEAN_CACHE();
+
+            // matched policy
+            var policyMatch = false;
+
+            // match policies to request
+            policyList.forEach(function(policy) {
+                if (policyMatch || !policy.match || policy.match.length === 0) {
+                    return;
                 }
 
-                // cache maintenance
-                INIT_CLEAN_CACHE();
+                var isMatch = true;
 
-                // matched policy
-                var policyMatch = false;
+                policy.match.forEach(function(rule) {
 
-                // match policies to request
-                policyList.forEach(function(policy) {
-                    if (policyMatch || !policy.match || policy.match.length === 0) {
+                    if (!isMatch) {
                         return;
                     }
 
-                    var isMatch = true;
+                    switch (rule.type) {
+                        case "url":
+                            if (rule.regex) {
+                                var regex = REGEX(rule.pattern);
+                                if (!regex) {
+                                    isMatch = false;
+                                } else {
+                                    var match = regex.test(event.request.url);
+                                    if (rule.not) {
+                                        if (match) {
+                                            isMatch = false;
+                                        }
+                                    } else if (!match) {
+                                        isMatch = false;
+                                    }
+                                }
+                            } else {
 
-                    policy.match.forEach(function(rule) {
+                                // multiple URL match (page include list)
+                                if (rule.pattern instanceof Array) {
+                                    var matchingUrl = false;
+                                    rule.pattern.forEach(function(pattern) {
+                                        if (matchingUrl) {
+                                            return;
+                                        }
+                                        var match = (event.request.url.indexOf(pattern) !== -1);
+                                        if (match) {
+                                            matchingUrl = true;
+                                        }
+                                    });
+                                    if (rule.not) {
+                                        if (matchingUrl) {
+                                            isMatch = false;
+                                        }
+                                    } else if (!matchingUrl) {
+                                        isMatch = false;
+                                    }
+                                } else {
 
-                        if (!isMatch) {
-                            return;
-                        }
+                                    var match = (event.request.url.indexOf(rule.pattern) !== -1);
+                                    if (rule.not) {
+                                        if (match) {
+                                            isMatch = false;
+                                        }
+                                    } else if (!match) {
+                                        isMatch = false;
+                                    }
+                                }
+                            }
+                            break;
+                        case "header":
 
-                        switch (rule.type) {
-                            case "url":
+                            // process special headers
+                            switch (rule.name.toLowerCase()) {
+
+                                // allow HTTP referer matching
+                                case "referer":
+                                case "referrer":
+                                    var value = event.request.referrer;
+                                    break;
+                                default:
+                                    var value = event.request.headers.get(rule.name);
+                                    break;
+                            }
+
+                            if (!value) {
+                                if (!rule.not) {
+                                    isMatch = false;
+                                }
+                            } else {
                                 if (rule.regex) {
                                     var regex = REGEX(rule.pattern);
                                     if (!regex) {
                                         isMatch = false;
                                     } else {
-                                        var match = regex.test(event.request.url);
+                                        var match = regex.test(value);
                                         if (rule.not) {
                                             if (match) {
                                                 isMatch = false;
@@ -858,305 +959,190 @@
                                         }
                                     }
                                 } else {
-
-                                    // multiple URL match (page include list)
-                                    if (rule.pattern instanceof Array) {
-                                        var matchingUrl = false;
-                                        rule.pattern.forEach(function(pattern) {
-                                            if (matchingUrl) {
-                                                return;
-                                            }
-                                            var match = (event.request.url.indexOf(pattern) !== -1);
-                                            if (match) {
-                                                matchingUrl = true;
-                                            }
-                                        });
-                                        if (rule.not) {
-                                            if (matchingUrl) {
-                                                isMatch = false;
-                                            }
-                                        } else if (!matchingUrl) {
+                                    var match = (value.indexOf(rule.pattern) !== -1);
+                                    if (rule.not) {
+                                        if (match) {
                                             isMatch = false;
                                         }
-                                    } else {
-
-                                        var match = (event.request.url.indexOf(rule.pattern) !== -1);
-                                        if (rule.not) {
-                                            if (match) {
-                                                isMatch = false;
-                                            }
-                                        } else if (!match) {
-                                            isMatch = false;
-                                        }
-                                    }
-                                }
-                                break;
-                            case "header":
-
-                                // process special headers
-                                switch (rule.name.toLowerCase()) {
-
-                                    // allow HTTP referer matching
-                                    case "referer":
-                                    case "referrer":
-                                        var value = event.request.referrer;
-                                        break;
-                                    default:
-                                        var value = event.request.headers.get(rule.name);
-                                        break;
-                                }
-
-                                if (!value) {
-                                    if (!rule.not) {
+                                    } else if (!match) {
                                         isMatch = false;
                                     }
-                                } else {
-                                    if (rule.regex) {
-                                        var regex = REGEX(rule.pattern);
-                                        if (!regex) {
-                                            isMatch = false;
-                                        } else {
-                                            var match = regex.test(value);
-                                            if (rule.not) {
-                                                if (match) {
-                                                    isMatch = false;
-                                                }
-                                            } else if (!match) {
-                                                isMatch = false;
-                                            }
-                                        }
-                                    } else {
-                                        var match = (value.indexOf(rule.pattern) !== -1);
-                                        if (rule.not) {
-                                            if (match) {
-                                                isMatch = false;
-                                            }
-                                        } else if (!match) {
-                                            isMatch = false;
-                                        }
-                                    }
                                 }
+                            }
 
-                                break;
-                        }
-                    });
-
-                    if (isMatch) {
-                        policyMatch = policy;
+                            break;
                     }
                 });
 
-                if (!policyMatch) {
-                    if (ABTFDEBUG) {
-                        console.info('Abtf.sw() ➤ policy ➤ no match', event.request.url);
-                    }
-                    return fetch(event.request).catch(function(error) {
-                        throw error;
-                    });;
+                if (isMatch) {
+                    policyMatch = policy;
                 }
+            });
 
+            if (!policyMatch) {
                 if (ABTFDEBUG) {
-                    console.info('Abtf.sw() ➤ policy ➤ match', event.request.url, policyMatch);
+                    console.info('Abtf.sw() ➤ policy ➤ no match', event.request.url);
                 }
+                return false;
+            }
 
-                switch (policyMatch.strategy) {
-                    case "cache":
-                        // try cache
-                        return CACHE_GET(event.request)
-                            .then(function(cacheResponse) {
+            if (ABTFDEBUG) {
+                console.info('Abtf.sw() ➤ policy ➤ match', event.request.url, policyMatch);
+            }
 
-                                // verify cache age
-                                if (cacheResponse && policyMatch.cache.max_age) {
-                                    var cacheAge = cacheResponse.headers.get('x-abtf-sw');
-                                    if (cacheAge < (TIMESTAMP() - policyMatch.cache.max_age)) {
-                                        cacheResponse = false;
-                                    }
+            switch (policyMatch.strategy) {
+                case "never":
+                    return false;
+                    break;
+                case "cache":
+                    // try cache
+                    return CACHE_GET(event.request)
+                        .then(function(cacheResponse) {
+
+                            // verify cache age
+                            if (cacheResponse && policyMatch.cache.max_age) {
+                                var cacheAge = cacheResponse.headers.get('x-abtf-sw');
+                                if (cacheAge < (TIMESTAMP() - policyMatch.cache.max_age)) {
+                                    cacheResponse = false;
                                 }
-
-                                // return cache
-                                if (cacheResponse) {
-
-                                    var updateCache = true;
-
-                                    // update interval
-                                    if (policyMatch.cache.update_interval) {
-                                        var interval = (isNaN(parseInt(policyMatch.cache.update_interval))) ? false : parseInt(policyMatch.cache.update_interval);
-                                    } else {
-                                        var interval = false;
-                                    }
-                                    if (interval) {
-
-                                        // verify cache date
-                                        var cache_time = cacheResponse.headers.get('x-abtf-sw');
-                                        if (cache_time && parseInt(cache_time) > (TIMESTAMP() - interval)) {
-
-                                            // do not update
-                                            updateCache = false;
-                                        }
-                                    }
-
-                                    // update cache in background
-                                    if (updateCache) {
-                                        (function(request, cacheResponse) {
-
-                                            // @todo
-                                            // fetch update queue? 
-                                            setTimeout(function() {
-                                                // notify client when update completes
-                                                var afterUpdate;
-                                                if (policyMatch.cache.head_update) {
-                                                    afterUpdate = function() {
-
-                                                        clients.matchAll().then(function(clients) {
-                                                            clients.forEach(function(client) {
-                                                                client.postMessage([2, request.url]);
-                                                            });
-                                                        });
-                                                    };
-                                                }
-                                                if (policyMatch.cache.head_update) {
-
-                                                    if (ABTFDEBUG) {
-                                                        console.info('Abtf.sw() ➤ HEAD ➤ verify', request.url);
-                                                    }
-
-                                                    HEAD_UPDATE(request, policyMatch.cache, cacheResponse, afterUpdate);
-                                                } else {
-
-                                                    if (ABTFDEBUG) {
-                                                        console.info('Abtf.sw() ➤ update cache', request.url);
-                                                    }
-
-                                                    var fetchRequest = FETCH(request, policyMatch.cache);
-                                                    if (afterUpdate) {
-                                                        fetchRequest.then(afterUpdate);
-                                                    }
-                                                }
-                                            }, 10);
-
-                                        })(event.request.clone(), cacheResponse.clone());
-                                    }
-
-                                    if (ABTFDEBUG) {
-                                        console.info('Abtf.sw() ➤ from cache', event.request.url);
-                                    }
-                                    return cacheResponse;
-                                } else {
-
-                                    return FETCH(event.request, policyMatch.cache, function(request, fetchResponse, error) {
-
-                                        // return offline page
-                                        if (policyMatch.offline) {
-
-                                            if (ABTFDEBUG) {
-                                                console.warn('Abtf.sw() ➤ no cache ➤ network failed ➤ offline page', request.url);
-                                            }
-
-                                            return OFFLINE(policyMatch.offline, request.clone());
-                                        } else {
-
-                                            if (ABTFDEBUG) {
-                                                console.warn('Abtf.sw() ➤ no cache ➤ network failed ➤ empty 404 response', request.url, fetchResponse, error);
-                                            }
-                                            // return 404 response
-                                            if (!fetchResponse) {
-                                                return fetch(event.request.clone()).catch(function(error) {
-                                                    throw error;
-                                                });
-                                            }
-                                            return fetchResponse;
-                                        }
-
-                                    });
-                                }
-                            });
-                        break;
-
-                        // try cache but do not add to cache
-                    case "event":
-                        // try cache
-                        return CACHE_GET(event.request)
-                            .then(function(cacheResponse) {
-
-                                // verify cache age
-                                if (cacheResponse && policyMatch.cache.max_age) {
-                                    var cacheAge = cacheResponse.headers.get('x-abtf-sw');
-                                    if (cacheAge < (TIMESTAMP() - policyMatch.cache.max_age)) {
-                                        cacheResponse = false;
-                                    }
-                                }
-
-                                // return cache
-                                if (cacheResponse) {
-
-                                    if (ABTFDEBUG) {
-                                        console.info('Abtf.sw() ➤ from cache', event.request.url);
-                                    }
-                                    return cacheResponse;
-                                } else {
-
-                                    return FETCH(event.request, null, function(request, fetchResponse, error) {
-
-                                        // return offline page
-                                        if (policyMatch.offline) {
-
-                                            if (ABTFDEBUG) {
-                                                console.warn('Abtf.sw() ➤ no cache ➤ network failed ➤ offline page', request.url);
-                                            }
-
-                                            return OFFLINE(policyMatch.offline, request.clone());
-                                        } else {
-
-                                            if (ABTFDEBUG) {
-                                                console.warn('Abtf.sw() ➤ no cache ➤ network failed ➤ empty 404 response', request.url, fetchResponse);
-                                            }
-                                            // return 404 response
-                                            if (!fetchResponse) {
-                                                return fetch(event.request).catch(function(error) {
-                                                    throw error;
-                                                });;
-                                            }
-                                            return fetchResponse;
-                                        }
-
-                                    });
-                                }
-                            });
-                        break;
-
-                        // Network request with cache as backup
-                    case "network":
-                    default:
-                        return FETCH(event.request, policyMatch.cache, function(request, fetchResponse, error) {
-
-                            if (ABTFDEBUG) {
-                                console.warn('Abtf.sw() ➤ network failed', request.url, (fetchResponse || error));
                             }
 
-                            // try cache
-                            return CACHE_GET(request)
-                                .then(function(response) {
+                            // return cache
+                            if (cacheResponse) {
 
-                                    // return cache
-                                    if (response) {
-                                        if (ABTFDEBUG) {
-                                            console.info('Abtf.sw() ➤ fallback from cache', request.url);
-                                        }
-                                        return response;
+                                var updateCache = true;
+
+                                // update interval
+                                if (policyMatch.cache.update_interval) {
+                                    var interval = (isNaN(parseInt(policyMatch.cache.update_interval))) ? false : parseInt(policyMatch.cache.update_interval);
+                                } else {
+                                    var interval = false;
+                                }
+                                if (interval) {
+
+                                    // verify cache date
+                                    var cache_time = cacheResponse.headers.get('x-abtf-sw');
+                                    if (cache_time && parseInt(cache_time) > (TIMESTAMP() - interval)) {
+
+                                        // do not update
+                                        updateCache = false;
                                     }
+                                }
+
+                                // update cache in background
+                                if (updateCache) {
+                                    (function(request, cacheResponse) {
+
+                                        // @todo
+                                        // fetch update queue? 
+                                        setTimeout(function() {
+                                            // notify client when update completes
+                                            var afterUpdate;
+                                            if (policyMatch.cache.head_update) {
+                                                afterUpdate = function() {
+
+                                                    clients.matchAll().then(function(clients) {
+                                                        clients.forEach(function(client) {
+                                                            client.postMessage([2, request.url]);
+                                                        });
+                                                    });
+                                                };
+                                            }
+                                            if (policyMatch.cache.head_update) {
+
+                                                if (ABTFDEBUG) {
+                                                    console.info('Abtf.sw() ➤ HEAD ➤ verify', request.url);
+                                                }
+
+                                                HEAD_UPDATE(request, policyMatch.cache, cacheResponse, afterUpdate);
+                                            } else {
+
+                                                if (ABTFDEBUG) {
+                                                    console.info('Abtf.sw() ➤ update cache', request.url);
+                                                }
+
+                                                var fetchRequest = FETCH(request, policyMatch.cache);
+                                                if (afterUpdate) {
+                                                    fetchRequest.then(afterUpdate);
+                                                }
+                                            }
+                                        }, 10);
+
+                                    })(event.request.clone(), cacheResponse.clone());
+                                }
+
+                                if (ABTFDEBUG) {
+                                    console.info('Abtf.sw() ➤ from cache', event.request.url);
+                                }
+                                return cacheResponse;
+                            } else {
+
+                                return FETCH(event.request, policyMatch.cache, function(request, fetchResponse, error) {
 
                                     // return offline page
                                     if (policyMatch.offline) {
 
                                         if (ABTFDEBUG) {
-                                            console.warn('Abtf.sw() ➤ no cache ➤ offline page', request.url);
+                                            console.warn('Abtf.sw() ➤ no cache ➤ network failed ➤ offline page', request.url);
                                         }
 
                                         return OFFLINE(policyMatch.offline, request.clone());
                                     } else {
 
                                         if (ABTFDEBUG) {
-                                            console.warn('Abtf.sw() ➤ no cache ➤ empty 404 response', request.url);
+                                            console.warn('Abtf.sw() ➤ no cache ➤ network failed ➤ empty 404 response', request.url, fetchResponse, error);
+                                        }
+                                        // return 404 response
+                                        if (!fetchResponse) {
+                                            return fetch(event.request.clone()).catch(function(error) {
+                                                throw error;
+                                            });
+                                        }
+                                        return fetchResponse;
+                                    }
+
+                                });
+                            }
+                        });
+                    break;
+
+                    // try cache but do not add to cache
+                case "event":
+                    // try cache
+                    return CACHE_GET(event.request)
+                        .then(function(cacheResponse) {
+
+                            // verify cache age
+                            if (cacheResponse && policyMatch.cache.max_age) {
+                                var cacheAge = cacheResponse.headers.get('x-abtf-sw');
+                                if (cacheAge < (TIMESTAMP() - policyMatch.cache.max_age)) {
+                                    cacheResponse = false;
+                                }
+                            }
+
+                            // return cache
+                            if (cacheResponse) {
+
+                                if (ABTFDEBUG) {
+                                    console.info('Abtf.sw() ➤ from cache', event.request.url);
+                                }
+                                return cacheResponse;
+                            } else {
+
+                                return FETCH(event.request, null, function(request, fetchResponse, error) {
+
+                                    // return offline page
+                                    if (policyMatch.offline) {
+
+                                        if (ABTFDEBUG) {
+                                            console.warn('Abtf.sw() ➤ no cache ➤ network failed ➤ offline page', request.url);
+                                        }
+
+                                        return OFFLINE(policyMatch.offline, request.clone());
+                                    } else {
+
+                                        if (ABTFDEBUG) {
+                                            console.warn('Abtf.sw() ➤ no cache ➤ network failed ➤ empty 404 response', request.url, fetchResponse);
                                         }
                                         // return 404 response
                                         if (!fetchResponse) {
@@ -1166,16 +1152,73 @@
                                         }
                                         return fetchResponse;
                                     }
+
                                 });
+                            }
                         });
-                        break;
-                }
-            }));
+                    break;
+
+                    // Network request with cache as backup
+                case "network":
+                default:
+                    return FETCH(event.request, policyMatch.cache, function(request, fetchResponse, error) {
+
+                        if (ABTFDEBUG) {
+                            console.warn('Abtf.sw() ➤ network failed', request.url, (fetchResponse || error));
+                        }
+
+                        // try cache
+                        return CACHE_GET(request)
+                            .then(function(response) {
+
+                                // return cache
+                                if (response) {
+                                    if (ABTFDEBUG) {
+                                        console.info('Abtf.sw() ➤ fallback from cache', request.url);
+                                    }
+                                    return response;
+                                }
+
+                                // return offline page
+                                if (policyMatch.offline) {
+
+                                    if (ABTFDEBUG) {
+                                        console.warn('Abtf.sw() ➤ no cache ➤ offline page', request.url);
+                                    }
+
+                                    return OFFLINE(policyMatch.offline, request.clone());
+                                } else {
+
+                                    if (ABTFDEBUG) {
+                                        console.warn('Abtf.sw() ➤ no cache ➤ empty 404 response', request.url);
+                                    }
+                                    // return 404 response
+                                    if (!fetchResponse) {
+                                        return fetch(event.request).catch(function(error) {
+                                            throw error;
+                                        });;
+                                    }
+                                    return fetchResponse;
+                                }
+                            });
+                    });
+                    break;
+            }
+        };
+
+        // policy is available
+        var policyRequest = matchPolicy(event, PWA_POLICY);
+        if (policyRequest === false) {
+            return; // request should be handled by client
+        }
+        return event.respondWith(policyRequest); // request is processed by service worker
 
     });
 
+    // process messages from client
     self.addEventListener('message', function(event) {
 
+        // PWA uses array data
         if (event && event.data && event.data instanceof Array) {
 
             // CONFIG EVENT
@@ -1191,7 +1234,7 @@
                     PWA_CACHE_MAX_SIZE = parseInt(event.data[3]);
                 }
 
-                // update prefix
+                // update prefix (using cache version setting)
                 var prefix = 'abtf:' + ((event.data[2]) ? event.data[2] + ':' : '');
                 if (prefix !== PWA_CACHE) {
                     PWA_CACHE = prefix;
@@ -1202,7 +1245,6 @@
 
                 // cache maintenance
                 CLEAN_CACHE();
-
             }
 
             // PRELOAD EVENT
@@ -1252,7 +1294,9 @@
                             });
                         }
                     } else {
-                        resolve('invalid-data');
+                        if (resolve) {
+                            resolve('invalid-data');
+                        }
                     }
                 } else {
                     if (resolve) {
