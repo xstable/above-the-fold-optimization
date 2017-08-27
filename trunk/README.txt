@@ -132,6 +132,10 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.8.14 =
+* Improved: javascript client optimized for further size reduction and compatibility with Content Security Policy. Configuration is moved to a data-attribute.
+* Added: the ability to white list the javascript client using a [Content Security Policy](https://content-security-policy.com/faq/) hash (available on Settings-tab).
+
 = 2.8.13 =
 * Bugfix: PHP 5.3 support (@psabbatella)
 

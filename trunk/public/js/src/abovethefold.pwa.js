@@ -9,7 +9,7 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-(function(window, Abtf) {
+Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
 
     // public method for browsers that do not support Service Worker or Promise
     Abtf.offline = function() {
@@ -203,4 +203,4 @@
         });
     }
 
-})(window, window.Abtf);
+});

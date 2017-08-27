@@ -6,6 +6,10 @@ window.document;
 
 // config
 window.loadCSS;
+window.WebFont;
+window.WebFontConfig;
+window.WebFontConfig.google;
+window.WebFontConfig.google.families;
 
 window.watch;
 window.unwatch;

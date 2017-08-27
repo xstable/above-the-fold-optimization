@@ -9,11 +9,12 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-(function(window, Abtf) {
+Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
 
     var doc = window.document;
+    var criticalCSSElement;
 
-    Abtf[CONFIG.LOADCSS] = function(href, before, media, callback) {
+    Abtf[CONFIG.LOADCSS] = function(href, media, callback) {
 
         if (ABTFDEBUG) {
             console.info('Abtf.css() ➤ loadCSS()[RAF] async download start', Abtf[CONFIG.LOCALURL](href));
@@ -25,9 +26,16 @@
         // By default, loadCSS attempts to inject the link after the last stylesheet or script in the DOM. However, you might desire a more specific location in your document.
         // `media` [OPTIONAL] is the media type or query of the stylesheet. By default it will be 'all'
         var el = doc.createElement("link");
-        var ref;
-        if (before) {
-            ref = before;
+
+        // detect critical css element
+        if (!criticalCSSElement && criticalCSSElement !== false) {
+            criticalCSSElement = document.getElementById('AbtfCSS');
+            if (!criticalCSSElement) {
+                criticalCSSElement = false;
+            }
+        }
+        if (criticalCSSElement) {
+            var ref = criticalCSSElement;
         } else {
             var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
             ref = refs[refs.length - 1];
@@ -141,7 +149,7 @@
         // Note: `insertBefore` is used instead of `appendChild`, for safety re: http://www.paulirish.com/2011/surefire-dom-element-insertion/
         ready(function() {
 
-            ref.parentNode.insertBefore(el, (before ? ref : ref.nextSibling));
+            ref.parentNode.insertBefore(el, ref.nextSibling);
 
             onloadcss_fallback(renderCSS);
         });
@@ -150,4 +158,4 @@
 
     };
 
-})(window, window.Abtf);
+});

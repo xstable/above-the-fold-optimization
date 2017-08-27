@@ -39,7 +39,6 @@ class Abovethefold_WebFonts
     /**
      * Web Font replacement string
      */
-    public $webfont_replacement_string = 'var ABTF_WEBFONT_CONFIG;';
     public $webfont_inline_replacement_string = 'ABTF_WEBFONT_INLINE_CONFIG';
 
     /**
@@ -235,27 +234,19 @@ class Abovethefold_WebFonts
          * Inline Web Font Loading
          */
         if (isset($this->CTRL->options['gwfo_loadmethod'])) {
-            if ($this->CTRL->options['gwfo_loadmethod'] === 'inline') {
+            if ($this->CTRL->options['gwfo_loadmethod'] !== 'disabled') {
 
                 /**
                  * Update Web Font configuration
                  */
-                $webfontconfig = $this->webfontconfig(true);
-                if (!is_string($webfontconfig)) {
-                    $webfontconfig = json_encode($webfontconfig);
+                $google_fonts = $this->get_google_fonts();
+                if (!empty($google_fonts)) {
+                    $google_fonts = json_encode($google_fonts);
+                } else {
+                    $google_fonts = -9;
                 }
-                //$search_regex[] = '#' . preg_quote($this->webfont_replacement_string) . '#Ui';
                 $search[] = '"' . $this->webfont_inline_replacement_string . '"';
-                $replace[] = $webfontconfig;
-            } elseif (!in_array($this->CTRL->options['gwfo_loadmethod'], array('inline','disabled'))) {
-
-                /**
-                 * Update Web Font configuration
-                 */
-                $webfontconfig = $this->webfontconfig();
-                //$search_regex[] = '#' . preg_quote($this->webfont_replacement_string) . '#Ui';
-                $search[] = $this->webfont_replacement_string;
-                $replace[] = $webfontconfig;
+                $replace[] = esc_attr($google_fonts);
             }
         }
 
@@ -409,16 +400,10 @@ class Abovethefold_WebFonts
     }
 
     /**
-     * Return WebFontConfig variable
+     * Return Google fonts
      */
-    public function webfontconfig($json = false)
+    public function get_google_fonts()
     {
-        $WebFontConfig = '';
-
-        if (isset($this->CTRL->options['gwfo_config']) && $this->CTRL->options['gwfo_config'] !== '' && isset($this->CTRL->options['gwfo_config_valid']) && $this->CTRL->options['gwfo_config_valid']) {
-            $WebFontConfig = trim($this->CTRL->options['gwfo_config']);
-        }
-
         /**
          * Apply Google Font Remove List
          */
@@ -439,53 +424,10 @@ class Abovethefold_WebFonts
          * Add Google Fonts to config
          */
         if (!empty($this->googlefonts)) {
-            if ($WebFontConfig !== '') {
-
-                // WebFontConfig has Google fonts, merge
-                if (strpos($WebFontConfig, 'GOOGLE-FONTS-FROM-INCLUDE-LIST') !== false) {
-                    $quote = (strpos($WebFontConfig, '\'GOOGLE-FONTS-FROM-INCLUDE-LIST') !== false) ? '\'' : '"';
-                    $WebFontConfig = str_replace($quote . 'GOOGLE-FONTS-FROM-INCLUDE-LIST' . $quote, json_encode($this->googlefonts), $WebFontConfig);
-                }
-            } else {
-
-                /**
-                 * Return JSON
-                 */
-                if ($json) {
-                    $googlefontconfig = array(
-                        'google' => array(
-                            'families' => $this->googlefonts
-                        )
-                    );
-                    return $googlefontconfig;
-                }
-
-                $googlefontconfig = array(
-                    'families' => $this->googlefonts
-                );
-                $WebFontConfig = 'WebFontConfig={google:' . json_encode($googlefontconfig) . '};';
-            }
+            return $this->googlefonts;
         }
 
-        // no webfont config
-        if (empty($WebFontConfig)) {
-            return null;
-        }
-
-        /**
-         * Return JSON
-         */
-        if ($json) {
-
-            // return original WebFontConfig object string to be converted by the client
-            return rtrim(ltrim(str_replace('WebFontConfig', '', $WebFontConfig), '= '), '; ');
-        }
-
-        if (substr($WebFontConfig, 0, -1) !== '/') {
-            $WebFontConfig .= ';';
-        }
-
-        return $WebFontConfig;
+        return array();
     }
 
     /**
@@ -556,55 +498,69 @@ REGEX;
     /**
      * Javascript client settings
      */
-    public function client_jssettings(&$jssettings, &$jsfiles, &$inlineJS, $jsdebug)
+    public function client_jssettings(&$jssettings, &$jsfiles, &$inlineJS, $jsdebug, &$script_code_before)
     {
         if (isset($this->CTRL->options['gwfo_loadmethod']) && $this->CTRL->options['gwfo_loadmethod'] === 'disabled') {
 
             // disabled, remove Web Font Loader
             //$this->CTRL->options['gwfo'] = false;
         } else {
-            $webfontconfig = $this->webfontconfig(true);
-            if (!$webfontconfig) {
+            $google_fonts = $this->get_google_fonts();
+
+            /**
+             * Support old option to include custom WebFontConfig in the settings.
+             *
+             * To comply with Content-Security-Policy it is advised to move this config to a file.
+             */
+            if (isset($this->CTRL->options['gwfo_config']) && $this->CTRL->options['gwfo_config'] !== '' && isset($this->CTRL->options['gwfo_config_valid']) && $this->CTRL->options['gwfo_config_valid']) {
+                $WebFontConfig = trim($this->CTRL->options['gwfo_config']);
+
+                // WebFontConfig has Google fonts, merge
+                if (strpos($WebFontConfig, 'GOOGLE-FONTS-FROM-INCLUDE-LIST') !== false) {
+                    $quote = (strpos($WebFontConfig, '\'GOOGLE-FONTS-FROM-INCLUDE-LIST') !== false) ? '\'' : '"';
+                    $WebFontConfig = str_replace($quote . 'GOOGLE-FONTS-FROM-INCLUDE-LIST' . $quote, json_encode($this->googlefonts), $WebFontConfig);
+                }
+                if (strpos($WebFontConfig, 'WebFontConfig') === 0) {
+                    $WebFontConfig = 'var ' . $WebFontConfig;
+                }
+                $script_code_before .= $WebFontConfig;
+            }
+
+            if (empty($google_fonts)) {
 
                 // empty, do not load webfont.js
                 $this->CTRL->options['gwfo'] = false;
             } else {
                 $gfwindex = $this->CTRL->optimization->client_config_ref['gwf'];
 
+                // google fonts
+                $jssettings[$gfwindex] = array();
+                $jssettings[$gfwindex][$this->CTRL->optimization->client_config_ref['gwf-sub']['google_fonts']] = $this->webfont_inline_replacement_string;
+
+                // load position
+                $jssettings[$gfwindex][$this->CTRL->optimization->client_config_ref['gwf-sub']['footer']] = ($this->CTRL->options['gwfo_loadposition'] === 'footer') ? true : false;
+
+                // async
+                if ($this->CTRL->options['gwfo_loadmethod'] === 'async' || $this->CTRL->options['gwfo_loadmethod'] === 'async_cdn') {
+                    $jssettings[$gfwindex][$this->CTRL->optimization->client_config_ref['gwf-sub']['async']] = true;
+                }
+
+                // async url
+                if ($this->CTRL->options['gwfo_loadmethod'] === 'async' || $this->CTRL->options['gwfo_loadmethod'] === 'async_cdn') {
+                    if ($this->CTRL->options['gwfo_loadmethod'] === 'async') {
+                        $jssettings[$gfwindex][$this->CTRL->optimization->client_config_ref['gwf-sub']['async_url']] = WPABTF_URI . 'public/js/webfont.js';
+                    } else {
+
+                    // load from Google CDN
+                    $jssettings[$gfwindex][$this->CTRL->optimization->client_config_ref['gwf-sub']['async_url']] = $this->cdn_url;
+                    }
+                }
+
                 /**
                  * Load webfont.js inline
                  */
                 if ($this->CTRL->options['gwfo_loadmethod'] === 'inline') {
                     $jsfiles[] = WPABTF_PATH . 'public/js/webfont.js';
-                    $jssettings[$gfwindex] = array($this->webfont_inline_replacement_string);
-                    if ($this->CTRL->options['gwfo_loadposition'] === 'footer') {
-                        $jssettings[$gfwindex][] = true;
-                    }
-                } elseif ($this->CTRL->options['gwfo_loadmethod'] === 'async' || $this->CTRL->options['gwfo_loadmethod'] === 'async_cdn') {
-
-                    /**
-                     * Load async
-                     */
-                    $jssettings[$gfwindex] = array('a');
-
-                    $jssettings[$gfwindex][] = ($this->CTRL->options['gwfo_loadposition'] === 'footer') ? true : false;
-
-                    if ($this->CTRL->options['gwfo_loadmethod'] === 'async') {
-                        $jssettings[$gfwindex][] = WPABTF_URI . 'public/js/webfont.js';
-                    } else {
-
-                        // load from Google CDN
-                        $jssettings[$gfwindex][] = $this->cdn_url;
-                    }
-
-                    // WebFontConfig variable
-                    $inlineJS .= $this->webfont_replacement_string; //this->webfontconfig();
-                } elseif ($this->CTRL->options['gwfo_loadmethod'] === 'wordpress') {
-
-                    /**
-                     * WordPress include, just add the WebFontConfig variable
-                     */
-                    $inlineJS .= $this->webfont_replacement_string; //$this->webfontconfig();
                 }
             }
         }

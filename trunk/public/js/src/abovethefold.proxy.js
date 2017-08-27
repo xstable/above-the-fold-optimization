@@ -6,7 +6,7 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-(function(Abtf) {
+Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
 
     /**
      * Proxy url
@@ -687,4 +687,4 @@
         return url;
     }
 
-})(window.Abtf);
+});

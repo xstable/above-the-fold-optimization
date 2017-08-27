@@ -271,17 +271,17 @@ class Abovethefold_PWA
     /**
      * Javascript client settings
      */
-    public function client_jssettings(&$jssettings, &$jsfiles, &$inlineJS, $jsdebug)
+    public function client_jssettings(&$jssettings, &$jsfiles, &$inlineJS, $jsdebug, $html_before)
     {
 
         // print link to manifest.json
         if (isset($this->CTRL->options['pwa_manifest_meta']) && $this->CTRL->options['pwa_manifest_meta']) {
-            print '<link rel="manifest" href="' . esc_attr(trailingslashit(parse_url(site_url(), PHP_URL_PATH)).'manifest.json') . '">';
+            $html_before .= '<link rel="manifest" href="' . esc_attr(trailingslashit(parse_url(site_url(), PHP_URL_PATH)).'manifest.json') . '">';
         }
 
         // print Web App meta
         if (isset($this->CTRL->options['pwa_meta']) && $this->CTRL->options['pwa_meta']) {
-            print $this->CTRL->options['pwa_meta'];
+            $html_before .= $this->CTRL->options['pwa_meta'];
         }
 
         // PWA client
@@ -365,7 +365,7 @@ class Abovethefold_PWA
         if ($max > 0) {
             for ($i = 0; $i <= $max; $i++) {
                 if (!isset($jssettings[$pwaindex][$i])) {
-                    $jssettings[$pwaindex][$i] = 'ABTF-NULL';
+                    $jssettings[$pwaindex][$i] = -1;
                 }
             }
             ksort($jssettings[$pwaindex]);

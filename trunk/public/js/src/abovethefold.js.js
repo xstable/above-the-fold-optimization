@@ -6,7 +6,7 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-(function(Abtf, Object) {
+Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
 
     // active loading scripts
     var LOADING_SCRIPTS_COUNT = 0;
@@ -347,4 +347,4 @@
      */
     Abtf[CONFIG.ON_SCRIPT_LOAD] = ON_SCRIPT_LOAD;
 
-})(window.Abtf, Object);
+});

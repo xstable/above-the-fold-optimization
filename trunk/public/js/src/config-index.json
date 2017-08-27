@@ -1,4 +1,4 @@
-["js", "css", "base",
+["load_module", "js", "css", "base", "css_footer",
     "css_delay", {
         "proxy": [
             "url",
@@ -12,7 +12,14 @@
             "css_exclude",
             "cdn"
         ]
-    }, "gwf", {
+    }, {
+        "gwf": [
+            "google_fonts",
+            "footer",
+            "async",
+            "async_url"
+        ]
+    }, {
         "pwa": [
             "path",
             "scope",
@@ -22,8 +29,8 @@
             "max_size",
             "register"
         ]
-    }, "pwa_unregister",
-    "header", "footer", "load_css",
+    }, "header_load", "header", "footer", "load_css", "pwa_unregister", "domready",
+
     "raf", "idle", "async",
     "load_js", "loadCSS", "on_script_load",
     "load_script", "load_script_mark", "load_cached_script", "load_cached_script_url",

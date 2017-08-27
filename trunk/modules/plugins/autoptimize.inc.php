@@ -178,9 +178,11 @@ class Abovethefold_OPP_Autoptimize extends Abovethefold_OPP
     public function clear_pagecache()
     {
         if (class_exists('autoptimizeCache')) {
-
-            // clean the Autoptimize cache
-            autoptimizeCache::clearall();
+            try {
+                // clean the Autoptimize cache
+                autoptimizeCache::clearall();
+            } catch (Exception $err) {
+            }
         }
     }
 }

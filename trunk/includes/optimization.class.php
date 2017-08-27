@@ -69,6 +69,37 @@ class Abovethefold_Optimization
         if ($this->CTRL->disabled) {
             return; // above the fold optimization disabled for area / page
         }
+        
+        // load client config index
+        $config_index = WPABTF_PATH . 'public/js/src/config-index.json';
+        try {
+            if (file_exists($config_index)) {
+                $this->client_config_index = json_decode(file_get_contents($config_index), true);
+            }
+        } catch (Exception $err) {
+            $this->client_config_index = false;
+        }
+        if (!$this->client_config_index) {
+            wp_die('Failed to read ' . str_replace(ABSPATH, '', WPABTF_PATH . 'public/js/src/config.index.json'));
+        }
+
+        // set key index references
+        $this->client_config_ref = array();
+        foreach ($this->client_config_index as $position => $key) {
+            if (is_string($key)) {
+                $this->client_config_ref[$key] = $position;
+            } else {
+                $keys = array_keys($key);
+                $subkeys = $key[$keys[0]];
+                $key = $keys[0];
+
+                $this->client_config_ref[$key] = $position;
+                $this->client_config_ref[$key . '-sub'] = array();
+                foreach ($subkeys as $subposition => $subkey) {
+                    $this->client_config_ref[$key . '-sub'][$subkey] = $subposition;
+                }
+            }
+        }
 
         /**
          * Optimize CSS delivery
@@ -103,37 +134,6 @@ class Abovethefold_Optimization
             /**
              * Standard view
              */
-
-            // load client config index
-            $config_index = WPABTF_PATH . 'public/js/src/config-index.json';
-            try {
-                if (file_exists($config_index)) {
-                    $this->client_config_index = json_decode(file_get_contents($config_index), true);
-                }
-            } catch (Exception $err) {
-                $this->client_config_index = false;
-            }
-            if (!$this->client_config_index) {
-                wp_die('Failed to read ' . str_replace(ABSPATH, '', WPABTF_PATH . 'public/js/src/config.index.json'));
-            }
-
-            // set key index references
-            $this->client_config_ref = array();
-            foreach ($this->client_config_index as $position => $key) {
-                if (is_string($key)) {
-                    $this->client_config_ref[$key] = $position;
-                } else {
-                    $keys = array_keys($key);
-                    $subkeys = $key[$keys[0]];
-                    $key = $keys[0];
-
-                    $this->client_config_ref[$key] = $position;
-                    $this->client_config_ref[$key . '-sub'] = array();
-                    foreach ($subkeys as $subposition => $subkey) {
-                        $this->client_config_ref[$key . '-sub'][$subkey] = $subposition;
-                    }
-                }
-            }
             
             /**
              * Check if an optimization module offers an output buffer hook
@@ -155,9 +155,6 @@ class Abovethefold_Optimization
 
         // wordpress header
         $this->CTRL->loader->add_action('wp_head', $this, 'header', 1);
-
-        // wordpress footer
-        $this->CTRL->loader->add_action('wp_print_footer_scripts', $this, 'footer', 99999);
     }
 
     /**
@@ -883,7 +880,7 @@ class Abovethefold_Optimization
              * Update CSS JSON configuration
              */
             $search[] = '"'.$this->criticalcss_replacement_string    .'"';
-            $replace[] = $styles_json;
+            $replace[] = esc_attr($styles_json);
         }
 
         /**
@@ -1025,13 +1022,47 @@ class Abovethefold_Optimization
         // debug enabled?
         $debug = (current_user_can('administrator') && intval($this->CTRL->options['debug']) === 1) ? true : false;
 
-        // Inline js
-        $inlineJS = '';
-
         /**
          * Load Critical CSS
          */
         $inlineCSS = $this->CTRL->criticalcss->get();
+
+        /**
+         * Optimize CSS delivery
+         */
+        if ($this->optimize_css_delivery) {
+            $headCSS = ($this->CTRL->options['cssdelivery_position'] === 'header') ? true : false;
+        } else {
+
+            // do not load CSS
+            $headCSS = false;
+        }
+
+        // client script and settings
+        $clientjs = $this->get_client_script($debug);
+
+        // print HTML such as meta
+        if ($clientjs['html_before']) {
+            print $clientjs['html_before'];
+        }
+
+        // print javascript
+        print '<script '.((!defined('ABTF_NOREF') || !ABTF_NOREF) ? 'data-ref="https://goo.gl/C1gw96"' : '').' data-abtf=\''.str_replace('\'', '&#39;', json_encode($clientjs['config'])).'\'>'.$clientjs['client'].'</script>';
+
+        // above the fold CSS
+        print '<style type="text/css" id="AbtfCSS" data-abtf>' . $inlineCSS . '</style>';
+    }
+
+    /**
+     * Get client script code
+     */
+    public function get_client_script($debug = false)
+    {
+        $html_before = '';
+
+        // Inline js
+        $script_code = '';
+        $script_code_before = '';
 
         // javascript debug extension
         $jsdebug = ($debug) ? '.debug' : '';
@@ -1052,7 +1083,7 @@ class Abovethefold_Optimization
         if ($this->CTRL->options['gwfo']) {
 
             // get web font loader client
-            $this->CTRL->gwfo->client_jssettings($jssettings, $jsfiles, $inlineJS, $jsdebug);
+            $this->CTRL->gwfo->client_jssettings($jssettings, $jsfiles, $inlineJS, $jsdebug, $script_code_before);
         }
 
         /** main client controller */
@@ -1061,7 +1092,7 @@ class Abovethefold_Optimization
         /**
          * Google PWA Optimization
          */
-        $this->CTRL->pwa->client_jssettings($jssettings, $jsfiles, $inlineJS, $jsdebug);
+        $this->CTRL->pwa->client_jssettings($jssettings, $jsfiles, $script_code, $jsdebug, $html_before);
 
         // Proxy external files
         if ($this->CTRL->options['js_proxy'] || $this->CTRL->options['css_proxy']) {
@@ -1117,7 +1148,7 @@ class Abovethefold_Optimization
             if (substr($js, -1) !== ';') {
                 $js .= ' ';
             }
-            $inlineJS .= $js;
+            $script_code .= $js;
         }
 
         /**
@@ -1128,10 +1159,6 @@ class Abovethefold_Optimization
             if (isset($this->CTRL->options['jsdelivery_idle']) && !empty($this->CTRL->options['jsdelivery_idle'])) {
                 $jssettings[$this->client_config_ref['js']][] = $this->CTRL->options['jsdelivery_idle'];
             }
-        } else {
-
-            // do not load CSS
-            $headJS = false;
         }
 
         /**
@@ -1144,11 +1171,9 @@ class Abovethefold_Optimization
                 $jssettings[$this->client_config_ref['css_delay']] = intval($this->CTRL->options['cssdelivery_renderdelay']);
             }
 
-            $headCSS = ($this->CTRL->options['cssdelivery_position'] === 'header') ? true : false;
-        } else {
-
-            // do not load CSS
-            $headCSS = false;
+            if (!isset($this->CTRL->options['cssdelivery_position']) || $this->CTRL->options['cssdelivery_position'] !== 'header') {
+                $jssettings[$this->client_config_ref['css_footer']] = true;
+            }
         }
 
         $max = 0;
@@ -1160,54 +1185,26 @@ class Abovethefold_Optimization
         if ($max > 0) {
             for ($i = 0; $i <= $max; $i++) {
                 if (!isset($jssettings[$i])) {
-                    $jssettings[$i] = 'ABTF-NULL';
+                    $jssettings[$i] = -1;
                 }
             }
             ksort($jssettings);
         }
 
-        // client javascript
-        print '<script '.((!defined('ABTF_NOREF') || !ABTF_NOREF) ? 'data-abtf="https://goo.gl/C1gw96"' : 'data-abtf').'>window.Abtf='.str_replace('"ABTF-NULL"', '', json_encode($jssettings)).';' . $inlineJS . 'Abtf['.$this->client_config_ref['header'].']();</script>';
-
-        // above the fold CSS
-        print '<style type="text/css" id="AbtfCSS" data-abtf>' . $inlineCSS . '</style>';
-
-        /**
-         * Start async loading of CSS
-         */
-        if ($this->optimize_css_delivery && $headCSS) {
-            print '<script data-abtf>Abtf['.$this->client_config_ref['load_css'].']();</script>';
-        }
+        return array(
+            'html_before' => $html_before,
+            'config' => $jssettings,
+            'client' => trim($script_code_before . 'window.Abtf={};' . $script_code . 'Abtf['.$this->client_config_ref['header_load'].']();')
+        );
     }
 
     /**
-     * WordPress Footer hook
+     * Get client script hash
      */
-    public function footer()
+    public function get_client_script_hash($debug = false, $algorithm = 'sha256')
     {
-        if ($this->CTRL->disabled) {
-            return;
-        }
-
-        // CSS delivery in footer
-        $footCSS = ($this->optimize_css_delivery && (empty($this->CTRL->options['cssdelivery_position']) || $this->CTRL->options['cssdelivery_position'] === 'footer')) ? true : false;
-
-        if (
-
-            $footCSS
-
-            // javascript in footer
-            || ($this->CTRL->options['jsdelivery'] && $this->CTRL->options['jsdelivery_position'] === 'footer')
-
-            // google web font loader in footer
-            || ($this->CTRL->options['gwfo'] && $this->CTRL->options['gwfo_loadposition'] === 'footer')
-
-        ) {
-
-            // start loading CSS from footer position
-            
-            print "<script data-abtf>Abtf[".$this->client_config_ref['footer']."](".json_encode($footCSS).");</script>";
-        }
+        $script = $this->get_client_script($debug);
+        return base64_encode(hash($algorithm, $script['client'], true));
     }
 
     /**

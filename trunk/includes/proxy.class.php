@@ -1107,7 +1107,7 @@ class Abovethefold_Proxy
         if ($max > 0) {
             for ($i = 0; $i <= $max; $i++) {
                 if (!isset($jssettings[$proxyindex][$i])) {
-                    $jssettings[$proxyindex][$i] = 'ABTF-NULL';
+                    $jssettings[$proxyindex][$i] = -1;
                 }
             }
             ksort($jssettings[$proxyindex]);

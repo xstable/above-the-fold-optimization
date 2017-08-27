@@ -8,7 +8,7 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-(function(Abtf) {
+Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
 
     // Global state.
     var pendingScripts = {};
@@ -215,4 +215,4 @@
         }
     };
 
-})(window.Abtf);
+});

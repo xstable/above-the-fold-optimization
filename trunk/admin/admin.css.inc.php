@@ -209,10 +209,14 @@
                                                             ?>
 															<textarea style="width: 100%;height:100px;font-size:11px;<?php if (isset($options['gwfo_config_valid']) && $options['gwfo_config_valid'] === false) {
                                                                 print 'border-color:red;';
-                                                            } ?>" name="abovethefold[gwfo_config]" placeholder="WebFontConfig = { classes: false, typekit: { id: 'xxxxxx' }, loading: function() {}, google: { families: ['Droid Sans', 'Droid Serif'] } };"><?php if (isset($options['gwfo_config'])) {
+                                                            } ?>" name="abovethefold[gwfo_config]" placeholder="WebFontConfig = { classes: false, typekit: { id: 'xxxxxx' }, loading: function() {}, google: { families: ['Droid Sans', 'Droid Serif'] } };" onchange="if (jQuery(this).val() ==='') { jQuery('#sha256_warning').hide(); } else {jQuery('#sha256_warning').show();} "><?php if (isset($options['gwfo_config'])) {
                                                                 echo htmlentities($options['gwfo_config']);
                                                             } ?></textarea>
 															<p class="description">Enter the <code>WebFontConfig</code> variable for Google Web Font Loader. Leave blank for the default configuration. (<a href="https://github.com/typekit/webfontloader#configuration" target="_blank">more information</a>)</p>
+
+															<p class="warning_red" id="sha256_warning" style="<?php if (!isset($options['gwfo_config']) || trim($options['gwfo_config']) === '') {
+                                                                print 'display:none;';
+                                                            } ?>margin-top:.5em;"><strong>Warning:</strong> If you use a Content-Security-Policy hash to white list the ABTF client script, modifying the custom <code>WebFontConfig</code> config changes the hash.</p>
 														</td>
 													</tr>
 													<tr valign="top" class="gwfloadoptions">

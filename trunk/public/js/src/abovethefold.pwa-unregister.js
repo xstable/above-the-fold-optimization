@@ -6,7 +6,7 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-(function(window, Abtf) {
+Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
 
 
     // test availability of serviceWorker
@@ -56,4 +56,4 @@
         }
     });
 
-})(window, window.Abtf);
+});

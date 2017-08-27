@@ -8,7 +8,7 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-(function(Abtf) {
+Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
 
     // Wait for Critical CSS <style>
     var retrycount = 0;
@@ -47,8 +47,8 @@
                 continue;
             }
             m = files[i][0].join(',');
-            Abtf[CONFIG.LOADCSS](files[i][1], target, m);
+            Abtf[CONFIG.LOADCSS](files[i][1], m);
         }
     };
 
-})(window.Abtf);
+});

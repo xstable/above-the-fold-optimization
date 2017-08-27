@@ -298,6 +298,38 @@ class Abovethefold
      */
     public function template_redirect()
     {
+
+        // return content security hashes
+        if (isset($_GET['abtf-csp-hash'])) {
+            $json = array();
+
+            $algorithms = array(
+                'sha256',
+                'sha384',
+                'sha512'
+            );
+            foreach ($algorithms as $algorithm) {
+                try {
+                    $json[$algorithm] = array(
+                        'public' => $this->optimization->get_client_script_hash(false, $algorithm),
+                        'debug' => $this->optimization->get_client_script_hash(true, $algorithm)
+                    );
+                } catch (Exception $err) {
+                    $json[$algorithm] = array(
+                        'public' => 'FAILED',
+                        'debug' => 'FAILED'
+                    );
+                }
+            }
+
+            while (ob_get_level()) {
+                ob_end_clean();
+            }
+
+            print json_encode($json);
+            exit;
+        }
+        
         $this->template_redirect_called = true;
 
         /**

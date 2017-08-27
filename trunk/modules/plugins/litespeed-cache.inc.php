@@ -14,57 +14,58 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-class Abovethefold_OPP_LitespeedCache extends Abovethefold_OPP {
+class Abovethefold_OPP_LitespeedCache extends Abovethefold_OPP
+{
 
-	/**
-	 * Plugin file reference
-	 */
-	public $plugin_file = 'litespeed-cache/litespeed-cache.php';
+    /**
+     * Plugin file reference
+     */
+    public $plugin_file = 'litespeed-cache/litespeed-cache.php';
 
-	/**
-	 * Initialize the class and set its properties
-	 */
-	public function __construct( &$CTRL ) {
-		parent::__construct( $CTRL );
+    /**
+     * Initialize the class and set its properties
+     */
+    public function __construct(&$CTRL)
+    {
+        parent::__construct($CTRL);
 
-		// Is the plugin enabled?
-		if ( !$this->active() ) {
-			return;
-		} 
+        // Is the plugin enabled?
+        if (!$this->active()) {
+            return;
+        }
+    }
 
-	}
+    /**
+     * Is plugin active?
+     */
+    public function active($type = false)
+    {
+        if (!class_exists('LiteSpeed_Cache')) {
+            return false;
+        }
 
-	/**
-	 * Is plugin active?
-	 */
-	public function active($type = false) {
+        if ($this->CTRL->plugins->active($this->plugin_file)) {
 
-		if (!class_exists('LiteSpeed_Cache')) {
-			return false;
-		}
+            // plugin is active
+            if (!$type) {
+                return true;
+            }
+        }
 
-		if ( $this->CTRL->plugins->active( $this->plugin_file ) ) {
+        return false; // not active for special types (css, js etc.)
+    }
 
-			// plugin is active
-			if (!$type) {
-				return true;
-			}
-		}
-
-		return false; // not active for special types (css, js etc.)
-	}
-
-	/**
-	 * Clear full page cache
-	 */
-	public function clear_pagecache() {
-
-		if (class_exists('LiteSpeed_Cache')) {
-
-			$cache = LiteSpeed_Cache::plugin();
-			$cache->purge_all();
-
-		}
-	}
-
+    /**
+     * Clear full page cache
+     */
+    public function clear_pagecache()
+    {
+        if (class_exists('LiteSpeed_Cache')) {
+            try {
+                $cache = LiteSpeed_Cache::plugin();
+                $cache->purge_all();
+            } catch (Exception $err) {
+            }
+        }
+    }
 }

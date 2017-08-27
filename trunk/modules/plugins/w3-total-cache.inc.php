@@ -13,300 +13,312 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-class Abovethefold_OPP_W3TotalCache extends Abovethefold_OPP {
+class Abovethefold_OPP_W3TotalCache extends Abovethefold_OPP
+{
 
-	/**
-	 * Plugin file reference
-	 */
-	public $plugin_file = 'w3-total-cache/w3-total-cache.php';
+    /**
+     * Plugin file reference
+     */
+    public $plugin_file = 'w3-total-cache/w3-total-cache.php';
 
-	/**
-	 * Config data
-	 */
-	private $config;
+    /**
+     * Config data
+     */
+    private $config;
 
-	/**
-	 * Page cache callback
-	 */
-	private $pagecache_callback;
+    /**
+     * Page cache callback
+     */
+    private $pagecache_callback;
 
-	/**
-	 * Initialize the class and set its properties
-	 */
-	public function __construct( &$CTRL ) {
-		parent::__construct( $CTRL );
+    /**
+     * Initialize the class and set its properties
+     */
+    public function __construct(&$CTRL)
+    {
+        parent::__construct($CTRL);
 
-		// Is the plugin enabled?
-		if ( !$this->active() ) {
-			return;
-		} 
+        // Is the plugin enabled?
+        if (!$this->active()) {
+            return;
+        }
 
-	   /**
-		* Skip CSS minification
-		*/
-		$this->CTRL->loader->add_filter( 'w3tc_minify_css_do_tag_minification', $this, 'skip_css', 10, 3 );
+       /**
+        * Skip CSS minification
+        */
+        $this->CTRL->loader->add_filter('w3tc_minify_css_do_tag_minification', $this, 'skip_css', 10, 3);
 
-	   /**
-		* Skip Javascript minification
-		*/
-		$this->CTRL->loader->add_filter( 'w3tc_minify_js_do_tag_minification', $this, 'skip_js', 10, 3 );
+       /**
+        * Skip Javascript minification
+        */
+        $this->CTRL->loader->add_filter('w3tc_minify_js_do_tag_minification', $this, 'skip_js', 10, 3);
+    }
 
-	}
+    /**
+     * Load config
+     */
+    public function get_config()
+    {
+        if (!$this->config) {
+            if (class_exists('\\W3TC\\Dispatcher')) {
+                $classname = '\\W3TC\\Dispatcher';
+                $this->config = $classname::config();
 
-	/**
-	 * Load config
-	 */
-	public function get_config() {
-		if (!$this->config) {
+                if ($this->config) {
 
-			if (class_exists('\\W3TC\\Dispatcher')) {
+                    // override minify settings to process content for optimization
+                    $minify_options = $this->config->get_array('minify.options');
+                    $minify_options['postprocessor'] = array($this,'process_minified_content');
 
-				$classname = '\\W3TC\\Dispatcher';
-				$this->config = $classname::config();
+                    $this->config->set('minify.options', $minify_options);
+                }
 
-				if ($this->config) {
+                return $this->config;
+            }
+            return false;
+        }
 
-					// override minify settings to process content for optimization
-					$minify_options = $this->config->get_array( 'minify.options' );
-					$minify_options['postprocessor'] = array($this,'process_minified_content');
+        return $this->config;
+    }
 
-					$this->config->set('minify.options', $minify_options);
-				}
+    /**
+     * Is plugin active?
+     */
+    public function active($type = false)
+    {
+        if ($this->CTRL->plugins->active($this->plugin_file)) {
 
-				return $this->config;
-			}
-			return false;
-		}
+            // plugin is active
+            if (!$type) {
+                return true;
+            }
 
-		return $this->config;
-	}
+            // get W3 config
+            if (!$this->get_config()) {
+                return false;
+            }
 
-	/**
-	 * Is plugin active?
-	 */
-	public function active($type = false) {
+            // verify if plugin is active for optimization type
+            switch ($type) {
 
-		if ( $this->CTRL->plugins->active( $this->plugin_file ) ) {
+                case "html_output_buffer": // hook to W3TC Output Buffer
+                    return true;
+                break;
 
-			// plugin is active
-			if (!$type) {
-				return true;
-			}
+                // Javascript optimization?
+                case "js":
+                    return ($this->config->get_boolean('minify.enabled') && $this->config->get_boolean('minify.js.enable'));
+                break;
 
-			// get W3 config
-			if (!$this->get_config()) {
-				return false;
-			}
+                // CSS optimization?
+                case "css":
+                    return ($this->config->get_boolean('minify.enabled') && $this->config->get_boolean('minify.css.enable'));
+                break;
 
-			// verify if plugin is active for optimization type
-			switch($type) {
+                // HTML optimization?
+                case "html":
+                    return ($this->config->get_boolean('minify.enabled') && $this->config->get_boolean('minify.html.enable'));
+                break;
+            }
 
-				case "html_output_buffer": // hook to W3TC Output Buffer
-					return true;
-				break;
+            return false;
+        }
 
-				// Javascript optimization?
-				case "js":
-					return ($this->config->get_boolean( 'minify.enabled' ) && $this->config->get_boolean( 'minify.js.enable' ));
-				break;
+        return false; // not active
+    }
 
-				// CSS optimization?
-				case "css":
-					return ($this->config->get_boolean( 'minify.enabled' ) && $this->config->get_boolean( 'minify.css.enable' ));
-				break;
+    /**
+     * Skip CSS from minificaiton
+     */
+    public function skip_css($do_tag_minification, $style_tag, $file)
+    {
+        if (!$do_tag_minification) {
+            return false;
+        }
 
-				// HTML optimization?
-				case "html":
-					return ($this->config->get_boolean( 'minify.enabled' ) && $this->config->get_boolean( 'minify.html.enable' ));
-				break;
-			}
+        if (strpos($style_tag, 'rel="abtf"') !== false) {
+            return false;
+        }
 
-			return false;
-		}
+        return true;
+    }
 
-		return false; // not active
-	}
+    /**
+     * Skip Javascript from Autoptimize minificaiton
+     */
+    public function skip_js($do_tag_minification, $style_tag, $file)
+    {
+        if (!$do_tag_minification) {
+            return false;
+        }
 
-	/**
-	 * Skip CSS from minificaiton
-	 */
-	public function skip_css($do_tag_minification, $style_tag, $file) {
+        if (strpos($style_tag, 'rel="abtf"') !== false) {
+            return false;
+        }
 
-		if (!$do_tag_minification) {
-			return false;
-		}
+        return true;
+    }
 
-		if (strpos($style_tag,'rel="abtf"') !== false) {
-			return false;
-		}
+    /**
+     * Process minified content
+     */
+    public function process_minified_content($content, $type)
+    {
+        if (class_exists('Minify0_Minify')) {
+            
+            /**
+             * Process minified CSS
+             */
+            if ($type === Minify0_Minify::TYPE_CSS) {
+                return $this->process_minified_css($content);
+            }
 
-		return true;
-	}
+            /**
+             * Process minified javascript
+             */
+            if ($type === Minify0_Minify::TYPE_JS) {
+                return $this->process_minified_js($content);
+            }
 
-	/**
-	 * Skip Javascript from Autoptimize minificaiton
-	 */
-	public function skip_js($do_tag_minification, $style_tag, $file) {
-		if (!$do_tag_minification) {
-			return false;
-		}
+            /**
+             * Process minified HTML
+             */
+            if ($type === Minify0_Minify::TYPE_HTML) {
+                return $this->process_minified_html($content);
+            }
+        }
 
-		if (strpos($style_tag,'rel="abtf"') !== false) {
-			return false;
-		}
+        return $content;
+    }
 
-		return true;
-	}
+    /**
+    * Process minified CSS
+    */
+    public function process_minified_css($css)
+    {
+        return apply_filters('abtf_css', $css);
+    }
 
-	/**
-	 * Process minified content
-	 */
-	public function process_minified_content($content, $type) {
+    /**
+    * Process minified javascript
+    */
+    public function process_minified_js($js)
+    {
+        return apply_filters('abtf_js', $js);
+    }
 
-		if (class_exists('Minify0_Minify')) {
-			
-			/**
-			 * Process minified CSS
-			 */
-			if ($type === Minify0_Minify::TYPE_CSS) {
-				return $this->process_minified_css($content);
-			}
+    /**
+     * Process HTML
+     */
+    public function process_minified_html($html)
+    {
+        return apply_filters('abtf_html', $html);
+    }
 
-			/**
-			 * Process minified javascript
-			 */
-			if ($type === Minify0_Minify::TYPE_JS) {
-				return $this->process_minified_js($content);
-			}
+    /**
+     * Disable CSS minification
+     */
+    public function disable_css_minify()
+    {
 
-			/**
-			 * Process minified HTML
-			 */
-			if ($type === Minify0_Minify::TYPE_HTML) {
-				return $this->process_minified_html($content);
-			}
-		}
+       /**
+        * Add filter to disable CSS optimization
+        */
+        $this->CTRL->loader->add_filter('w3tc_minify_css_enable', $this, 'noptimize');
+    }
 
-		return $content;
-	}
+    /**
+     * Disable HTML minification
+     */
+    public function disable_html_minify()
+    {
 
-	/**
-	* Process minified CSS 
-	*/
-	public function process_minified_css($css) {
-		return apply_filters('abtf_css', $css);
-	}
+       /**
+        * Add filter to disable CSS optimization
+        */
+        $this->CTRL->loader->add_filter('w3tc_minify_html_enable', $this, 'noptimize');
+    }
 
-	/**
-	* Process minified javascript
-	*/
-	public function process_minified_js($js) {
-		return apply_filters('abtf_js', $js);
-	}
+    /**
+     * Disable Javascript minification
+     */
+    public function disable_js_minify()
+    {
 
-	/**
-	 * Process HTML
-	 */
-	public function process_minified_html($html) {
-		return apply_filters('abtf_html', $html);
-	}
+       /**
+        * Add filter to disable Javascript optimization
+        */
+        $this->CTRL->loader->add_filter('w3tc_minify_js_enable', $this, 'noptimize');
+    }
 
-	/**
-	 * Disable CSS minification
-	 */
-	public function disable_css_minify() {
+    /**
+     * Disable optimization
+     */
+    public function noptimize()
+    {
+        return false;
+    }
 
-	   /**
-		* Add filter to disable CSS optimization
-		*/
-		$this->CTRL->loader->add_filter( 'w3tc_minify_css_enable', $this, 'noptimize' );
-	}
+    /**
+     * Clear cache
+     */
+    public function clear_pagecache()
+    {
+        try {
+            if (function_exists('w3tc_pgcache_flush')) {
 
-	/**
-	 * Disable HTML minification
-	 */
-	public function disable_html_minify() {
+            // clean the page cache
+            w3tc_pgcache_flush();
+            }
 
-	   /**
-		* Add filter to disable CSS optimization
-		*/
-		$this->CTRL->loader->add_filter( 'w3tc_minify_html_enable', $this, 'noptimize' );
-	}
+            if (function_exists('w3tc_minify_flush')) {
+            
+            // clean minify cache
+            w3tc_minify_flush();
+            }
+        } catch (Exception $err) {
+        }
+    }
 
-	/**
-	 * Disable Javascript minification
-	 */
-	public function disable_js_minify() {
+    /**
+     * Handle output buffer
+     */
+    public function ob_callback($buffer)
+    {
 
-	   /**
-		* Add filter to disable Javascript optimization
-		*/
-		$this->CTRL->loader->add_filter( 'w3tc_minify_js_enable', $this, 'noptimize' );
-	}
+        // apply Above The Fold Optimization
+        $buffer = $this->CTRL->optimization->process_output_buffer($buffer);
 
-	/**
-	 * Disable optimization
-	 */
-	public function noptimize() {
-		return false;
-	}
+        // apply W3 Total Cache pagecache output filter
+        if ($this->pagecache_callback) {
+            if (is_callable($this->pagecache_callback)) {
+                $buffer = call_user_func($this->pagecache_callback, $buffer);
+            } elseif (function_exists('wp_get_current_user') && current_user_can('administrator')) {
+                return 'Failed to process W3 Total Cache callback. Please contact the author of the <a href="https://goo.gl/C1gw96" target="_blank">Above The Fold Optimization</a> plugin</a>. This message is only visible to administrators.';
+            }
+        }
 
-	/**
-	 * Clear cache
-	 */
-	public function clear_pagecache() {
+        return $buffer;
+    }
 
-		if (function_exists('w3tc_pgcache_flush')) {
+    /**
+     * HTML output hook
+     *
+     * The goal is to apply above the fold optimization after the output of optimization plugins, but before full page cache.
+     *
+     * Use the active() -> "html_output_buffer" method above to enable/disable this HTML output buffer hook.
+     */
+    public function html_output_hook($optimization)
+    {
 
-			// clean the page cache
-			w3tc_pgcache_flush();
-		}
+        // check if pagecache output buffer is started
+        if (isset($GLOBALS['_w3tc_ob_callbacks']['pagecache'])) {
+            $this->pagecache_callback = $GLOBALS['_w3tc_ob_callbacks']['pagecache'];
+        }
 
-		if (function_exists('w3tc_minify_flush')) {
-			
-			// clean minify cache
-			w3tc_minify_flush();
-		}
-	}
+        // set / replace pagecache output buffer callback with Above The Fold customized callback
+        $GLOBALS['_w3tc_ob_callbacks']['pagecache'] = array($this, 'ob_callback');
 
-	/**
-	 * Handle output buffer
-	 */
-	public function ob_callback($buffer) {
-
-		// apply Above The Fold Optimization
-		$buffer = $this->CTRL->optimization->process_output_buffer($buffer);
-
-		// apply W3 Total Cache pagecache output filter
-		if ($this->pagecache_callback) {
-			if ( is_callable( $this->pagecache_callback ) ) {
-				$buffer = call_user_func( $this->pagecache_callback, $buffer );
-			} else if (function_exists('wp_get_current_user') && current_user_can('administrator')) {
-				return 'Failed to process W3 Total Cache callback. Please contact the author of the <a href="https://goo.gl/C1gw96" target="_blank">Above The Fold Optimization</a> plugin</a>. This message is only visible to administrators.';
-			}
-		}
-
-		return $buffer;
-	}
-
-	/**
-	 * HTML output hook
-	 *
-	 * The goal is to apply above the fold optimization after the output of optimization plugins, but before full page cache.
-	 *
-	 * Use the active() -> "html_output_buffer" method above to enable/disable this HTML output buffer hook.
-	 */
-	public function html_output_hook($optimization) {
-
-		// check if pagecache output buffer is started
-		if ( isset( $GLOBALS['_w3tc_ob_callbacks']['pagecache'] ) ) {
-			$this->pagecache_callback = $GLOBALS['_w3tc_ob_callbacks']['pagecache'];
-		}
-
-		// set / replace pagecache output buffer callback with Above The Fold customized callback
-		$GLOBALS['_w3tc_ob_callbacks']['pagecache'] = array($this, 'ob_callback');
-
-		return true;
-	}
-
+        return true;
+    }
 }
