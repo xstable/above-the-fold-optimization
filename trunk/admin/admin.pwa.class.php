@@ -60,7 +60,7 @@ class Abovethefold_Admin_PWA
                     @file_put_contents($manifest, json_encode(array(
                         "short_name" => "",
                         "name" => "",
-                        "icons" => [],
+                        "icons" => array(),
                         "start_url" => "/?utm_source=web_app_manifest",
                         "background_color" => "#f0f3e9",
                         "theme_color" => "#3da508",
