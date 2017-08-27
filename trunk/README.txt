@@ -132,6 +132,9 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.8.13 =
+* Bugfix: PHP 5.3 support (@psabbatella)
+
 = 2.8.12 =
 * Added: optional Service Worker registration to support other service workers by importing the PWA Service Worker via `includeScript`.
 * Added: option to unregister (remove) the PWA Service Worker after disabling PWA.
