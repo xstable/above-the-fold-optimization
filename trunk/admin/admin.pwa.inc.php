@@ -48,7 +48,7 @@
 <label><input type="checkbox" name="abovethefold[pwa_register]" value="1"<?php if (!isset($options['pwa']) || !isset($options['pwa_register']) || intval($options['pwa_register']) === 1) {
     print ' checked';
 } ?> /> Register Service Worker</label>
-			<p class="description">Unchecking this option enables to combine the PWA Service Worker with other service workers, for example for <a href="http://localhost/wp-admin/plugin-install.php?s=push+notifications&tab=search&type=term">Push Notifications</a>. If you want to load the PWA Service Worker using <code>includeScript</code> use the file <a href="<?php echo esc_attr(trailingslashit(site_url()) . $sw['filename']); ?>" target="_blank" download="<?php echo esc_attr($sw['filename']); ?>">/<?php echo esc_html($sw['filename']); ?></a>.</p>
+			<p class="description">Unchecking this option enables to combine the PWA Service Worker with other service workers, for example for <a href="<?php echo admin_url('plugin-install.php?s=push+notifications&tab=search&type=term'); ?>">Push Notifications</a>. If you want to load the PWA Service Worker using <code>includeScript</code> use the file <a href="<?php echo esc_attr(trailingslashit(site_url()) . $sw['filename']); ?>" target="_blank" download="<?php echo esc_attr($sw['filename']); ?>">/<?php echo esc_html($sw['filename']); ?></a>.</p>
 </div>
 			<div id="pwa_unreg" style="margin-top:0.5em;<?php if (!isset($options['pwa']) || $options['pwa']) {
     print ' display:none;';
