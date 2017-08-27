@@ -75,21 +75,7 @@ The HTML5 script loader offers the following advantages when configured correctl
 
 **The plugin does not provide Javascript code optimization, minification or concatenation.**
 
-### Google Web Font Optimization
-
-The plugin contains tools to optimize [Google Web Fonts](https://fonts.google.com/). 
-
-Some of the features:
-
-* Load Google Web Fonts via [Google Web Font Loader](https://github.com/typekit/webfontloader).
-* Auto-discovery of Google Web Fonts using:
-	* Parse `<link rel="stylesheet">` in HTML source.
-	* Parse `@import` links in minified CSS from minification plugins (e.g. Autoptimize).
-	* Parse existing `WebFontConfig` javascript configuration.
-* Remove fonts to enable local font loading.
-* Upload Google Web Font Packages from [google-webfonts-helper](https://google-webfonts-helper.herokuapp.com/) to the theme directory.
-
-### Google PWA Validation
+### Google PWA Optimization
 
 The plugin contains tools to achieve a 100 / 100 / 100 / 100 score in the [Google Lighthouse Test](https://developers.google.com/web/tools/lighthouse/). Google has been promoting [Progressive Web Apps](https://developers.google.com/web/progressive-web-apps/) (PWA) as the future of the internet: a combination of the flexability and openness of the existing web with the user experience advantages of native mobile apps. In essence: a mobile app that can be indexed by Google and that can be managed by WordPress. 
 
@@ -104,6 +90,20 @@ Some of the features:
 * HTTP HEAD based cache updates.
 * Option to add `offline` class on `<body>` when the connection is offline.
 * [Web App Manifest](https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/) management: add website to home screen on mobile devices, track app launches and more.
+
+### Google Web Font Optimization
+
+The plugin contains tools to optimize [Google Web Fonts](https://fonts.google.com/). 
+
+Some of the features:
+
+* Load Google Web Fonts via [Google Web Font Loader](https://github.com/typekit/webfontloader).
+* Auto-discovery of Google Web Fonts using:
+	* Parse `<link rel="stylesheet">` in HTML source.
+	* Parse `@import` links in minified CSS from minification plugins (e.g. Autoptimize).
+	* Parse existing `WebFontConfig` javascript configuration.
+* Remove fonts to enable local font loading.
+* Upload Google Web Font Packages from [google-webfonts-helper](https://google-webfonts-helper.herokuapp.com/) to the theme directory.
 
 ### Gulp.js Critical CSS Creator
 
