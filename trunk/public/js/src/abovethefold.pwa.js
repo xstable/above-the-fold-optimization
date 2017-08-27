@@ -11,6 +11,13 @@
 
 (function(window, Abtf) {
 
+    // public method for browsers that do not support Service Worker or Promise
+    Abtf.offline = function() {
+        return {
+            then: function() {}
+        }
+    }; // do nothing
+
     // test availability of serviceWorker
     if (!('serviceWorker' in window.navigator)) {
         return;
@@ -88,38 +95,51 @@
                 POST_CONFIG();
             });
         }
+        if (ABTFDEBUG) {
+            console.info('Abtf.pwa() ➤ service worker ready');
+        }
     });
 
     /**
      * Register Service Worker
      */
-    navigator.serviceWorker.register(PWA_CONFIG[CONFIG.PWA_PATH], {
-            scope: PWA_CONFIG[CONFIG.PWA_SCOPE]
-        })
-        .then(function waitUntilInstalled(registration) {
-            return new Promise(function(resolve, reject) {
-                if (registration.installing) {
-                    registration.installing.addEventListener('statechange', function(e) {
-                        if (e.target.state == 'installed') {
-                            resolve();
-                        } else if (e.target.state == 'redundant') {
-                            reject();
+    if (PWA_CONFIG[CONFIG.PWA_REGISTER]) {
+        navigator.serviceWorker.register(PWA_CONFIG[CONFIG.PWA_PATH], {
+                scope: PWA_CONFIG[CONFIG.PWA_SCOPE]
+            })
+            .then(function waitUntilInstalled(registration) {
+                return new Promise(function(resolve, reject) {
+                    if (registration.installing) {
+                        registration.installing.addEventListener('statechange', function(e) {
+
+                            if (e.target.state == 'installed') {
+                                if (ABTFDEBUG) {
+                                    console.info('Abtf.pwa() ➤ service worker loaded');
+                                }
+                                resolve();
+                            } else {
+
+                                if (ABTFDEBUG) {
+                                    console.warn('Abtf.pwa() ➤ service worker', e.target.state);
+                                }
+
+                                if (e.target.state == 'redundant') {
+                                    reject();
+                                }
+                            }
+                        });
+                    } else {
+                        if (ABTFDEBUG) {
+                            console.info('Abtf.pwa() ➤ service worker loaded');
                         }
-                    });
-                } else {
-                    resolve();
-                }
+                        resolve();
+                    }
+                });
+            })
+            .catch(function(error) {
+                throw error;
             });
-        })
-        .then(function() {
-            if (ABTFDEBUG) {
-                console.info('Abtf.pwa() ➤ service worker loaded');
-            }
-            READY = true;
-        })
-        .catch(function(error) {
-            throw error;
-        });
+    }
 
     /**
      * Listen for messages from Service Worker
@@ -146,23 +166,41 @@
 
     });
 
-
     /**
      * Install offline
      */
-    var OFFLINE = function(url) {
+    var OFFLINE = function(urls, resolve) {
         if (navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage([2, url]);
+
+            // start message channel for callback
+            var messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = function(event) {
+                if (event.data && event.data.error) {
+                    if (ABTFDEBUG) {
+                        console.info('Abtf.offline() ➤ error', event.data.error);
+                    }
+                } else {
+                    resolve(event.data.status);
+                }
+            };
+
+            navigator.serviceWorker.controller.postMessage([2, urls], [messageChannel.port2]);
         } else {
             navigator.serviceWorker.ready.then(function() {
-                OFFLINE(url);
+                OFFLINE(urls, resolve);
             });
         }
     }
 
     // public method
-    Abtf.offline = function(url) {
-        OFFLINE(url);
+    Abtf.offline = function(urls) {
+        return new Promise(function(resolve) {
+            OFFLINE(urls, resolve);
+        }).catch(function(err) {
+            if (ABTFDEBUG) {
+                console.info('Abtf.offline() ➤ error', err, urls);
+            }
+        });
     }
 
 })(window, window.Abtf);

@@ -96,6 +96,8 @@ class Abovethefold_Admin_PWA
          * Google PWA optimization
          */
         $options['pwa'] = (isset($input['pwa']) && intval($input['pwa']) === 1) ? true : false;
+        $options['pwa_register'] = (isset($input['pwa_register']) && intval($input['pwa_register']) === 1) ? true : false;
+        $options['pwa_unregister'] = (isset($input['pwa_unregister']) && intval($input['pwa_unregister']) === 1) ? true : false;
         $options['pwa_scope'] = (isset($input['pwa_scope']) && trim($input['pwa_scope']) !== '') ? $input['pwa_scope'] : '';
         $options['pwa_meta'] = (isset($input['pwa_meta']) && trim($input['pwa_meta']) !== '') ? trim($input['pwa_meta']) : '';
 

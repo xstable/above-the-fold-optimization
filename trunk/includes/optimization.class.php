@@ -1061,11 +1061,7 @@ class Abovethefold_Optimization
         /**
          * Google PWA Optimization
          */
-        if (isset($this->CTRL->options['pwa']) && $this->CTRL->options['pwa']) {
-            
-            // get Google PWA client
-            $this->CTRL->pwa->client_jssettings($jssettings, $jsfiles, $inlineJS, $jsdebug);
-        }
+        $this->CTRL->pwa->client_jssettings($jssettings, $jsfiles, $inlineJS, $jsdebug);
 
         // Proxy external files
         if ($this->CTRL->options['js_proxy'] || $this->CTRL->options['css_proxy']) {

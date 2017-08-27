@@ -273,10 +273,6 @@ class Abovethefold_PWA
      */
     public function client_jssettings(&$jssettings, &$jsfiles, &$inlineJS, $jsdebug)
     {
-        if (!isset($this->CTRL->options['pwa']) || !$this->CTRL->options['pwa']) {
-            // disabled
-            return;
-        }
 
         // print link to manifest.json
         if (isset($this->CTRL->options['pwa_manifest_meta']) && $this->CTRL->options['pwa_manifest_meta']) {
@@ -288,6 +284,18 @@ class Abovethefold_PWA
             print $this->CTRL->options['pwa_meta'];
         }
 
+        // PWA client
+        if (!isset($this->CTRL->options['pwa']) || !$this->CTRL->options['pwa']) {
+            if (isset($this->CTRL->options['pwa_unregister']) && $this->CTRL->options['pwa_unregister']) {
+
+                // unregister
+                $jssettings[$this->CTRL->optimization->client_config_ref['pwa_unregister']] = true;
+                $jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-pwa-unregister'.$jsdebug.'.min.js';
+            }
+
+            // disabled
+            return;
+        }
         // verify if service worker exists
         $sw = $this->get_sw();
 
@@ -320,7 +328,8 @@ class Abovethefold_PWA
         $pwasettings = array(
             'path' => $sw['scope'] . $swfile,
             'scope' => $scope,
-            'policy' => filemtime($sw['file_policy'])
+            'policy' => filemtime($sw['file_policy']),
+            'register' => (!isset($this->CTRL->options['pwa_register']) || $this->CTRL->options['pwa_register'])
         );
 
         // offline class

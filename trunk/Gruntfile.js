@@ -42,8 +42,9 @@ module.exports = function(grunt) {
         'public/js/abovethefold-loadcss-enhanced.min.js': 'public/js/min/abovethefold-loadcss-enhanced.js',
         'public/js/abovethefold-loadcss.min.js': 'public/js/min/abovethefold-loadcss.js',
         'public/js/abovethefold-js.min.js': 'public/js/min/abovethefold-js.js',
-        'public/js/abovethefold-pwa.min.js': 'public/js/min/abovethefold-pwa.js',
-        'public/js/pwa-serviceworker.js': 'public/js/min/pwa.serviceworker.js'
+        'public/js/abovethefold-pwa-unregister.min.js': 'public/js/min/abovethefold-pwa-unregister.js',
+        'public/js/pwa-serviceworker.js': 'public/js/min/pwa.serviceworker.js',
+        'public/js/abovethefold-pwa.min.js': 'public/js/min/abovethefold-pwa.js'
     };
 
     var srcfile;
@@ -133,8 +134,7 @@ module.exports = function(grunt) {
                     // Javascript optimization
                     'public/js/min/abovethefold-js.js': [
                         'public/js/src/abovethefold.js.js',
-                        'public/js/src/abovethefold.loadscript.js',
-                        'public/js/src/abovethefold.pwa-unregister.js'
+                        'public/js/src/abovethefold.loadscript.js'
                     ],
 
                     // Javascript localstorage script loader
@@ -297,6 +297,11 @@ module.exports = function(grunt) {
                         'public/js/src/abovethefold.pwa.js'
                     ],
 
+                    // Google PWA `unregister controller
+                    'public/js/min/abovethefold-pwa-unregister.js': [
+                        'public/js/src/abovethefold.pwa-unregister.js'
+                    ],
+
                     // Service Worker
                     'public/js/min/pwa.serviceworker.js': [
                         'public/js/src/pwa.serviceworker.js'
@@ -319,6 +324,10 @@ module.exports = function(grunt) {
                         'public/js/src/abovethefold.pwa.js'
                     ],
 
+                    // Google PWA `unregister controller
+                    'public/js/min/abovethefold-pwa-unregister.debug.js': [
+                        'public/js/src/abovethefold.pwa-unregister.js'
+                    ],
                     // Service Worker
                     'public/js/min/pwa.serviceworker.debug.js': [
                         'public/js/src/pwa.serviceworker.js'

@@ -1,7 +1,7 @@
 <?php
 
-    $scope = trailingslashit(parse_url(site_url(), PHP_URL_PATH));
-
+    $sw = $this->CTRL->pwa->get_sw();
+    $scope = $sw['scope'];
 
     // verify service worker
     if (isset($options['pwa']) && intval($options['pwa']) === 1) {
@@ -36,19 +36,45 @@
 		<td>
 			<label><input type="checkbox" name="abovethefold[pwa]" value="1"<?php if (isset($options['pwa']) && intval($options['pwa']) === 1) {
     print ' checked';
+} ?><?php if (isset($options['pwa'])) {
+    print ' onchange="if (jQuery(this).is(\':checked\')) {jQuery(\'#pwa_unreg\').hide();jQuery(\'#pwa_reg\').show();} else {jQuery(\'#pwa_unreg\').show();jQuery(\'#pwa_reg\').hide();}"';
+} else {
+    print ' onchange="if (jQuery(this).is(\':checked\')) {jQuery(\'#pwa_reg\').show();} else {jQuery(\'#pwa_reg\').hide();}"';
 } ?> /> Enabled</label>
 			<p class="description">Enable PWA functionality in browsers that support <a href="https://jakearchibald.github.io/isserviceworkerready/" target="_blank">Service Worker</a>.</p>
+			<div id="pwa_reg" style="margin-top:0.5em;<?php if (!isset($options['pwa']) || !$options['pwa']) {
+    print ' display:none;';
+} ?>">
+<label><input type="checkbox" name="abovethefold[pwa_register]" value="1"<?php if (!isset($options['pwa']) || !isset($options['pwa_register']) || intval($options['pwa_register']) === 1) {
+    print ' checked';
+} ?> /> Register Service Worker</label>
+			<p class="description">Unchecking this option enables to combine the PWA Service Worker with other service workers, for example for <a href="http://localhost/wp-admin/plugin-install.php?s=push+notifications&tab=search&type=term">Push Notifications</a>. If you want to load the PWA Service Worker using <code>includeScript</code> use the file <a href="<?php echo esc_attr(trailingslashit(site_url()) . $sw['filename']); ?>" target="_blank" download="<?php echo esc_attr($sw['filename']); ?>">/<?php echo esc_html($sw['filename']); ?></a>.</p>
+</div>
+			<div id="pwa_unreg" style="margin-top:0.5em;<?php if (!isset($options['pwa']) || $options['pwa']) {
+    print ' display:none;';
+} ?>">
+<label><input type="checkbox" name="abovethefold[pwa_unregister]" value="1"<?php if (isset($options['pwa_unregister']) && intval($options['pwa_unregister']) === 1) {
+    print ' checked';
+} ?> /> Unregister Service Worker</label>
+			<p class="description">Unregister the PWA Service Worker for visitors.</p>
+</div>
 		</td>
 	</tr>
 	<tr valign="top">
 		<th scope="row">&nbsp;</th>
-		<td style="padding-top:0px;">
+		<td style="padding-top:0px;padding-bottom:0px;">
 			<h5 class="h">&nbsp;Service Worker Scope</h5>
 			<input type="text" size="40" name="abovethefold[pwa_scope]" value="<?php if (isset($options['pwa_scope'])) {
     echo esc_attr($options['pwa_scope']);
 } ?>" placeholder="Leave blank for global scope" title="Global scope: <?php echo esc_attr($scope); ?>">
 			<p class="description">Enter an optional <a href="https://developers.google.com/web/fundamentals/getting-started/primers/service-workers#register_a_service_worker" target="_blank">scope</a> for the service worker, e.g. <code>/blog/</code>. The scope restricts the PWA functionality to a path.</p>
-			
+		</td>
+	</tr>
+	<tr valign="top">
+		<th scope="row"><?php
+submit_button(__('Save'), 'primary large', 'is_submit', false);
+?></th>
+		<td style="padding-top:0px;">
 			<p class="info_yellow" style="margin-top:1em;font-size:14px;" id="edit"><strong>Tip:</strong> For debugging the Service Worker see: <strong>chrome://serviceworker-internals</strong> (copy in the address bar)</p>
 		</td>
 	</tr>
@@ -79,7 +105,12 @@
 				</select>
 				</div>
 			<div class="clearfix" style="clear:both;"></div>
-			<p class="description">By default HTML pages are fetched from the network with the cache as fallback when the network fails. Select the Cache First strategy to serve pages from cache with the network as backup. Select the On demand strategy to use a Cache First strategy with a manual (event based) cache initiation (e.g. "click to read this page offline"). The API is <code>Abtf.offline(URL);</code> which can also be used for precaching.</p>
+			<p class="description">By default HTML pages are fetched from the network with the cache as fallback when the network fails. Select the Cache First strategy to serve pages from cache with the network as backup. Select the On demand strategy to use a Cache First strategy with a manual (event based) cache storage (e.g. "click to read this page offline"). The API is <code>Abtf.offline(url);</code> which can also be used for precaching. (<a href="javascript:void(0);" onclick="jQuery('#precache_example').fadeToggle();">show example</a>)</p>
+
+			<pre style="display:none;padding:10px;border:solid 1px #efefef;" id="precache_example">Abtf.offline(['/shop/','/shop/product1.html','/wp-content/uploads/.../product-image.jpg'])
+.then(function(status) {
+	console.log('Resources available offline', status);
+});</pre>
 		</td>
 	</tr>
 	<tr valign="top" class="cache_strategy_options"<?php if (!(isset($options['pwa_cache_pages_strategy']) && $options['pwa_cache_pages_strategy'] === 'cache')) {
@@ -114,8 +145,6 @@
 		updateFeedView();
 	}
 });</pre>
-				
-
 			</div>
 		</td>
 	</tr>
@@ -131,7 +160,9 @@
 		</td>
 	</tr>
 	<tr valign="top">
-		<th scope="row">&nbsp;</th>
+		<th scope="row"><?php
+submit_button(__('Save'), 'primary large', 'is_submit', false);
+?></th>
 		<td style="padding-top:0px;">
 			<h5 class="h">&nbsp;Offline Page</h5>
 			<select id="offline_page" name="abovethefold[pwa_cache_pages_offline]" size="80" placeholder="/path/to/offline.html">
@@ -149,14 +180,6 @@
 } ?>
 			</select>
 			<p class="description">Enter an URL or absolute path to a HTML page to display when the network is offline and when the requested page is not available in cache.</p>
-		</td>
-	</tr>
-
-	<tr valign="top">
-		<td colspan="2" style="padding:0px;">
-<?php
-submit_button(__('Save'), 'primary large', 'is_submit', false);
-?>
 		</td>
 	</tr>
 	<tr valign="top">
@@ -268,7 +291,7 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 } ?>"><?php if (isset($options['pwa_meta'])) {
     echo esc_html($options['pwa_meta']);
 } ?></textarea>
-			<p class="description">Enter Google PWA essential and Web App related meta tags to include in the <code>&lt;head&gt;</code> of the page. (<a href="https://developers.google.com/web/ilt/pwa/lab-auditing-with-lighthouse#43_add_tags_for_other_browsers" target="_blank">documentation</a>). There are many <a href="https://encrypted.google.com/search?q=<?php print urlencode('web app icon generators'); ?>" target="_blank">Web App Meta Generators</a> that enable you to fine tune the settings for an optimal mobile representation.</p>
+			<p class="description">Enter Google PWA essential and Web App related meta tags to include in the <code>&lt;head&gt;</code> of the page. (<a href="https://developers.google.com/web/ilt/pwa/lab-auditing-with-lighthouse#43_add_tags_for_other_browsers" target="_blank">documentation</a>). There are many <a href="https://encrypted.google.com/search?q=<?php print urlencode('web app icon generators'); ?>" target="_blank">Web App Meta Generators</a> that enable to fine tune the settings for an optimal mobile representation.</p>
 
 			<p class="info_yellow" style="margin-top:1em;"><strong>Tip:</strong> Use the Google Chrome <strong>Application &gt; Manifest</strong> tab to debug the settings and to simulate <em>Add to homescreen</em>.</p> 
 

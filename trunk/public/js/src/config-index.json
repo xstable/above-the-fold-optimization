@@ -19,9 +19,10 @@
             "policy",
             "offline_class",
             "version",
-            "max_size"
+            "max_size",
+            "register"
         ]
-    },
+    }, "pwa_unregister",
     "header", "footer", "load_css",
     "raf", "idle", "async",
     "load_js", "loadCSS", "on_script_load",

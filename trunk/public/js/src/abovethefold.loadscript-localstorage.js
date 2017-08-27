@@ -132,7 +132,7 @@
             // get from localStorage
             var cacheObject = LS.get(url);
 
-            if (!cacheObject) {
+            if (!cacheObject || typeof cacheObject !== 'object') {
                 return false; // not in cache
             }
 
@@ -151,12 +151,14 @@
                     chunkData = LS.get('chunk:' + i + ':' + url);
 
                     // chunk is missing
-                    if (chunkData === false) {
+                    if (chunkData === false || typeof chunkData === 'undefined') {
                         return false;
                     }
                     data.push(chunkData);
                 }
                 cacheObject.data = data.join('');
+            } else if (!cacheObject.data) {
+                return false; // no data
             }
 
             var scriptData = '/* @source ' + url + ' */\n';

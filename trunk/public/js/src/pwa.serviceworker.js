@@ -1208,6 +1208,17 @@
             // PRELOAD EVENT
             if (event.data[0] === 2) {
 
+                if (event.ports[0]) {
+                    var resolve = function(err, status) {
+                        event.ports[0].postMessage({
+                            error: err,
+                            status: status
+                        });
+                    }
+                } else {
+                    var resolve = false;
+                }
+
                 if (event.data[1]) {
                     var preload;
                     if (typeof event.data[1] === 'string' || event.data[1] instanceof Request) {
@@ -1216,12 +1227,38 @@
                         preload = event.data[1];
                     }
                     if (preload) {
+                        var promises = [];
                         preload.forEach(function(url) {
-                            CACHE_PRELOAD(url);
+                            promises.push(CACHE_PRELOAD(url));
                         });
+                        if (resolve) {
+                            Promise.all(promises).then(function(responses) {
+                                var status = [];
+                                responses.forEach(function(response) {
+                                    var resourceStatus = {
+                                        url: response.url,
+                                        status: response.status,
+                                        statusText: response.statusText
+                                    };
+                                    var size = response.headers.get('content-length');
+                                    resourceStatus.size = (!isNaN(parseInt(size))) ? parseInt(size) : -1;
+                                    status.push(resourceStatus);
+                                });
+                                resolve(null, status);
+                            }).catch(function(err) {
+                                if (ABTFDEBUG) {
+                                    console.error('Abtf.sw() ➤ preload', err);
+                                }
+                            });
+                        }
+                    } else {
+                        resolve('invalid-data');
+                    }
+                } else {
+                    if (resolve) {
+                        resolve('no-urls');
                     }
                 }
-
             }
         }
 

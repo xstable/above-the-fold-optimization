@@ -1,8 +1,5 @@
 /**
- * Google PWA + Service Worker caching and offline availability
- *
- * @link https://developers.google.com/web/tools/lighthouse/
- * @link https://developers.google.com/web/fundamentals/getting-started/primers/service-workers
+ * Unregister Google PWA Service Worker
  *
  * @package    abovethefold
  * @subpackage abovethefold/public
@@ -17,35 +14,46 @@
         return;
     }
 
-    // PWA is disabled, try to unregister an installed service worker
-    if (!Abtf[CONFIG.PWA]) {
+    // functionality is disabled, this script should not be loaded
+    if (!Abtf[CONFIG.PWA_UNREGISTER]) {
+        return;
+    }
 
-        var UNREGISTER = function() {
-            try {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                    for (var registration in registrations) {
-                        if (registrations.hasOwnProperty(registration) && typeof registration.unregister === 'function') {
+    var UNREGISTER = function() {
+        try {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+
+                console.warn(registrations);
+                if (registrations) {
+                    registrations.forEach(function(registration) {
+                        if (typeof registration.unregister === 'function') {
+
+                            // verify script url
+                            if (registration.active && registration.active.scriptURL) {
+                                if (!registration.active.scriptURL.match(/abtf-pwa/)) {
+                                    return;
+                                }
+                            }
 
                             if (ABTFDEBUG) {
                                 console.warn('Abtf.pwa() ➤ unregister Service Worker', registration);
                             }
                             registration.unregister();
                         }
-                    }
-                });
-            } catch (e) {
+                    });
+                }
+            });
+        } catch (e) {
 
-            }
         }
-
-        window.addEventListener('load', function() {
-            if (Abtf[CONFIG.IDLE]) {
-                Abtf[CONFIG.IDLE](UNREGISTER);
-            } else {
-                UNREGISTER();
-            }
-        });
-
     }
+
+    window.addEventListener('load', function() {
+        if (Abtf[CONFIG.IDLE]) {
+            Abtf[CONFIG.IDLE](UNREGISTER);
+        } else {
+            UNREGISTER();
+        }
+    });
 
 })(window, window.Abtf);
