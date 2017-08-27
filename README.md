@@ -52,6 +52,22 @@ The HTML5 script loader offers the following advantages when configured correctl
 
 **The plugin does not provide Javascript code optimization, minification or concatenation.**
 
+### Google PWA Optimization
+
+The plugin contains tools to achieve a 100 / 100 / 100 / 100 score in the [Google Lighthouse Test](https://developers.google.com/web/tools/lighthouse/). Google has been promoting [Progressive Web Apps](https://developers.google.com/web/progressive-web-apps/) (PWA) as the future of the internet: a combination of the flexability and openness of the existing web with the user experience advantages of native mobile apps. In essence: a mobile app that can be indexed by Google and that can be managed by WordPress. 
+
+This plugin provides an advanced [HTML5 Service Worker](https://developers.google.com/web/fundamentals/getting-started/primers/service-workers) based solution to create a PWA with any website.
+
+Some of the features:
+
+* JSON based request and cache policy that includes regular expressions and numeric operator comparison for request and response headers.
+* Offline availability management: default offline page, image or resource.
+* Prefetch/preload resources in the Service Worker for fast access and/or offline availability.
+* Event/click based offline cache (e.g. "click to read this page offline")
+* HTTP HEAD based cache updates.
+* Option to add `offline` class on `<body>` when the connection is offline.
+* [Web App Manifest](https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/) management: add website to home screen on mobile devices, track app launches and more.
+
 ## Google Web Font Optimization
 
 The plugin contains tools to optimize [Google Web Fonts](https://fonts.google.com/). 
