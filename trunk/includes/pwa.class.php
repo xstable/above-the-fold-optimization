@@ -274,12 +274,12 @@ class Abovethefold_PWA
     /**
      * Javascript client settings
      */
-    public function client_jssettings(&$jssettings, &$jsfiles, &$inlineJS, $jsdebug, $html_before)
+    public function client_jssettings(&$jssettings, &$jsfiles, &$inlineJS, $jsdebug, &$html_before)
     {
 
         // print link to manifest.json
         if (isset($this->CTRL->options['pwa_manifest_meta']) && $this->CTRL->options['pwa_manifest_meta']) {
-            $html_before .= '<link rel="manifest" href="' . esc_attr(trailingslashit(parse_url(site_url(), PHP_URL_PATH)).'manifest.json') . '">';
+            $html_before .= '<link rel="manifest" href="' . esc_attr(site_url('manifest.json')) . '">';
         }
 
         // print Web App meta

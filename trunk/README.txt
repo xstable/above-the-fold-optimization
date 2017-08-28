@@ -132,6 +132,9 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.8.17 =
+* Bugfix: Web App Manifest meta not printed in header.
+
 = 2.8.16 =
 * Added: Service Worker cache now expires based on HTTP expire header.
 * Added: Max age setting in page cache policy form.
