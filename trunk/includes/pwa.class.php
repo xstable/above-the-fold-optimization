@@ -354,6 +354,13 @@ class Abovethefold_PWA
             $pwasettings['max_size'] = '';
         }
 
+        // start_url
+        if (isset($this->CTRL->options['pwa_manifest_start_url']) && $this->CTRL->options['pwa_manifest_start_url'] !== '') {
+            $pwasettings['start_url'] = $this->CTRL->options['pwa_manifest_start_url'];
+        } else {
+            $pwasettings['start_url'] = '';
+        }
+
         $jssettings[$pwaindex] = array();
         foreach ($pwasettings as $key => $value) {
             if (!isset($this->CTRL->optimization->client_config_ref['pwa-sub'][$key])) {

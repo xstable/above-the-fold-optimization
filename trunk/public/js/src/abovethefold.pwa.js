@@ -78,9 +78,10 @@ Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
      */
     var POST_CONFIG = function() {
         navigator.serviceWorker.controller.postMessage([1,
-            Abtf[CONFIG.PWA][CONFIG.PWA_POLICY],
-            Abtf[CONFIG.PWA][CONFIG.PWA_VERSION],
-            Abtf[CONFIG.PWA][CONFIG.PWA_MAX_SIZE]
+            PWA_CONFIG[CONFIG.PWA_POLICY],
+            PWA_CONFIG[CONFIG.PWA_VERSION],
+            PWA_CONFIG[CONFIG.PWA_MAX_SIZE],
+            PWA_CONFIG[CONFIG.PWA_START_URL]
         ]);
     }
 

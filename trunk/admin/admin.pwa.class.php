@@ -152,6 +152,11 @@ class Abovethefold_Admin_PWA
                 if ($manifestjson && is_array($manifestjson)) {
                     $home = parse_url(home_url());
 
+                    // add start url to options for PWA cache
+                    if (isset($manifestjson['start_url'])) {
+                        $options['pwa_manifest_start_url'] = $manifestjson['start_url'];
+                    }
+
                     // get service worker path
                     $sw = $this->CTRL->pwa->get_sw();
 
@@ -172,6 +177,22 @@ class Abovethefold_Admin_PWA
 
                     if (!file_exists($manifest) || file_get_contents($manifest) !== $json) {
                         $this->CTRL->admin->set_notice('Failed to write to Web App Manifest <strong>manifest.json</strong>. Please check the permissions.', 'ERROR');
+                    }
+                }
+            }
+        } else {
+            $manifest = trailingslashit(ABSPATH) . 'manifest.json';
+            if (file_exists($manifest)) {
+                try {
+                    $manifestjson = json_decode(trim(file_get_contents($manifest)), true);
+                } catch (Exception $err) {
+                    $manifestjson = false;
+                }
+                if ($manifestjson && is_array($manifestjson)) {
+
+                    // add start url to options for PWA cache
+                    if (isset($manifestjson['start_url'])) {
+                        $options['pwa_manifest_start_url'] = $manifestjson['start_url'];
                     }
                 }
             }

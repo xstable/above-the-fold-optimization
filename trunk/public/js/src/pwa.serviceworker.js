@@ -1256,6 +1256,11 @@
                     PWA_CACHE_MAX_SIZE = parseInt(event.data[3]);
                 }
 
+                // preload start url
+                if (event.data[4]) {
+                    CACHE_PRELOAD(event.data[4]);
+                }
+
                 // update prefix (using cache version setting)
                 var prefix = 'abtf:' + ((event.data[2]) ? event.data[2] + ':' : '');
                 if (prefix !== PWA_CACHE) {

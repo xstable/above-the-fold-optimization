@@ -501,6 +501,31 @@ class Abovethefold_Upgrade
                 }
             }
 
+
+            /**
+             * Pre 2.8.19 update
+             */
+            if (version_compare($current_version, '2.8.19', '<')) {
+                if (isset($options['pwa']) && $options['pwa']) {
+                    $update_options = true;
+                    $manifest = trailingslashit(ABSPATH) . 'manifest.json';
+                    if (file_exists($manifest)) {
+                        try {
+                            $manifestjson = json_decode(trim(file_get_contents($manifest)), true);
+                        } catch (Exception $err) {
+                            $manifestjson = false;
+                        }
+                        if ($manifestjson && is_array($manifestjson)) {
+
+                            // add start url to options for PWA cache
+                            if (isset($manifestjson['start_url'])) {
+                                $options['pwa_manifest_start_url'] = $manifestjson['start_url'];
+                            }
+                        }
+                    }
+                }
+            }
+
             // update new abtf-pwa-policy.json format
             if (isset($options['pwa']) && $options['pwa']) {
 

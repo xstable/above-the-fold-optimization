@@ -132,6 +132,9 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.8.19 =
+* Added: Service Worker preloads `start_url` from manifest.json to validate as Google PWA.
+
 = 2.8.18 =
 * Added: custom [Push Notification](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification) API: `Abtf.push(title,options)`
 
