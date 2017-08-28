@@ -126,6 +126,13 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 				<p class="description">Enter a time in seconds to update cached pages using the network. Leave blank to update the cache on each request.</p>
 			</div>
 			<div style="margin-top:1em;">
+				<h5 class="h">&nbsp;Cache Max Age</h5>
+				<input type="number" name="abovethefold[pwa_cache_pages_max_age]" style="width:120px;" value="<?php if (isset($options['pwa_cache_pages_max_age']) && trim($options['pwa_cache_pages_max_age']) !== '') {
+    print esc_attr($options['pwa_cache_pages_max_age']);
+} ?>">
+				<p class="description">Enter a expire time in seconds. The maximum age does not override HTTP expire headers.</p>
+			</div>
+			<div style="margin-top:1em;">
 				<h5 class="h">&nbsp;HEAD based network update</h5>
 				<label><input type="checkbox" name="abovethefold[pwa_cache_pages_head_update]" value="1"<?php if (isset($options['pwa_cache_pages_head_update']) && intval($options['pwa_cache_pages_head_update']) === 1) {
     print ' checked';
@@ -137,9 +144,9 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 				<label><input type="checkbox" name="abovethefold[pwa_cache_pages_update_notify]" value="1"<?php if (isset($options['pwa_cache_pages_update_notify']) && intval($options['pwa_cache_pages_update_notify']) === 1) {
     print ' checked';
 } ?> /> Enabled</label>
-				<p class="description">Send a notification to the client when the cache is updated. The API is <code>jQuery('body').on('sw-update',fn);</code> (<a href="javascript:void(0);" onclick="jQuery('#update_notify_example').fadeToggle();">show example</a>).</p>
+				<p class="description">Send a notification to the client when the cache is updated. The API is <code>jQuery(window).on('sw-update',fn);</code> (<a href="javascript:void(0);" onclick="jQuery('#update_notify_example').fadeToggle();">show example</a>).</p>
 				
-				<pre style="display:none;padding:10px;border:solid 1px #efefef;" id="update_notify_example">jQuery('body').on('sw-update',function(e){
+				<pre style="display:none;padding:10px;border:solid 1px #efefef;" id="update_notify_example">jQuery(window).on('sw-update',function(e){
 	if (e.detail.url === '/my/ajax-feed.json') {
 		/* the Service Worker detected new content, update view */
 		updateFeedView();

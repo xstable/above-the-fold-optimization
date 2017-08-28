@@ -160,7 +160,7 @@ Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
                         url: event.data[1]
                     }
                 });
-                document.body.dispatchEvent(event);
+                window.dispatchEvent(event);
             }
         }
 

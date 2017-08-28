@@ -109,6 +109,7 @@ class Abovethefold_Admin_PWA
         $options['pwa_cache_pages'] = (isset($input['pwa_cache_pages']) && intval($input['pwa_cache_pages']) === 1) ? true : false;
         $options['pwa_cache_pages_strategy'] = (isset($input['pwa_cache_pages_strategy']) && trim($input['pwa_cache_pages_strategy']) !== '') ? $input['pwa_cache_pages_strategy'] : '';
         $options['pwa_cache_pages_update_interval'] = (isset($input['pwa_cache_pages_update_interval']) && trim($input['pwa_cache_pages_update_interval']) !== '' && intval($input['pwa_cache_pages_update_interval']) > 0) ? $input['pwa_cache_pages_update_interval'] : '';
+        $options['pwa_cache_pages_max_age'] = (isset($input['pwa_cache_pages_max_age']) && trim($input['pwa_cache_pages_max_age']) !== '' && intval($input['pwa_cache_pages_max_age']) > 0) ? $input['pwa_cache_pages_max_age'] : '';
         $options['pwa_cache_pages_head_update'] = (isset($input['pwa_cache_pages_head_update']) && intval($input['pwa_cache_pages_head_update']) === 1) ? true : false;
         $options['pwa_cache_pages_update_notify'] = (isset($input['pwa_cache_pages_update_notify']) && intval($input['pwa_cache_pages_update_notify']) === 1) ? true : false;
         $options['pwa_cache_pages_include'] = $this->CTRL->admin->newline_array($input['pwa_cache_pages_include']);

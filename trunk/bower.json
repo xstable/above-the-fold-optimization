@@ -1,6 +1,6 @@
 {
     "name": "abovethefold",
-    "version": "2.8.15",
+    "version": "2.8.16",
     "ignore": [
         ".jshintrc",
         "**/*.txt"

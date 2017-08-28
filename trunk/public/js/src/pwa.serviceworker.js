@@ -152,17 +152,11 @@
 
                 PWA_CONFIG_UPDATE_RUNNING = true;
 
-                // no cache headers
-                var headers = new Headers();
-                headers.append('pragma', 'no-cache');
-                headers.append('cache-control', 'no-cache');
-
                 // verify last-modified header once per 5 minutes
                 // HEAD request
-                var headRequest = new Request(PWA_CONFIG_URL, {
+                var headRequest = new Request(PWA_CONFIG_URL + '?' + Math.round(Date.now() / 1000), {
                     method: 'HEAD',
-                    mode: 'no-cors',
-                    headers: headers
+                    mode: 'no-cors'
                 });
 
                 fetch(headRequest)
@@ -171,7 +165,7 @@
 
                         var update = true;
                         if (headResponse && headResponse.ok) {
-                            var lastModified = LAST_MODIFIED(headResponse.headers.get('last-modified'));
+                            var lastModified = UNIX_TIMESTAMP(headResponse.headers.get('last-modified'));
                             if (lastModified && lastModified <= PWA_CONFIG_TIMESTAMP) {
                                 update = false;
                             }
@@ -211,7 +205,7 @@
 
         PWA_CONFIG_UPDATE_RUNNING = true;
 
-        return fetch(PWA_CONFIG_URL, {
+        return fetch(PWA_CONFIG_URL + '?' + Math.round(Date.now() / 1000), {
                 mode: 'no-cors'
             })
             .then(function(response) {
@@ -291,7 +285,7 @@
     }
 
     // parse last-modified header
-    var LAST_MODIFIED = function(value) {
+    var UNIX_TIMESTAMP = function(value) {
         if (!value) {
             return;
         }
@@ -606,7 +600,7 @@
 
         // verify if cache entry has verifyable headers
         var etag = cacheResponse.headers.get('etag');
-        var lastmodified = LAST_MODIFIED(cacheResponse.headers.get('last-modified'));
+        var lastmodified = UNIX_TIMESTAMP(cacheResponse.headers.get('last-modified'));
         if (!etag && !lastmodified) {
 
             if (ABTFDEBUG) {
@@ -637,7 +631,7 @@
 
                 // verify headers
                 var headEtag = headResponse.headers.get('etag');
-                var headLastmodified = LAST_MODIFIED(headResponse.headers.get('last-modified'));
+                var headLastmodified = UNIX_TIMESTAMP(headResponse.headers.get('last-modified'));
                 if (headEtag && headEtag !== etag) {
                     update = true;
                 } else if (headLastmodified && headLastmodified !== lastmodified) {
@@ -701,6 +695,49 @@
      * Store response in cache
      */
     var CACHE_GET = function(request) {
+
+        // open cache
+        return caches.open(PWA_CACHE)
+            .then(function(cache) {
+
+                // return cached response
+                return cache.match(request)
+                    .then(function(cacheResponse) {
+
+                        // verify if cache is expired
+                        if (cacheResponse) {
+                            var maxAge = cacheResponse.headers.get('x-abtf-sw-expire');
+                            if (maxAge) {
+                                var cacheAge = cacheResponse.headers.get('x-abtf-sw');
+                            }
+                            var expire = cacheResponse.headers.get('expire');
+                            if (expire) {
+                                expire = UNIX_TIMESTAMP(expire);
+                            }
+                            if (maxAge && cacheAge < (TIMESTAMP() - maxAge)) {
+                                cacheResponse = false;
+
+                                if (ABTFDEBUG) {
+                                    console.info('Abtf.sw() ➤ cache expired by policy', request.url, 'max age:', maxAge);
+                                }
+                            } else if (expire && expire < TIMESTAMP()) {
+                                cacheResponse = false;
+
+                                if (ABTFDEBUG) {
+                                    console.info('Abtf.sw() ➤ cache expired by HTTP expire', request.url, cacheResponse.headers.get('expire'));
+                                }
+                            }
+                        }
+
+                        return cacheResponse;
+                    });
+            });
+    }
+
+    /**
+     * Verify if cache is expired
+     */
+    var CACHE_EXPIRED = function(cacheResponse) {
 
         // open cache
         return caches.open(PWA_CACHE)
@@ -999,14 +1036,6 @@
                     return CACHE_GET(event.request)
                         .then(function(cacheResponse) {
 
-                            // verify cache age
-                            if (cacheResponse && policyMatch.cache.max_age) {
-                                var cacheAge = cacheResponse.headers.get('x-abtf-sw');
-                                if (cacheAge < (TIMESTAMP() - policyMatch.cache.max_age)) {
-                                    cacheResponse = false;
-                                }
-                            }
-
                             // return cache
                             if (cacheResponse) {
 
@@ -1036,6 +1065,7 @@
                                         // @todo
                                         // fetch update queue? 
                                         setTimeout(function() {
+
                                             // notify client when update completes
                                             var afterUpdate;
                                             if (policyMatch.cache.head_update) {
@@ -1111,14 +1141,6 @@
                     // try cache
                     return CACHE_GET(event.request)
                         .then(function(cacheResponse) {
-
-                            // verify cache age
-                            if (cacheResponse && policyMatch.cache.max_age) {
-                                var cacheAge = cacheResponse.headers.get('x-abtf-sw');
-                                if (cacheAge < (TIMESTAMP() - policyMatch.cache.max_age)) {
-                                    cacheResponse = false;
-                                }
-                            }
 
                             // return cache
                             if (cacheResponse) {

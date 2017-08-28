@@ -110,6 +110,9 @@ class Abovethefold_PWA
                 if (isset($this->CTRL->options['pwa_cache_pages_update_interval']) && $this->CTRL->options['pwa_cache_pages_update_interval']) {
                     $page_cache_policy['cache']['update_interval'] = intval($this->CTRL->options['pwa_cache_pages_update_interval']);
                 }
+                if (isset($this->CTRL->options['pwa_cache_pages_max_age']) && $this->CTRL->options['pwa_cache_pages_max_age']) {
+                    $page_cache_policy['cache']['max_age'] = intval($this->CTRL->options['pwa_cache_pages_max_age']);
+                }
                 $page_cache_policy['cache']['head_update'] = (isset($this->CTRL->options['pwa_cache_pages_head_update']) && $this->CTRL->options['pwa_cache_pages_head_update']) ? true : false;
 
                 $page_cache_policy['cache']['notify'] = (isset($this->CTRL->options['pwa_cache_pages_update_notify']) && $this->CTRL->options['pwa_cache_pages_update_notify']) ? true : false;
