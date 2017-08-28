@@ -237,6 +237,11 @@
                         // preload
                         var preload = [];
 
+                        // start url
+                        if (pwaConfig.start_url) {
+                            preload.push(pwaConfig.start_url);
+                        }
+
                         // precache offline pages
                         if (pwaConfig.policy) {
                             pwaConfig.policy.forEach(function(policy) {
@@ -1254,11 +1259,6 @@
                 // max cache size
                 if (event.data[3] && !isNaN(parseInt(event.data[3]))) {
                     PWA_CACHE_MAX_SIZE = parseInt(event.data[3]);
-                }
-
-                // preload start url
-                if (event.data[4]) {
-                    CACHE_PRELOAD(event.data[4]);
                 }
 
                 // update prefix (using cache version setting)

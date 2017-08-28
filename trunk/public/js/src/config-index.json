@@ -27,8 +27,7 @@
             "offline_class",
             "version",
             "max_size",
-            "register",
-            "start_url"
+            "register"
         ]
     }, "header_load", "header", "footer", "load_css", "pwa_unregister", "domready",
 

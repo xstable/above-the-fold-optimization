@@ -130,6 +130,10 @@ class Abovethefold_PWA
             $config['preload'] = $this->CTRL->options['pwa_cache_preload'];
         }
 
+        if (isset($this->CTRL->options['pwa_manifest_start_url']) && $this->CTRL->options['pwa_manifest_start_url']) {
+            $config['start_url'] = $this->CTRL->options['pwa_manifest_start_url'];
+        }
+
         return $config;
     }
 
@@ -352,13 +356,6 @@ class Abovethefold_PWA
             $pwasettings['max_size'] = $this->CTRL->options['pwa_cache_max_size'];
         } else {
             $pwasettings['max_size'] = '';
-        }
-
-        // start_url
-        if (isset($this->CTRL->options['pwa_manifest_start_url']) && $this->CTRL->options['pwa_manifest_start_url'] !== '') {
-            $pwasettings['start_url'] = $this->CTRL->options['pwa_manifest_start_url'];
-        } else {
-            $pwasettings['start_url'] = '';
         }
 
         $jssettings[$pwaindex] = array();

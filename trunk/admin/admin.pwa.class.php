@@ -57,7 +57,7 @@ class Abovethefold_Admin_PWA
             $manifest = trailingslashit(ABSPATH) . 'manifest.json';
             if (!file_exists($manifest)) {
                 try {
-                    @file_put_contents($manifest, json_encode(array(
+                    $manifestjson = array(
                         "short_name" => "",
                         "name" => "",
                         "icons" => array(),
@@ -66,7 +66,16 @@ class Abovethefold_Admin_PWA
                         "theme_color" => "#3da508",
                         "display" => "standalone",
                         "orientation" => "landscape"
-                    )));
+                    );
+
+                    // PHP 5.3
+                    if (version_compare(phpversion(), '5.4.0', '<')) {
+                        $json = str_replace('\\/', '/', json_encode($manifestjson));
+                    } else {
+                        $json = json_encode($manifestjson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+                    }
+
+                    @file_put_contents($manifest, $json);
                 } catch (Exception $error) {
                 }
 
@@ -169,7 +178,12 @@ class Abovethefold_Admin_PWA
                         $manifestjson['serviceworker']['scope'] = $input['pwa_scope'];
                     }
 
-                    $json = (defined('JSON_PRETTY_PRINT')) ? json_encode($manifestjson, JSON_PRETTY_PRINT) : json_encode($manifestjson);
+                    // PHP 5.3
+                    if (version_compare(phpversion(), '5.4.0', '<')) {
+                        $json = str_replace('\\/', '/', json_encode($manifestjson));
+                    } else {
+                        $json = json_encode($manifestjson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+                    }
                     try {
                         @file_put_contents($manifest, $json);
                     } catch (Exception $error) {

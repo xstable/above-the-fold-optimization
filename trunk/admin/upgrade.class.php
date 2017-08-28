@@ -401,7 +401,15 @@ class Abovethefold_Upgrade
 
                         if ($updated_json) {
                             try {
-                                file_put_contents($manifest_file, json_encode($json));
+
+                                // PHP 5.3
+                                if (version_compare(phpversion(), '5.4.0', '<')) {
+                                    $json = str_replace('\\/', '/', json_encode($json));
+                                } else {
+                                    $json = json_encode($json, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+                                }
+
+                                file_put_contents($manifest_file, $json);
                             } catch (Exception $error) {
                             }
                         }
