@@ -1,6 +1,7 @@
 // above the fold object
 window.Abtf;
-window.Abtf.offline
+window.Abtf.offline;
+window.Abtf.push;
 CustomEvent;
 window.document;
 

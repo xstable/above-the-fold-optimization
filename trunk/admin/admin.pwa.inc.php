@@ -71,6 +71,28 @@
 		</td>
 	</tr>
 	<tr valign="top">
+		<th scope="row">&nbsp;</th>
+		<td style="padding-bottom:0px;">
+			<h5 class="h">&nbsp;Push Notification API</h5>
+			<p class="description">The PWA Service Worker supports sending Push Notifications (<a href="https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification" target="_blank">documentation</a>). The API is <code>Abtf.push(title,options)</code> (<a href="javascript:void(0);" onclick="jQuery('#push_example').fadeToggle();">show example</a>)</p>
+
+			<pre style="display:none;padding:10px;border:solid 1px #efefef;" id="push_example">/* You must first obtain <a href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/requestPermission" target="_blank">permissions</a> */
+Notification.requestPermission(function(result) {
+	if (result === 'granted') {
+		Abtf.push('Welcome back!',{
+			body: 'Buzz! Buzz!',
+			icon: '../images/touch/chrome-touch-icon-192x192.png',
+			vibrate: [200, 100, 200, 100, 200, 100, 200],
+			tag: 'vibration-sample'
+		})
+		.then(function(status) {
+			console.log('Notification sent', status);
+		});
+	}
+});</pre>
+		</td>
+	</tr>
+	<tr valign="top">
 		<th scope="row"><?php
 submit_button(__('Save'), 'primary large', 'is_submit', false);
 ?></th>

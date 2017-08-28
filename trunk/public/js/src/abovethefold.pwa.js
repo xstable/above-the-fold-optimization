@@ -166,30 +166,58 @@ Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
 
     });
 
-    /**
-     * Install offline
-     */
-    var OFFLINE = function(urls, resolve) {
+    // on controller
+    var ON_CONTROLLER = function(fn, params) {
         if (navigator.serviceWorker.controller) {
+            fn.apply(window, params);
+        } else {
+            navigator.serviceWorker.ready.then(function() {
+                fn.apply(window, params);
+            });
+        }
+    }
+
+    // send message with callback to service worker
+    var SEND_MESSAGE = function(type, data) {
+
+        return new Promise(function(resolve, reject) {
 
             // start message channel for callback
             var messageChannel = new MessageChannel();
             messageChannel.port1.onmessage = function(event) {
                 if (event.data && event.data.error) {
                     if (ABTFDEBUG) {
-                        console.info('Abtf.offline() ➤ error', event.data.error);
+                        console.info('Abtf.' + type + '() ➤ error', event.data.error);
                     }
                 } else {
-                    resolve(event.data.status);
+                    resolve(event.data);
                 }
             };
 
-            navigator.serviceWorker.controller.postMessage([2, urls], [messageChannel.port2]);
-        } else {
-            navigator.serviceWorker.ready.then(function() {
-                OFFLINE(urls, resolve);
+            navigator.serviceWorker.controller.postMessage(data, [messageChannel.port2]);
+        });
+    }
+
+    /**
+     * Install offline
+     */
+    var OFFLINE = function(urls, resolve) {
+        ON_CONTROLLER(function(urls) {
+            SEND_MESSAGE('offline', [2, urls]).then(function(data) {
+                resolve(data.status);
             });
-        }
+        }, [urls, resolve]);
+    }
+
+    /**
+     * Custom Push Notification
+     */
+    var PUSH = function(title, options, resolve) {
+        ON_CONTROLLER(function(title, options) {
+            SEND_MESSAGE('push', [3, title, options]).then(function(data) {
+                resolve(data.status);
+            });
+        }, [title, options]);
     }
 
     // public method
@@ -199,6 +227,17 @@ Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
         }).catch(function(err) {
             if (ABTFDEBUG) {
                 console.info('Abtf.offline() ➤ error', err, urls);
+            }
+        });
+    }
+
+    // custom push notification
+    Abtf.push = function(title, options) {
+        return new Promise(function(resolve) {
+            PUSH(title, options, resolve);
+        }).catch(function(err) {
+            if (ABTFDEBUG) {
+                console.info('Abtf.push() ➤ error', err, title, options);
             }
         });
     }

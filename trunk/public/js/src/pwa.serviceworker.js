@@ -1269,9 +1269,7 @@
                 CLEAN_CACHE();
             }
 
-            // PRELOAD EVENT
-            if (event.data[0] === 2) {
-
+            if (event.data[0] === 2 || event.data[0] === 3) {
                 if (event.ports[0]) {
                     var resolve = function(err, status) {
                         event.ports[0].postMessage({
@@ -1282,6 +1280,10 @@
                 } else {
                     var resolve = false;
                 }
+            }
+
+            // PRELOAD EVENT
+            if (event.data[0] === 2) {
 
                 if (event.data[1]) {
                     var preload;
@@ -1326,8 +1328,17 @@
                     }
                 }
             }
+
+            // PUSH EVENT
+            if (event.data[0] === 3) {
+                self.registration.showNotification(event.data[1], event.data[2]);
+                if (resolve) {
+                    resolve(null, 'sent');
+                }
+            }
         }
 
     });
+
 
 })(self, self.fetch, Cache);
