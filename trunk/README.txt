@@ -133,7 +133,7 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 == Changelog ==
 
 = 2.8.20 =
-* Bugfix: manifest.json stored with escaped slashes.
+* Bugfix: manifest.json stored with escaped slashes. ([@VidyutK](https://github.com/optimalisatie/above-the-fold-optimization/issues/63))
 * Improved: `start_url` moved to `abtf-pwa-config.json` and preloaded on Service Worker installation.
 
 = 2.8.19 =
