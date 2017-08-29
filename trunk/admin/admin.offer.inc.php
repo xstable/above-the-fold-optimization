@@ -6,6 +6,8 @@
         $welcome_checked = get_user_meta(get_current_user_id(), 'abtf_show_offer', true);
     }
 
+    $this->google_intlcode = 'en-us';
+
         // Google uses a different host for the US
     $thinkhost = 'https://testmysite.' . (($this->google_intlcode === 'en-us') ? 'think' : '') . 'withgoogle.com/';
     $thinkurl = $thinkhost . 'intl/'.$this->google_intlcode.'?url=' . urlencode(home_url());

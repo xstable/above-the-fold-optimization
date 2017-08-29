@@ -264,8 +264,9 @@
                         }
 
                         // preload resources
+                        preloadPromises = [];
                         preload.forEach(function(url) {
-                            CACHE_PRELOAD(url);
+                            preloadPromises.push(CACHE_PRELOAD(url));
                         });
 
                     });
@@ -826,10 +827,7 @@
                     headers['x-abtf-sw-expire'] = cachePolicy.max_age;
                 }
 
-                // body contains text
-                /*if (response.headers.get('content-type').match(/text/i)) {
-                    response.text().then(storeCache);
-                } else {*/
+                // read response
                 response.blob().then(function(body) {
 
                     // create cache response with modified headers
@@ -841,7 +839,6 @@
 
                     cache.put(request, cacheResponse);
                 });
-                //}
 
             });
     }

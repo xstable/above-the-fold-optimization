@@ -34,6 +34,7 @@ window.Abtf.localUrl;
 
 pwaConfig.policy;
 pwaConfig.preload;
+pwaConfig.start_url;
 
 policyMatch.strategy;
 policyMatch.offline;
