@@ -320,7 +320,7 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 } ?>"><?php if (isset($options['pwa_meta'])) {
     echo esc_html($options['pwa_meta']);
 } ?></textarea>
-			<p class="description">Enter Google PWA essential and Web App related meta tags to include in the <code>&lt;head&gt;</code> of the page. (<a href="https://developers.google.com/web/ilt/pwa/lab-auditing-with-lighthouse#43_add_tags_for_other_browsers" target="_blank">documentation</a>). There are many <a href="https://encrypted.google.com/search?q=<?php print urlencode('web app icon generators'); ?>" target="_blank">Web App Meta Generators</a> that enable to fine tune the settings for an optimal mobile representation.</p>
+			<p class="description">Enter Web App related meta tags to include in the <code>&lt;head&gt;</code> of the page. (<a href="https://developers.google.com/web/ilt/pwa/lab-auditing-with-lighthouse#43_add_tags_for_other_browsers" target="_blank">documentation</a>). There are many <a href="https://encrypted.google.com/search?q=<?php print urlencode('web app icon generators'); ?>" target="_blank">Web App Meta Generators</a> that enable to fine tune the settings for an optimal mobile representation.</p>
 
 			<p class="info_yellow" style="margin-top:1em;"><strong>Tip:</strong> Use the Google Chrome <strong>Application &gt; Manifest</strong> tab to debug the settings and to simulate <em>Add to homescreen</em>.</p> 
 
