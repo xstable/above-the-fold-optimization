@@ -20,16 +20,19 @@
 
         var url = new URL(location);
         PWA_ROOT = url.searchParams.get('path');
-        var config_file = url.searchParams.get('config') || 'abtf-pwa-config.json';
+        if (!PWA_ROOT) {
+            PWA_ROOT = '/';
+        }
+        var config_file = url.searchParams.get('config');
+        if (!config_file) {
+            config_file = 'abtf-pwa-config.json';
+        }
         PWA_CONFIG_URL = PWA_ROOT + config_file;
 
     }
 
     // Install
     self.addEventListener('install', function(event) {
-
-        // parse query config
-        PARSE_PWA_QUERY_CONFIG();
 
         // fetch policy config
         event.waitUntil(
@@ -43,10 +46,6 @@
 
     // Activate
     self.addEventListener('activate', function(event) {
-
-        // parse query config
-        PARSE_PWA_QUERY_CONFIG();
-
         event.waitUntil(self.clients.claim());
     });
 
@@ -561,6 +560,9 @@
 
             } else if (!PWA_CONFIG_UPDATE_RUNNING && PWA_CONFIG_TIMESTAMP < (TIMESTAMP() - 300)) {
 
+                // parse query config
+                PARSE_PWA_QUERY_CONFIG();
+
                 // HTTP HEAD based update
 
                 PWA_CONFIG_UPDATE_RUNNING = true;
@@ -615,6 +617,9 @@
         if (PWA_CONFIG_UPDATE_RUNNING || (UPDATE_CONFIG_LAST && UPDATE_CONFIG_LAST > (TIMESTAMP() - 10))) {
             return Promise.resolve();
         }
+
+        // parse query config
+        PARSE_PWA_QUERY_CONFIG();
 
         PWA_CONFIG_UPDATE_RUNNING = true;
 

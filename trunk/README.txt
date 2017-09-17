@@ -132,6 +132,9 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.9.1 =
+* Bugfix: Service Worker JSON config from query parameter not persistent after browser restart.
+
 = 2.9.0 =
 * Added: HTTP/2 Server Push optimization.
 * Added: [Cache Digest](https://calendar.perfplanet.com/2016/cache-digests-http2-server-push/) hash computation in PWA Service Worker for HTTP/2 pushed resources.
