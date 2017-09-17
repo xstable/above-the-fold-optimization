@@ -10,9 +10,45 @@
     // ABTF Service Worker / PWA config
     var PWA_POLICY = false;
     var PWA_CONFIG_TIMESTAMP = false;
-    var PWA_CONFIG_URL = './abtf-pwa-config.json';
+    var PWA_ROOT;
+    var PWA_CONFIG_URL;
     var PWA_CACHE;
     var PWA_CACHE_MAX_SIZE = 1000; // default
+
+    // extract config parameters from query string
+    var PARSE_PWA_QUERY_CONFIG = function() {
+
+        var url = new URL(location);
+        PWA_ROOT = url.searchParams.get('path');
+        var config_file = url.searchParams.get('config') || 'abtf-pwa-config.json';
+        PWA_CONFIG_URL = PWA_ROOT + config_file;
+
+    }
+
+    // Install
+    self.addEventListener('install', function(event) {
+
+        // parse query config
+        PARSE_PWA_QUERY_CONFIG();
+
+        // fetch policy config
+        event.waitUntil(
+            UPDATE_CONFIG().then(function() {
+                self.skipWaiting();
+            }).catch(function() {
+                self.skipWaiting();
+            })
+        );
+    });
+
+    // Activate
+    self.addEventListener('activate', function(event) {
+
+        // parse query config
+        PARSE_PWA_QUERY_CONFIG();
+
+        event.waitUntil(self.clients.claim());
+    });
 
     // Via https://github.com/coonsta/cache-polyfill/blob/master/dist/serviceworker-cache-polyfill.js
     // Adds in some functionality missing in Chrome 40.
@@ -61,7 +97,9 @@
                         }
 
                         return fetch(request.clone()).catch(function(error) {
-                            throw error;
+                            setTimeout(function() {
+                                throw error;
+                            });
                         });;
                     })
                 );
@@ -101,23 +139,398 @@
         };
     }
 
-    // Install
-    self.addEventListener('install', function(event) {
+    /**
+     * HTTP/2 cache digest computation
+     *
+     * Based on Cache-Digest Immutable
+     * @link https://gitlab.com/sebdeckers/cache-digest-immutable/
+     */
+    var HTTP2_CACHE_DIGEST_COMPUTE = (function() {
 
-        // fetch policy config
-        event.waitUntil(
-            UPDATE_CONFIG().then(function() {
-                self.skipWaiting();
-            }).catch(function() {
-                self.skipWaiting();
+        function BitCoder() {
+            this.value = [];
+            this.leftBits = 0;
+        }
+
+        BitCoder.prototype.addBit = function(b) {
+            if (this.leftBits == 0) {
+                this.value.push(0);
+                this.leftBits = 8;
+            }
+            --this.leftBits;
+            if (b)
+                this.value[this.value.length - 1] |= 1 << this.leftBits;
+            return this;
+        };
+
+        BitCoder.prototype.addBits = function(v, nbits) {
+            if (nbits != 0) {
+                do {
+                    --nbits;
+                    this.addBit(v & (1 << nbits));
+                } while (nbits != 0);
+            }
+            return this;
+        };
+
+        BitCoder.prototype.gcsEncode = function(values, bits_fixed) {
+            // values = values.sort(function (a, b) { return a - b; });
+            var prev = -1;
+            for (var i = 0; i != values.length; ++i) {
+                if (prev == values[i])
+                    continue;
+                var v = values[i] - prev - 1;
+                for (var q = v >> bits_fixed; q != 0; --q)
+                    this.addBit(0);
+                this.addBit(1);
+                this.addBits(v, bits_fixed);
+                prev = values[i];
+            }
+            return this;
+        };
+
+
+        function uint8ToBase64(buffer) {
+            var binary = ''
+            var len = buffer.byteLength
+            for (var i = 0; i < len; i++) {
+                binary += String.fromCharCode(buffer[i])
+            }
+            return btoa(binary)
+                // Trimming Base64 padding is required by H2O's decoder.
+                .replace(/=+$/, '')
+        }
+
+
+        // LMGTFY
+        function isPowerOfTwo(x) {
+            return ((x > 0) && ((x & (~x + 1)) === x))
+        }
+
+        function ascendingOrderComparator(a, b) {
+            return a - b
+        }
+
+        /**
+         * HTTP/2 Comute Hash Value for url
+         */
+        var textEncoder = new TextEncoder('utf-8');
+
+        function computeHashValue(url, n, p) {
+
+            return new Promise(function(resolve, reject) {
+
+                // Let "key" be "URL" converted to an ASCII string by percent-
+                // encoding as appropriate [RFC3986].
+                var key = appropriatelyPercentEncode(url);
+                crypto.subtle.digest(
+                    'SHA-256',
+                    textEncoder.encode(key)
+                ).then(function(hash) {
+
+                    // Let "hash-value" be the SHA-256 message digest [RFC6234] of
+                    // "key", expressed as an integer.
+                    var hashValue = new DataView(hash).getUint32(0) // TODO: Spec allows up to 62 bits (n=2**31, p=2**31)
+
+                    // Truncate "hash-value" to log2( "N" * "P" ) bits.
+                    var truncate = Math.log2(n * p);
+                    if (truncate > 31) throw Error('This implementation only supports up to 31 bit hash values')
+                    hashValue = (hashValue >> (32 - truncate)) & ((1 << truncate) - 1);
+
+                    resolve(hashValue);
+                });
+            });
+        }
+
+        // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
+        // "To be more stringent in adhering to RFC 3986 (which
+        // reserves !, ', (, ), and *), even though these
+        // characters have no formalized URI delimiting uses,
+        // the following can be safely used:"
+        function appropriatelyPercentEncode(url) {
+            // "url" is already encoded as if it passed through encodeURI.
+            // Fix any missing characters as per RFC 3986.
+            return url.replace(/[!'()*]/g, function(character) {
+                return '%' + character.charCodeAt(0).toString(16)
             })
-        );
-    });
+        }
 
-    // Activate
-    self.addEventListener('activate', function(event) {
-        event.waitUntil(self.clients.claim());
-    });
+
+        // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
+        // "To be more stringent in adhering to RFC 3986 (which
+        // reserves !, ', (, ), and *), even though these
+        // characters have no formalized URI delimiting uses,
+        // the following can be safely used:"
+        function appropriatelyPercentEncode(url) {
+            // "url" is already encoded as if it passed through encodeURI.
+            // Fix any missing characters as per RFC 3986.
+            return url.replace(/[!'()*]/g, function(character) {
+                return '%' + character.charCodeAt(0).toString(16)
+            })
+        }
+
+        function computeDigestValue(urls, p) {
+            if (p >= Math.pow(2, 32)) {
+                throw Error('Invalid probability: "${p}" must be smaller than 2**32');
+            }
+            if (!isPowerOfTwo(p)) {
+                throw Error('Invalid probability: "${p}" must be a power of 2');
+            }
+
+            //  "digest-value" can be computed using the following algorithm:
+            var digestValue;
+
+            // Let N be the count of "URLs"' members, rounded to the nearest
+            // power of 2 smaller than 2**32.
+            var n = Math.min(Math.pow(2, Math.round(Math.log2(urls.length))), Math.pow(2, 31));
+
+            // Let "hash-values" be an empty array of integers.
+            var hashValues = [];
+
+            // Append 0 to "hash-values".
+            // hashValues.push(0) // BitCoder.prototype.gcsEncode handles this by skipping the first entry.
+
+            // For each ("URL", "ETag") in "URLs", compute a hash value
+            // (Section 2.1.2) and append the result to "hash-values".
+
+            return new Promise(function(resolve, reject) {
+
+                Promise.all(
+                    urls.map(function(url) {
+                        return computeHashValue(url, n, p);
+                    })
+                ).then(function(values) {
+                    hashValues = hashValues.concat()
+                        // Sort "hash-values" in ascending order.
+                        .sort(ascendingOrderComparator);
+
+                    // console.dir({n: Math.log2(n), p: Math.log2(p), hashValues})
+
+                    // Let "digest-value" be an empty array of bits.
+                    digestValue = Uint8Array.from(
+                        new BitCoder()
+
+                        // Write log base 2 of "N" to "digest-value" using 5 bits.
+                        .addBits(Math.log2(n), 5)
+
+                        // Write log base 2 of "P" to "digest-value" using 5 bits.
+                        .addBits(Math.log2(p), 5)
+
+                        // For each "V" in "hash-values":
+                        //   1.  Let "W" be the value following "V" in "hash-values".
+                        //   2.  If "W" and "V" are equal, continue to the next "V".
+                        //   3.  Let "D" be the result of "W - V - 1".
+                        //   4.  Let "Q" be the integer result of "D / P".
+                        //   5.  Let "R" be the result of "D modulo P".
+                        //   6.  Write "Q" '0' bits to "digest-value".
+                        //   7.  Write 1 '1' bit to "digest-value".
+                        //   8.  Write "R" to "digest-value" as binary, using log2("P"5)
+                        //       bits.
+                        .gcsEncode(hashValues, Math.log2(p))
+
+                        .value
+                    );
+
+                    resolve(uint8ToBase64(digestValue));
+                });
+
+            });
+
+        }
+
+        return function(urls, p) {
+            return computeDigestValue(urls, p);
+        }
+    })();
+
+    /**
+     * Get cache digest for request
+     */
+    var HTTP2_CACHE_DIGEST = function(accept) {
+
+        if (!accept || !accept.includes('text/html')) {
+            return Promise.resolve(null);
+        }
+
+        return new Promise(function(resolve, reject) {
+
+            // calcualte cache digest
+            caches.open(PWA_CACHE + ':push')
+                .then(function(cache) {
+                    cache.keys().then(function(requests) {
+
+                        // no pushed resources
+                        if (requests.length === 0) {
+                            return resolve(null);
+                        }
+
+                        var cachePromises = [];
+                        requests.forEach(function(req) {
+                            cachePromises.push(CACHE_GET(req));
+                        });
+
+                        Promise.all(cachePromises).then(function(responses) {
+
+                            var digest_urls = [];
+
+                            requests.forEach(function(req, index) {
+                                if (responses[index] !== 'undefined' && responses[index]) {
+                                    digest_urls.push(req.url);
+                                }
+                            });
+
+                            // calculate digest
+                            if (digest_urls.length === 0) {
+                                resolve(null);
+                            } else {
+                                HTTP2_CACHE_DIGEST_COMPUTE(
+                                    digest_urls, // tuples [url, etag|null]
+                                    Math.pow(2, 7) // probability (1/P)
+                                ).then(function(digest) {
+                                    resolve(digest);
+                                });
+
+                            }
+                        });
+                    });
+                });
+
+        });
+    }
+
+    /**
+     * Keep track of priority tasks and provide an on idle callback
+     */
+    var PRIORITY = (function() {
+
+        var tasks = {};
+        var count = 0;
+
+        // on idle callback queue
+        var idleQueue = [];
+
+        // start priority task
+        var start = function(timeout) {
+            var index = ++count;
+            tasks[index] = [Date.now(), timeout];
+            return index;
+        }
+
+        // complete task
+        var complete = function(index) {
+            try {
+                delete tasks[index];
+            } catch (e) {
+
+            }
+
+            // process queue
+            if (idleQueue.length > 0) {
+                onIdle(null, 0);
+            }
+        }
+
+        // on idle callback
+        var onIdle = function(fn, timeout, key) {
+
+            // wait for priority tasks?
+            var wait = false;
+
+            // verify active tasks
+            var taskKeys = Object.keys(tasks);
+            if (taskKeys.length > 0) {
+
+                var now = Date.now();
+                taskKeys.forEach(function(taskKey) {
+                    if (wait) {
+                        return;
+                    }
+
+                    // timeout expired
+                    if (tasks[taskKey][0] < (now - tasks[taskKey][1])) {
+                        try {
+                            delete tasks[taskKey];
+                        } catch (e) {}
+                    } else {
+                        wait = true;
+                    }
+                });
+            }
+
+            if (!wait) {
+                if (fn) {
+                    idleQueue.push([fn]);
+                }
+
+                // process on idle queue
+                if (idleQueue.length > 0) {
+                    var item = idleQueue.shift();
+                    while (item) {
+                        if (item instanceof Array) {
+                            if (item[1]) {
+                                clearTimeout(item[1]);
+                            }
+
+                            // execute callback
+                            try {
+                                item[0]();
+                            } catch (e) {}
+
+                        }
+                        item = idleQueue.shift();
+                    }
+                }
+
+
+            } else {
+
+                // queue init, ignore
+                if (timeout === 0) {
+                    return;
+                }
+
+                // add to idle callback queue
+                var index;
+
+                // verify if callback is already in queue
+                if (key) {
+                    var existingIndex = false;
+                    idleQueue.forEach(function(item, itemIndex) {
+                        if (existingIndex) {
+                            return;
+                        }
+                        if (item[2] == key) {
+                            existingIndex = itemIndex;
+                        }
+                    });
+                    if (existingIndex) {
+                        if (idleQueue[existingIndex][1]) {
+                            clearTimeout(idleQueue[existingIndex][1]);
+                        }
+                        index = existingIndex;
+                    }
+                }
+                if (!index) {
+                    index = (idleQueue.push([])) - 1;
+                }
+                idleQueue[index] = [fn, setTimeout(function(index, fn) {
+                    delete idleQueue[index];
+                    fn();
+                    if (idleQueue.length > 0) {
+                        onIdle(null, 0);
+                    }
+                }, timeout, index, fn), key];
+            }
+        }
+
+        // public methods
+        return {
+            start: start,
+            complete: complete,
+            onIdle: onIdle
+        };
+
+    })();
 
     /* 
      * Get policy config
@@ -326,17 +739,7 @@
      */
     var CLEAN_CACHE_LAST_TIMESTAMP = false;
     var CLEAN_CACHE_RUNNING = false;
-    var CLEAN_CACHE_TIMEOUT;
-
-    // init
-    var INIT_CLEAN_CACHE = function() {
-        if (CLEAN_CACHE_TIMEOUT) {
-            try {
-                clearTimeout(CLEAN_CACHE_TIMEOUT);
-            } catch (e) {}
-        }
-        CLEAN_CACHE_TIMEOUT = setTimeout(CLEAN_CACHE, 500);
-    }
+    var CLEAN_CACHE_TIMEOUT = false;
 
     var CLEAN_CACHE = function() {
 
@@ -460,65 +863,99 @@
     /**
      * Fetch asset
      */
-    var FETCH = function(request, cachePolicy, fallback) {
+    var FETCH = function(r, cachePolicy, fallback) {
 
-        return fetch(request)
-            .then(function(response) {
+        // init work process
+        var taskIndex = PRIORITY.start(1000);
 
-                // valid response
-                if (response.ok && response.status < 400) {
+        return HTTP2_CACHE_DIGEST(r.headers.get('accept'))
+            .then(function(digest) {
 
-                    // update cache
-                    if (cachePolicy) {
+                var request = r;
 
-                        var shouldCache = true;
+                // add HTTP/2 Cache Digest to request
+                if (digest) {
+                    request = new Request(request);
+                    request.headers.set('cache-digest', digest);
+                }
 
-                        // cache conditions
-                        if (cachePolicy.conditions) {
-                            cachePolicy.conditions.forEach(function(rule) {
-                                if (!shouldCache) {
-                                    return;
+                return fetch(request)
+                    .then(function(response) {
+
+                        var shouldCache = false;
+
+                        // valid response
+                        if (response.ok && response.status < 400) {
+
+                            // detect HTTP/2 Server Push headers
+                            var pushHeaders = response.headers.get('link');
+                            if (pushHeaders) {
+                                if (!(pushHeaders instanceof Array)) {
+                                    pushHeaders = [pushHeaders];
                                 }
 
-                                switch (rule.type) {
-                                    case "url":
-                                        if (rule.regex) {
-                                            var regex = REGEX(rule.pattern);
-                                            if (!regex) {
-                                                shouldCache = false;
-                                            } else {
-                                                var match = regex.test(request.url);
-                                                if (rule.not) {
-                                                    if (match) {
-                                                        shouldCache = false;
-                                                    }
-                                                } else if (!match) {
-                                                    shouldCache = false;
-                                                }
-                                            }
-                                        } else {
-                                            var match = (request.url.indexOf(rule.pattern) !== -1);
-                                            if (rule.not) {
-                                                if (match) {
-                                                    shouldCache = false;
-                                                }
-                                            } else if (!match) {
-                                                shouldCache = false;
-                                            }
-                                        }
-                                        break;
-                                    case "header":
+                                // exec on idle
+                                PRIORITY.onIdle(function() {
 
-                                        var value = response.headers.get(rule.name);
-                                        if (!value) {
-                                            shouldCache = false;
-                                        } else {
-                                            if (rule.regex) {
-                                                var regex = REGEX(rule.pattern);
-                                                if (!regex) {
-                                                    shouldCache = false;
+                                    // open push request cache
+                                    caches.open(PWA_CACHE + ':push')
+                                        .then(function(cache) {
+
+                                            // keep track of HTTP/2 pushed resources
+                                            var pushCacheRequests = [];
+                                            pushHeaders.forEach(function(v) {
+                                                var links = v.split(',');
+                                                links.forEach(function(link) {
+                                                    if (/rel=preload/.test(link)) {
+                                                        var m = link.match(/<([^>]+)>/);
+                                                        if (m && m[1]) {
+                                                            cache.match(m[1]).then(function(pushResp) {
+                                                                if (!pushResp) {
+                                                                    cache.put(m[1], new Response(null, {
+                                                                        status: 204
+                                                                    }));
+                                                                }
+                                                            });
+                                                        }
+                                                    }
+                                                });
+                                            });
+                                        });
+
+                                }, 1000);
+
+                            }
+
+                            // update cache
+                            if (cachePolicy) {
+
+                                shouldCache = true;
+
+                                // cache conditions
+                                if (cachePolicy.conditions) {
+                                    cachePolicy.conditions.forEach(function(rule) {
+                                        if (!shouldCache) {
+                                            return;
+                                        }
+
+                                        switch (rule.type) {
+                                            case "url":
+                                                if (rule.regex) {
+                                                    var regex = REGEX(rule.pattern);
+                                                    if (!regex) {
+                                                        shouldCache = false;
+                                                    } else {
+                                                        var match = regex.test(request.url);
+                                                        if (rule.not) {
+                                                            if (match) {
+                                                                shouldCache = false;
+                                                            }
+                                                        } else if (!match) {
+                                                            shouldCache = false;
+                                                        }
+                                                    }
                                                 } else {
-                                                    var match = regex.test(value);
+                                                    var match = (request.url.indexOf(rule.pattern) !== -1);
                                                     if (rule.not) {
                                                         if (match) {
                                                             shouldCache = false;
@@ -527,36 +964,19 @@
                                                         shouldCache = false;
                                                     }
                                                 }
-                                            } else if (typeof rule.pattern === 'object') {
+                                                break;
+                                            case "header":
 
-                                                // comparison match
-                                                if (rule.pattern.operator) {
-
-                                                    value = parseFloat(value);
-                                                    var pattern = parseFloat(rule.pattern.value);
-
-                                                    if (isNaN(value) || isNaN(pattern)) {
-                                                        shouldCache = false;
-                                                    } else {
-
-                                                        // numeric operator comparison
-                                                        switch (rule.pattern.operator) {
-                                                            case "<":
-                                                                var match = (value < pattern);
-                                                                break;
-                                                            case ">":
-                                                                var match = (value > pattern);
-                                                                break;
-                                                            case "=":
-                                                                var match = (value === pattern);
-                                                                break;
-                                                            default:
-                                                                shouldCache = false;
-                                                                break;
-                                                        }
-
-                                                        // process match
-                                                        if (shouldCache) {
+                                                var value = response.headers.get(rule.name);
+                                                if (!value) {
+                                                    shouldCache = false;
+                                                } else {
+                                                    if (rule.regex) {
+                                                        var regex = REGEX(rule.pattern);
+                                                        if (!regex) {
+                                                            shouldCache = false;
+                                                        } else {
+                                                            var match = regex.test(value);
                                                             if (rule.not) {
                                                                 if (match) {
                                                                     shouldCache = false;
@@ -565,37 +985,89 @@
                                                                 shouldCache = false;
                                                             }
                                                         }
-                                                    }
-                                                } else {
-                                                    shouldCache = false;
-                                                }
-                                            } else if (value.indexOf(rule.pattern) === -1) {
-                                                shouldCache = false;
-                                            }
-                                        }
-                                        break;
-                                }
-                            });
+                                                    } else if (typeof rule.pattern === 'object') {
 
-                            if (ABTFDEBUG) {
-                                if (!shouldCache) {
-                                    console.info('Abtf.sw() ➤ cache condition ➤ no cache', request.url, cachePolicy.conditions);
-                                } else {
-                                    console.info('Abtf.sw() ➤ cache condition ➤ cache', request.url, cachePolicy.conditions);
+                                                        // comparison match
+                                                        if (rule.pattern.operator) {
+
+                                                            value = parseFloat(value);
+                                                            var pattern = parseFloat(rule.pattern.value);
+
+                                                            if (isNaN(value) || isNaN(pattern)) {
+                                                                shouldCache = false;
+                                                            } else {
+
+                                                                // numeric operator comparison
+                                                                switch (rule.pattern.operator) {
+                                                                    case "<":
+                                                                        var match = (value < pattern);
+                                                                        break;
+                                                                    case ">":
+                                                                        var match = (value > pattern);
+                                                                        break;
+                                                                    case "=":
+                                                                        var match = (value === pattern);
+                                                                        break;
+                                                                    default:
+                                                                        shouldCache = false;
+                                                                        break;
+                                                                }
+
+                                                                // process match
+                                                                if (shouldCache) {
+                                                                    if (rule.not) {
+                                                                        if (match) {
+                                                                            shouldCache = false;
+                                                                        }
+                                                                    } else if (!match) {
+                                                                        shouldCache = false;
+                                                                    }
+                                                                }
+                                                            }
+                                                        } else {
+                                                            shouldCache = false;
+                                                        }
+                                                    } else if (value.indexOf(rule.pattern) === -1) {
+                                                        shouldCache = false;
+                                                    }
+                                                }
+                                                break;
+                                        }
+                                    });
+
+                                    if (ABTFDEBUG) {
+                                        if (!shouldCache) {
+                                            console.info('Abtf.sw() ➤ cache condition ➤ no cache', request.url, cachePolicy.conditions);
+                                        } else {
+                                            console.info('Abtf.sw() ➤ cache condition ➤ cache', request.url, cachePolicy.conditions);
+                                        }
+                                    }
+                                }
+
+                                if (shouldCache) {
+                                    CACHE_SET(request, response.clone(), cachePolicy).then(function() {
+
+                                        // mark task complete
+                                        PRIORITY.complete(taskIndex);
+                                    });
                                 }
                             }
                         }
 
-                        if (shouldCache) {
-                            CACHE_SET(request, response.clone(), cachePolicy);
-                        }
-                    }
-                }
+                        if (!shouldCache) {
 
-                return response; // return response
-            })
-            .catch(function(error) {
-                return (fallback) ? fallback(request, null, error) : null;
+                            // mark task complete
+                            PRIORITY.complete(taskIndex);
+                        }
+
+                        return response; // return response
+                    })
+                    .catch(function(error) {
+
+                        // mark task complete
+                        PRIORITY.complete(taskIndex);
+                        return (fallback) ? fallback(request, null, error) : null;
+                    });
             });
     }
 
@@ -622,6 +1094,9 @@
             }
             return fetchRequest;
         }
+
+        // init work process
+        var taskIndex = PRIORITY.start(1000);
 
         // HEAD request
         var headRequest = new Request(request.url, {
@@ -654,12 +1129,25 @@
                     // initiate request
                     var fetchRequest = FETCH(request, cachePolicy);
 
+
+                    fetchRequest = fetchRequest.then(function(response) {
+
+                        // mark task complete
+                        PRIORITY.complete(taskIndex);
+
+                        return response;
+                    });
+
                     // process update
                     if (afterUpdate) {
                         fetchRequest = fetchRequest.then(afterUpdate);
                     }
                     return fetchRequest;
                 } else {
+
+                    // mark task complete
+                    PRIORITY.complete(taskIndex);
+
                     return null;
                 }
 
@@ -668,10 +1156,19 @@
                 // fallback to regular fetch
                 var fetchRequest = FETCH(request, cachePolicy);
 
+                fetchRequest = fetchRequest.then(function(response) {
+
+                    // mark task complete
+                    PRIORITY.complete(taskIndex);
+
+                    return response;
+                });
+
                 // process update
                 if (afterUpdate) {
                     fetchRequest = fetchRequest.then(afterUpdate);
                 }
+
                 return fetchRequest;
             });
     };
@@ -692,7 +1189,9 @@
                 });
             }
             return fetch(originalRequest).catch(function(error) {
-                throw error;
+                setTimeout(function() {
+                    throw error;
+                });
             });;
         });
     };
@@ -701,6 +1200,9 @@
      * Store response in cache
      */
     var CACHE_GET = function(request) {
+
+        // init work process
+        var taskIndex = PRIORITY.start(1000);
 
         // open cache
         return caches.open(PWA_CACHE)
@@ -734,6 +1236,9 @@
                                 }
                             }
                         }
+
+                        // mark task complete
+                        PRIORITY.complete(taskIndex);
 
                         return cacheResponse;
                     });
@@ -812,7 +1317,7 @@
     var CACHE_SET = function(request, response, cachePolicy) {
 
         // open cache
-        caches.open(PWA_CACHE)
+        return caches.open(PWA_CACHE)
             .then(function(cache) {
 
                 // parse headers
@@ -828,7 +1333,7 @@
                 }
 
                 // read response
-                response.blob().then(function(body) {
+                return response.blob().then(function(body) {
 
                     // create cache response with modified headers
                     var cacheResponse = new Response(body, {
@@ -837,7 +1342,7 @@
                         headers: headers
                     });
 
-                    cache.put(request, cacheResponse);
+                    return cache.put(request, cacheResponse);
                 });
 
             });
@@ -880,7 +1385,7 @@
         // init config
         GET_POLICY();
 
-        // not yet configured / get policy config
+        // not yet configured
         if (!PWA_POLICY || !PWA_CACHE) {
             return;
         }
@@ -892,9 +1397,6 @@
             if (!policyList || policyList.length === 0) {
                 return false;
             }
-
-            // cache maintenance
-            INIT_CLEAN_CACHE();
 
             // matched policy
             var policyMatch = false;
@@ -1029,13 +1531,24 @@
                 console.info('Abtf.sw() ➤ policy ➤ match', event.request.url, policyMatch);
             }
 
+            // cache maintenance
+            if (CLEAN_CACHE_TIMEOUT) {
+                clearTimeout(CLEAN_CACHE_TIMEOUT);
+            }
+            CLEAN_CACHE_TIMEOUT = setTimeout(function() {
+
+                // exec on idle
+                PRIORITY.onIdle(CLEAN_CACHE, 10000, 'clean-cache');
+                CLEAN_CACHE_TIMEOUT = false;
+            }, 100);
+
             switch (policyMatch.strategy) {
                 case "never":
                     return false;
                     break;
                 case "cache":
                     // try cache
-                    return CACHE_GET(event.request)
+                    return CACHE_GET()
                         .then(function(cacheResponse) {
 
                             // return cache
@@ -1070,9 +1583,8 @@
 
                                             // notify client when update completes
                                             var afterUpdate;
-                                            if (policyMatch.cache.head_update) {
+                                            if (policyMatch.cache.notify) {
                                                 afterUpdate = function() {
-
                                                     clients.matchAll().then(function(clients) {
                                                         clients.forEach(function(client) {
                                                             client.postMessage([2, request.url]);
@@ -1124,10 +1636,12 @@
                                         if (ABTFDEBUG) {
                                             console.warn('Abtf.sw() ➤ no cache ➤ network failed ➤ empty 404 response', request.url, fetchResponse, error);
                                         }
-                                        // return 404 response
+                                        // return original result of fetch response
                                         if (!fetchResponse) {
                                             return fetch(event.request.clone()).catch(function(error) {
-                                                throw error;
+                                                setTimeout(function() {
+                                                    throw error;
+                                                });
                                             });
                                         }
                                         return fetchResponse;
@@ -1168,10 +1682,12 @@
                                         if (ABTFDEBUG) {
                                             console.warn('Abtf.sw() ➤ no cache ➤ network failed ➤ empty 404 response', request.url, fetchResponse);
                                         }
-                                        // return 404 response
+                                        // return original result of fetch response
                                         if (!fetchResponse) {
                                             return fetch(event.request).catch(function(error) {
-                                                throw error;
+                                                setTimeout(function() {
+                                                    throw error;
+                                                });
                                             });;
                                         }
                                         return fetchResponse;
@@ -1216,10 +1732,12 @@
                                     if (ABTFDEBUG) {
                                         console.warn('Abtf.sw() ➤ no cache ➤ empty 404 response', request.url);
                                     }
-                                    // return 404 response
+                                    // return original result of fetch response
                                     if (!fetchResponse) {
                                         return fetch(event.request).catch(function(error) {
-                                            throw error;
+                                            setTimeout(function() {
+                                                throw error;
+                                            });
                                         });;
                                     }
                                     return fetchResponse;
@@ -1268,7 +1786,7 @@
                 }
 
                 // cache maintenance
-                CLEAN_CACHE();
+                PRIORITY.onIdle(CLEAN_CACHE, 10000, 'clean-cache');
             }
 
             if (event.data[0] === 2 || event.data[0] === 3) {

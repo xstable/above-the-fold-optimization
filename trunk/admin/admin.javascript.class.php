@@ -74,7 +74,7 @@ class Abovethefold_Admin_Javascript
         $options['jsdelivery_async_disabled'] = $this->CTRL->admin->newline_array($input['jsdelivery_async_disabled']);
         $options['jsdelivery_scriptloader'] = trim($input['jsdelivery_scriptloader']);
 
-        $options['jsdelivery_idle'] = $this->CTRL->admin->newline_array(isset($input['jsdelivery_idle']) ? $input['jsdelivery_idle'] : array());
+        $options['jsdelivery_idle'] = $this->CTRL->admin->newline_array(isset($input['jsdelivery_idle']) ? $input['jsdelivery_idle'] : '');
         $idle = array();
         if (!empty($options['jsdelivery_idle'])) {
             foreach ($options['jsdelivery_idle'] as $str) {
@@ -108,7 +108,7 @@ class Abovethefold_Admin_Javascript
         // update settings
         $this->CTRL->admin->save_settings($options, 'Javascript optimization settings saved.');
 
-        wp_redirect(add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'javascript' ), admin_url('admin.php')));
+        wp_redirect(add_query_arg(array( 'page' => 'pagespeed-javascript' ), admin_url('admin.php')));
         exit;
     }
 }

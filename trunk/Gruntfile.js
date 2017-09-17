@@ -271,6 +271,11 @@ module.exports = function(grunt) {
                         'admin/js/admincp-pwa.js'
                     ],
 
+                    // admincp HTTP2
+                    'admin/js/admincp-http2.min.js': [
+                        'admin/js/admincp-http2.js'
+                    ],
+
                     // Codemirror
                     'admin/js/codemirror.min.js': [
                         'bower_components/codemirror/lib/codemirror.js',

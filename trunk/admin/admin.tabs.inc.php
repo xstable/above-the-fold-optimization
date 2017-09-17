@@ -20,7 +20,7 @@
                 $class .= ($tabkey == 'offer') ? ' nav-tab-offer' : '';
                 echo "<a class='nav-tab$class' href='https://pagespeed.pro/innovation/advanced-wordpress-optimization/' target='_blank'>$name</a>";
             } else {
-                $url = add_query_arg(array('page'=>'abovethefold','tab'=>$tabkey), admin_url('admin.php'));
+                $url = add_query_arg(array('page'=>'pagespeed' . (($tabkey !== 'intro') ? '-' . $tabkey : '')), admin_url('admin.php'));
                 echo '<a class="nav-tab'.$class.'" href="'.esc_url($url).'">'.$name.'</a>';
             }
         }

@@ -86,7 +86,7 @@ class Abovethefold_Admin_PWA
                 }
             }
 
-            wp_redirect(add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'pwa' ), admin_url('admin.php')) . '#manifest');
+            wp_redirect(add_query_arg(array( 'page' => 'pagespeed-pwa' ), admin_url('admin.php')) . '#manifest');
             exit;
         }
 
@@ -159,19 +159,15 @@ class Abovethefold_Admin_PWA
                     $manifestjson = false;
                 }
                 if ($manifestjson && is_array($manifestjson)) {
-                    $home = parse_url(home_url());
 
                     // add start url to options for PWA cache
                     if (isset($manifestjson['start_url'])) {
                         $options['pwa_manifest_start_url'] = $manifestjson['start_url'];
                     }
 
-                    // get service worker path
-                    $sw = $this->CTRL->pwa->get_sw();
-
                     // add service worker
                     $manifestjson['serviceworker'] = array(
-                        'src' => trailingslashit((isset($home['path'])) ? $home['path'] : '/') . $sw['filename'],
+                        'src' => $this->CTRL->pwa->get_sw_path(),
                         'use_cache' => true
                     );
                     if (isset($input['pwa_scope']) && trim($input['pwa_scope']) !== '') {
@@ -220,7 +216,7 @@ class Abovethefold_Admin_PWA
             $this->install_serviceworker();
         }
 
-        wp_redirect(add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'pwa' ), admin_url('admin.php')));
+        wp_redirect(add_query_arg(array( 'page' => 'pagespeed-pwa' ), admin_url('admin.php')));
         exit;
     }
 
@@ -229,8 +225,6 @@ class Abovethefold_Admin_PWA
      */
     public function install_serviceworker()
     {
-        // get service worker path
-        $sw = $this->CTRL->pwa->get_sw();
 
         // update service worker files
         if (!$this->CTRL->pwa->update_sw()) {
@@ -239,7 +233,11 @@ class Abovethefold_Admin_PWA
 
         // update abtf-pwa-policy.json config
         if (!$this->CTRL->pwa->update_sw_config()) {
-            $this->CTRL->admin->set_notice('Failed to install the Service Worker Cache Policy on <strong>' . esc_html(str_replace(ABSPATH, '[ABSPATH]/', $sw['file_policy'])) . '</strong>. Please check the permissions or create the file manually with the following JSON content: <div style="padding:10px;"><textarea style="width:100%;height:100px;">'.esc_html(json_encode($this->CTRL->pwa->get_sw_config())).'</textarea></div>', 'ERROR');
+            
+            // get service worker path
+            $sw = $this->CTRL->pwa->get_sw();
+
+            $this->CTRL->admin->set_notice('Failed to install the Service Worker Cache Policy on <strong>' . esc_html(str_replace(ABSPATH, '[ABSPATH]/', $sw['file_config'])) . '</strong>. Please check the permissions or create the file manually with the following JSON content: <div style="padding:10px;"><textarea style="width:100%;height:100px;">'.esc_html(json_encode($this->CTRL->pwa->get_sw_config())).'</textarea></div>', 'ERROR');
         }
     }
     /**
@@ -247,7 +245,7 @@ class Abovethefold_Admin_PWA
      */
     public function enqueue_scripts($hook)
     {
-        if (!isset($_REQUEST['page']) || !isset($_REQUEST['tab']) || $_REQUEST['page'] !== 'abovethefold' || $_REQUEST['tab'] !== 'pwa') {
+        if (!isset($_REQUEST['page']) || $_GET['page'] !== 'pagespeed-pwa') {
             return;
         }
 

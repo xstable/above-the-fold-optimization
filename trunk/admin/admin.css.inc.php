@@ -120,6 +120,7 @@
 														</td>
 													</tr>
 												</table>
+
 											</div>
 
 										</div>
@@ -213,10 +214,6 @@
                                                                 echo htmlentities($options['gwfo_config']);
                                                             } ?></textarea>
 															<p class="description">Enter the <code>WebFontConfig</code> variable for Google Web Font Loader. Leave blank for the default configuration. (<a href="https://github.com/typekit/webfontloader#configuration" target="_blank">more information</a>)</p>
-
-															<p class="warning_red" id="sha256_warning" style="<?php if (!isset($options['gwfo_config']) || trim($options['gwfo_config']) === '') {
-                                                                print 'display:none;';
-                                                            } ?>margin-top:.5em;"><strong>Warning:</strong> If you use a Content-Security-Policy hash to white list the ABTF client script, modifying the custom <code>WebFontConfig</code> config changes the hash.</p>
 														</td>
 													</tr>
 													<tr valign="top" class="gwfloadoptions">
@@ -268,7 +265,7 @@
 													<tr valign="top">
 														<th scope="row">Local Font Loading</th>
 														<td>
-															<p>Google Fonts are served from <code>fonts.googleapis.com</code> that is causing a render-blocking warning in the Google PageSpeed test. The Google fonts stylesheet cannot be cached by the <a href="<?php echo add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'proxy' ), admin_url('admin.php')); ?>">external resource proxy</a> because it serves different content based on the client.</p>
+															<p>Google Fonts are served from <code>fonts.googleapis.com</code> that is causing a render-blocking warning in the Google PageSpeed test. The Google fonts stylesheet cannot be cached by the <a href="<?php echo add_query_arg(array( 'page' => 'pagespeed-proxy' ), admin_url('admin.php')); ?>">external resource proxy</a> because it serves different content based on the client.</p>
 															<p style="margin-top:7px;">To solve the PageSpeed Score issue while also achieving the best font render performance, it is possible to download the Google fonts and load them locally (from the critical CSS). Loading Google fonts locally enables to achieve a Google PageSpeed 100 Score while also preventing a font flicker effect during navigation.</p>
 
 															<br />

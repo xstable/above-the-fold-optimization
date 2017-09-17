@@ -197,8 +197,8 @@
 										<td colspan="2" style="padding:0px;margin:0px;font-size:11px;">
 											<p style="padding:0px;margin:0px;font-size:11px;">Stats last updated: <?php echo date('r', $cache_stats['date']); ?></p>
 											<hr />
-											<a href="<?php echo add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'proxy', 'update_cache_stats' => 1 ), admin_url('admin.php')); ?>" class="button button-small">Refresh Stats</a>
-											<a href="<?php echo add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'proxy', 'empty_cache' => 1 ), admin_url('admin.php')); ?>" onclick="if (!confirm('Are you sure you want to empty the cache directory?',true)) { return false; } " class="button button-small">Empty Cache</a>
+											<a href="<?php echo add_query_arg(array( 'page' => 'pagespeed-proxy', 'update_cache_stats' => 1 ), admin_url('admin.php')); ?>" class="button button-small">Refresh Stats</a>
+											<a href="<?php echo add_query_arg(array( 'page' => 'pagespeed-proxy', 'empty_cache' => 1 ), admin_url('admin.php')); ?>" onclick="if (!confirm('Are you sure you want to empty the cache directory?',true)) { return false; } " class="button button-small">Empty Cache</a>
 										</td>
 									</tr>
 								</tfoot>

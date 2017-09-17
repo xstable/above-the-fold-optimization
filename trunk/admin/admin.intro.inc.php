@@ -57,7 +57,7 @@
 
 
 						<h3 style="margin-top:0px;padding-bottom:5px;margin-bottom:0px;border-bottom:solid 1px #efefef;">Step 4 - setup a website monitor</h3>
-						<p>Once the performance and quality of your website has achieved a perfect state, it is required to maintain it to achieve an optimal reliability, quality and performance reputation in Google. Go to the 	<a href="<?php echo add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'monitor' ), admin_url('admin.php')); ?>">Monitor tab</a> for information about website monitoring tools.</p>
+						<p>Once the performance and quality of your website has achieved a perfect state, it is required to maintain it to achieve an optimal reliability, quality and performance reputation in Google. Go to the 	<a href="<?php echo add_query_arg(array( 'page' => 'pagespeed-monitor' ), admin_url('admin.php')); ?>">Monitor tab</a> for information about website monitoring tools.</p>
 					</div>
 				</div>
 			</div>

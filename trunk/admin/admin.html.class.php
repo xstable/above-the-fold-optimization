@@ -97,7 +97,7 @@ class Abovethefold_Admin_HTML
         // update settings
         $this->CTRL->admin->save_settings($options, 'HTML optimization settings saved.');
 
-        wp_redirect(add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'html' ), admin_url('admin.php')));
+        wp_redirect(add_query_arg(array( 'page' => 'pagespeed-html' ), admin_url('admin.php')));
         exit;
     }
     
@@ -106,7 +106,7 @@ class Abovethefold_Admin_HTML
      */
     public function enqueue_scripts($hook)
     {
-        if (!isset($_REQUEST['page']) || !isset($_REQUEST['tab']) || $_REQUEST['page'] !== 'abovethefold' || $_REQUEST['tab'] !== 'html') {
+        if (!isset($_REQUEST['page']) || $_GET['page'] !== 'pagespeed-html') {
             return;
         }
 

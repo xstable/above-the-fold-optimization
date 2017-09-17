@@ -33,25 +33,48 @@ class Abovethefold_PWA
     }
 
     /**
-     * Return service worker path and scope
+     * Return service worker path
      */
     public function get_sw()
     {
         $path = trailingslashit(ABSPATH);
-        $scope = trailingslashit(parse_url(site_url(), PHP_URL_PATH));
 
         $sw_filename = 'abtf-pwa.js';
         $sw_filename_debug = 'abtf-pwa.debug.js';
-        $sw_policy_filename = 'abtf-pwa-config.json';
+        $sw_config_filename = 'abtf-pwa-config.json';
 
         return array(
             'filename' => $sw_filename,
             'filename_debug' => $sw_filename_debug,
+            'filename_config' => $sw_config_filename,
             'file' => $path . $sw_filename,
             'file_debug' => $path . $sw_filename_debug,
-            'file_policy' => $path . $sw_policy_filename,
-            'scope' => $scope
+            'file_config' => $path . $sw_config_filename
         );
+    }
+
+    /**
+     * Return service worker scope
+     */
+    public function get_sw_scope()
+    {
+        if (isset($this->CTRL->options['pwa_scope']) && trim($this->CTRL->options['pwa_scope']) !== '') {
+            $scope = $this->CTRL->options['pwa_scope'];
+        } else {
+            $scope = trailingslashit(parse_url(site_url(), PHP_URL_PATH));
+        }
+        return apply_filters('abtf_pwa_sw_scope', $scope);
+    }
+
+    /**
+     * Return service worker path
+     */
+    public function get_sw_path($debug=false)
+    {
+        $sw = $this->get_sw();
+        $file = ($debug) ? $sw['filename_debug'] : $sw['filename'];
+        $path = trailingslashit(parse_url(site_url(), PHP_URL_PATH));
+        return apply_filters('abtf_pwa_sw_path', $path . $file . '?path=' . urlencode($path));
     }
 
     /**
@@ -191,22 +214,22 @@ class Abovethefold_PWA
         $config = $this->get_sw_config();
         $config_json = json_encode($config);
 
-        $sw_policy_ok = true;
-        $current_config = (file_exists($sw['file_policy'])) ? file_get_contents($sw['file_policy']) : false;
+        $sw_config_ok = true;
+        $current_config = (file_exists($sw['file_config'])) ? file_get_contents($sw['file_config']) : false;
         if (!$current_config || md5($current_config) !== md5($config_json)) {
             try {
-                @file_put_contents($sw['file_policy'], $config_json);
+                @file_put_contents($sw['file_config'], $config_json);
             } catch (Exception $error) {
-                $sw_policy_ok = false;
+                $sw_config_ok = false;
             }
-            if (!file_exists($sw['file_policy'])) {
-                $sw_policy_ok = false;
-            } elseif ($sw_policy_ok && md5(file_get_contents($sw['file_policy'])) !== md5($config_json)) {
-                $sw_policy_ok = false;
+            if (!file_exists($sw['file_config'])) {
+                $sw_config_ok = false;
+            } elseif ($sw_config_ok && md5(file_get_contents($sw['file_config'])) !== md5($config_json)) {
+                $sw_config_ok = false;
             }
         }
 
-        if (!$sw_policy_ok) {
+        if (!$sw_config_ok) {
             return false;
         }
         
@@ -303,9 +326,11 @@ class Abovethefold_PWA
             // disabled
             return;
         }
-        // verify if service worker exists
+
+        // get service worker paths
         $sw = $this->get_sw();
 
+        // verify if service worker file exist
         $swfile = ($jsdebug) ? $sw['filename_debug'] : $sw['filename'];
         if (!file_exists($swfile)) {
 
@@ -318,24 +343,20 @@ class Abovethefold_PWA
             }
         }
 
-        // no cache policy file
-        if (!file_exists($sw['file_policy'])) {
+        // no config file
+        if (!file_exists($sw['file_config'])) {
             // disable
             return;
         }
 
+        // config index key
         $pwaindex = $this->CTRL->optimization->client_config_ref['pwa'];
 
-        if (isset($this->CTRL->options['pwa_scope']) && trim($this->CTRL->options['pwa_scope']) !== '') {
-            $scope = $this->CTRL->options['pwa_scope'];
-        } else {
-            $scope = $sw['scope'];
-        }
-
+        // client settings
         $pwasettings = array(
-            'path' => $sw['scope'] . $swfile,
-            'scope' => $scope,
-            'policy' => filemtime($sw['file_policy']),
+            'path' => $this->get_sw_path($jsdebug),
+            'scope' => $this->get_sw_scope(),
+            'policy' => filemtime($sw['file_config']),
             'register' => (!isset($this->CTRL->options['pwa_register']) || $this->CTRL->options['pwa_register'])
         );
 
@@ -358,6 +379,7 @@ class Abovethefold_PWA
             $pwasettings['max_size'] = '';
         }
 
+        // add pwa settings to client settings
         $jssettings[$pwaindex] = array();
         foreach ($pwasettings as $key => $value) {
             if (!isset($this->CTRL->optimization->client_config_ref['pwa-sub'][$key])) {
@@ -367,6 +389,7 @@ class Abovethefold_PWA
             $jssettings[$pwaindex][$this->CTRL->optimization->client_config_ref['pwa-sub'][$key]] = $value;
         }
 
+        // fill empty array values to preserve JSON array format
         $max = 0;
         foreach ($jssettings[$pwaindex] as $index => $value) {
             if ($index > $max) {

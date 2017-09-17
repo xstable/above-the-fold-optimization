@@ -59,8 +59,7 @@
 <?php
     $client_hashes = false;
 
-    $site_url = site_url();
-    $site_url .= ((strpos($site_url, '?') !== -1) ? '?' : '&') . 'abtf-csp-hash=1';
+    $site_url = wp_nonce_url(trailingslashit(site_url()), 'csp_hash_json', 'abtf-csp-hash');
 
     try {
         $json = file_get_contents($site_url);

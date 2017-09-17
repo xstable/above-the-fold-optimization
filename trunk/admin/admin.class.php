@@ -51,6 +51,7 @@ class Abovethefold_Admin
         'css' => 'CSS',
         'javascript' => 'Javascript',
         'pwa' => 'PWA', // Google PWA Validation
+        'http2' => 'HTTP/2',
         'proxy' => 'Proxy',
         'settings' => 'Settings',
         'build-tool' => 'Critical CSS Creator',
@@ -136,6 +137,7 @@ class Abovethefold_Admin
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.css.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.javascript.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.pwa.class.php';
+            require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.http2.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.proxy.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.settings.class.php';
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin.build-tool.class.php';
@@ -165,6 +167,11 @@ class Abovethefold_Admin
              * Load PWA management
              */
             $this->pwa = new Abovethefold_Admin_PWA($CTRL);
+
+            /**
+             * Load HTTP/2 management
+             */
+            $this->http2 = new Abovethefold_Admin_HTTP2($CTRL);
 
             /**
              * Load proxy management
@@ -201,7 +208,7 @@ class Abovethefold_Admin
      */
     public function settings_link($links)
     {
-        $settings_link = '<a href="' . add_query_arg(array( 'page' => 'abovethefold' ), admin_url('admin.php')) . '">'.__('Settings').'</a>';
+        $settings_link = '<a href="' . add_query_arg(array( 'page' => 'pagespeed' ), admin_url('admin.php')) . '">'.__('Settings').'</a>';
         array_unshift($links, $settings_link);
         return $links;
     }
@@ -252,7 +259,18 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
     {
 
         // get tab from query string
-        $tab = (isset($_REQUEST['tab'])) ? trim(strtolower($_REQUEST['tab'])) : $default;
+        $tab = $default;
+
+        // page based tab
+        if (isset($_GET['page']) && strpos($_GET['page'], 'pagespeed-') === 0) {
+            $tab = substr($_GET['page'], 10);
+            if ($tab === 'above-the-fold') {
+                $tab = 'criticalcss';
+            }
+            if (isset($this->tabs[$tab])) {
+                $this->active_tab = $tab;
+            }
+        }
 
         // invalid tab
         if (!isset($this->tabs[$tab])) {
@@ -271,7 +289,7 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
         // add global admin CSS
         wp_enqueue_style('abtf_admincp_global', plugin_dir_url(__FILE__) . 'css/admincp-global.min.css', false, WPABTF_VERSION);
 
-        if (!isset($_REQUEST['page']) || $_REQUEST['page'] !== 'abovethefold') {
+        if (!isset($_REQUEST['page']) || strpos($_GET['page'], 'pagespeed') !== 0) {
             return;
         }
 
@@ -283,7 +301,7 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
 
             $this->clear_pagecache();
 
-            wp_redirect(add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'settings' ), admin_url('admin.php')));
+            wp_redirect(add_query_arg(array( 'page' => 'pagespeed-settings' ), admin_url('admin.php')));
             exit;
         }
 
@@ -301,27 +319,84 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
     {
         global $submenu;
 
-        if (is_plugin_active('w3-total-cache/w3-total-cache.php')) {
-
-            /**
-             * Add settings link to Performance tab of W3 Total Cache
-             */
-            if (is_array($submenu['w3tc_dashboard']) && !empty($submenu['w3tc_dashboard'])) {
-                array_splice($submenu['w3tc_dashboard'], 2, 0, array(
-                    array(__('Above The Fold', 'abovethefold'), 'manage_options',  add_query_arg(array( 'page' => 'abovethefold' ), admin_url('admin.php')), __('Above The Fold Optimization', 'abovethefold'))
-                ));
-            }
-
-            add_submenu_page(null, __('Above The Fold', 'abovethefold'), __('Above The Fold Optimization', 'abovethefold'), 'manage_options', 'abovethefold', array(
+        add_menu_page(
+            __('Google PageSpeed Optimization', 'pagespeed'),
+            __('PageSpeed', 'pagespeed'),
+            'manage_options',
+            'pagespeed',
+            array(
                 &$this,
                 'settings_page'
-            ));
-        }
+            ),
+            $this->admin_icon(),
+            100
+        );
+
+        add_submenu_page('pagespeed', __('Critical CSS (Above The Fold) Optimization', 'pagespeed'), __('Critical CSS', 'pagespeed'), 'manage_options', 'pagespeed-criticalcss', array(
+            &$this,
+            'settings_page'
+        ));
+
+        add_submenu_page('pagespeed', __('HTML Optimization', 'pagespeed'), __('HTML', 'pagespeed'), 'manage_options', 'pagespeed-html', array(
+            &$this,
+            'settings_page'
+        ));
+
+        add_submenu_page('pagespeed', __('CSS Optimization', 'pagespeed'), __('CSS', 'pagespeed'), 'manage_options', 'pagespeed-css', array(
+            &$this,
+            'settings_page'
+        ));
+
+        add_submenu_page('pagespeed', __('Javascript Optimization', 'pagespeed'), __('Javascript', 'pagespeed'), 'manage_options', 'pagespeed-javascript', array(
+            &$this,
+            'settings_page'
+        ));
+
+        add_submenu_page('pagespeed', __('Progressive Web App Optimization', 'pagespeed'), __('PWA', 'pagespeed'), 'manage_options', 'pagespeed-pwa', array(
+            &$this,
+            'settings_page'
+        ));
+
+        add_submenu_page('pagespeed', __('HTTP/2 Optimization', 'pagespeed'), __('HTTP/2', 'pagespeed'), 'manage_options', 'pagespeed-http2', array(
+            &$this,
+            'settings_page'
+        ));
+
+        add_submenu_page('pagespeed', __('External Resource Proxy', 'pagespeed'), __('Proxy', 'pagespeed'), 'manage_options', 'pagespeed-proxy', array(
+            &$this,
+            'settings_page'
+        ));
+
+        add_submenu_page('pagespeed', __('Settings', 'pagespeed'), __('Settings', 'pagespeed'), 'manage_options', 'pagespeed-settings', array(
+            &$this,
+            'settings_page'
+        ));
+
+        add_submenu_page('pagespeed', __('⚡ Instant App', 'pagespeed'), __('⚡ Instant App', 'pagespeed'), 'manage_options', 'pagespeed-instant', array(
+            &$this,
+            'settings_page'
+        ));
 
         /**
-         * Add settings link to Settings tab
+         * Add theme settings link to Appearance tab
          */
-        add_submenu_page('themes.php', __('Above The Fold Optimization', 'abovethefold'), __('Above The Fold', 'abovethefold'), 'manage_options', 'abovethefold', array(
+        add_submenu_page('themes.php', __('Above The Fold Optimization', 'pagespeed'), __('Above The Fold', 'pagespeed'), 'manage_options', 'pagespeed-above-the-fold', array(
+            &$this,
+            'settings_page'
+        ));
+
+        /**
+         * Hidden pages
+         */
+        add_submenu_page(null, __('Critical CSS Quality Test', 'pagespeed'), __('Quality Test', 'pagespeed'), 'manage_options', 'pagespeed-compare', array(
+            &$this,
+            'settings_page'
+        ));
+        add_submenu_page(null, __('Critical CSS Gulp.js Build Tool', 'pagespeed'), __('Gulp.js Build Tool', 'pagespeed'), 'manage_options', 'pagespeed-build-tool', array(
+            &$this,
+            'settings_page'
+        ));
+        add_submenu_page(null, __('Website Monitor', 'pagespeed'), __('Website Monitor', 'pagespeed'), 'manage_options', 'pagespeed-monitor', array(
             &$this,
             'settings_page'
         ));
@@ -338,12 +413,12 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
             return;
         }
 
-        $settings_url = add_query_arg(array( 'page' => 'abovethefold' ), admin_url('admin.php'));
+        $settings_url = add_query_arg(array( 'page' => 'pagespeed' ), admin_url('admin.php'));
         $nonced_url = wp_nonce_url($settings_url, 'abovethefold');
         $admin_bar->add_menu(array(
             'id' => 'abovethefold',
-            'title' => __('PageSpeed', 'abovethefold'),
-            'href' => $nonced_url,
+            'title' => '<div class="ab-icon wp-menu-image svg" style="background-image: url(\''.$this->admin_icon().'\') !important;"></div><span class="ab-label">' . __('PageSpeed', 'pagespeed') . '</span>',
+            'href' => $settings_url,
             'meta' => array( 'title' => __('PageSpeed', 'abovethefold'), 'class' => 'ab-sub-secondary' )
 
         ));
@@ -369,6 +444,12 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
 
         $admin_bar->add_node(array(
             'parent' => 'abovethefold-top',
+            'id' => 'abovethefold-optimization',
+            'title' => __('Optimization', 'abovethefold')
+        ));
+
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-top',
             'id' => 'abovethefold-tools',
             'title' => __('Other Tools', 'abovethefold')
         ));
@@ -383,6 +464,85 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
         }
 
         /**
+         * Optimize Critical CSS
+         */
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-optimization',
+            'id' => 'abovethefold-optimization-criticalcss',
+            'title' => __('Critical CSS', 'abovethefold'),
+            'href' => add_query_arg(array( 'page' => 'pagespeed-criticalcss' ), admin_url('admin.php')),
+            'meta' => array( 'title' => __('Critical CSS', 'abovethefold') )
+        ));
+
+        /**
+         * Optimize HTML
+         */
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-optimization',
+            'id' => 'abovethefold-optimization-html',
+            'title' => __('HTML', 'abovethefold'),
+            'href' => add_query_arg(array( 'page' => 'pagespeed-html' ), admin_url('admin.php')),
+            'meta' => array( 'title' => __('HTML', 'abovethefold') )
+        ));
+
+        /**
+         * Optimize CSS
+         */
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-optimization',
+            'id' => 'abovethefold-optimization-css',
+            'title' => __('CSS', 'abovethefold'),
+            'href' => add_query_arg(array( 'page' => 'pagespeed-css' ), admin_url('admin.php')),
+            'meta' => array( 'title' => __('CSS', 'abovethefold') )
+        ));
+
+        /**
+         * Optimize Javascript
+         */
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-optimization',
+            'id' => 'abovethefold-optimization-javascript',
+            'title' => __('Javascript', 'abovethefold'),
+            'href' => add_query_arg(array( 'page' => 'pagespeed-javascript' ), admin_url('admin.php')),
+            'meta' => array( 'title' => __('Javascript', 'abovethefold') )
+        ));
+
+        /**
+         * Optimize PWA
+         */
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-optimization',
+            'id' => 'abovethefold-optimization-pwa',
+            'title' => __('Progressive Web App (PWA)', 'abovethefold'),
+            'href' => add_query_arg(array( 'page' => 'pagespeed-pwa' ), admin_url('admin.php')),
+            'meta' => array( 'title' => __('PWA', 'abovethefold') )
+        ));
+
+        /**
+         * Optimize HTTP2
+         */
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-optimization',
+            'id' => 'abovethefold-optimization-http2',
+            'title' => __('HTTP/2', 'abovethefold'),
+            'href' => add_query_arg(array( 'page' => 'pagespeed-http2' ), admin_url('admin.php')),
+            'meta' => array( 'title' => __('HTTP/2', 'abovethefold') )
+        ));
+
+        /**
+         * Optimize Proxy
+         */
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-optimization',
+            'id' => 'abovethefold-optimization-proxy',
+            'title' => __('Proxy', 'abovethefold'),
+            'href' => add_query_arg(array( 'page' => 'pagespeed-proxy' ), admin_url('admin.php')),
+            'meta' => array( 'title' => __('Proxy', 'abovethefold') )
+        ));
+
+
+
+        /**
          * Extract Full CSS
          */
         $admin_bar->add_node(array(
@@ -395,7 +555,7 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
         /**
          * Page cache clear
          */
-        $clear_url = add_query_arg(array( 'page' => 'abovethefold', 'clear' => 'pagecache' ), admin_url('admin.php'));
+        $clear_url = add_query_arg(array( 'page' => 'pagespeed', 'clear' => 'pagecache' ), admin_url('admin.php'));
         $nonced_url = wp_nonce_url($clear_url, 'abovethefold');
         $admin_bar->add_node(array(
             'parent' => 'abovethefold-tools',
@@ -530,6 +690,13 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
             'title' => __('Into DNS', 'abovethefold'),
             'href' => 'http://www.intodns.com/'.urlencode(str_replace('www.', '', parse_url($currenturl, PHP_URL_HOST))).'',
             'meta' => array( 'title' => __('Into DNS', 'abovethefold'), 'target' => '_blank' )
+        ));
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-check-technical',
+            'id' => 'abovethefold-check-http2',
+            'title' => __('HTTP/2', 'abovethefold'),
+            'href' => 'https://tools.keycdn.com/http2-test?url='.urlencode($currenturl).'',
+            'meta' => array( 'title' => __('HTTP/2', 'abovethefold'), 'target' => '_blank' )
         ));
         $admin_bar->add_node(array(
             'parent' => 'abovethefold-check-technical',
@@ -764,7 +931,7 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
 <?php
 
         // active tab
-        $tab = (isset($_REQUEST['tab'])) ? trim($_REQUEST['tab']) : 'intro';
+        $tab = $this->active_tab('intro');
 
         // invalid tab
         if (!isset($this->tabs[$tab])) {
@@ -787,6 +954,7 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
             case "html":
             case "javascript":
             case "pwa":
+            case "http2":
             case "proxy":
             case "settings":
             case "extract":
@@ -919,5 +1087,59 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
         $size = array('B','kB','MB','GB','TB','PB','EB','ZB','YB');
         $factor = floor((strlen($bytes) - 1) / 3);
         return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[$factor];
+    }
+
+
+    /**
+     * Return admin panel SVG icon
+     */
+    final public function admin_icon($color = false)
+    {
+        $icon = file_get_contents(WPABTF_PATH.'public/100.svg');
+        $icon = 'data:image/svg+xml;base64,'.base64_encode($this->menu_svg_color($icon, $color));
+        return $icon;
+    }
+
+    /**
+     * Fills menu page inline SVG icon color.
+     */
+    final private function menu_svg_color($svg, $color=false)
+    {
+        if ($color) {
+            $use_icon_fill_color = $color;
+        } else {
+            if (!($color = get_user_option('admin_color'))) {
+                $color = 'fresh';
+            }
+
+            /**
+             * WordPress admin icon color schemes.
+             */
+            $wp_admin_icon_colors = [
+                'fresh'     => ['base' => '#999999', 'focus' => '#2EA2CC', 'current' => '#FFFFFF'],
+                'light'     => ['base' => '#999999', 'focus' => '#CCCCCC', 'current' => '#CCCCCC'],
+                'blue'      => ['base' => '#E5F8FF', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
+                'midnight'  => ['base' => '#F1F2F3', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
+                'sunrise'   => ['base' => '#F3F1F1', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
+                'ectoplasm' => ['base' => '#ECE6F6', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
+                'ocean'     => ['base' => '#F2FCFF', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
+                'coffee'    => ['base' => '#F3F2F1', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
+            ];
+
+            if (empty($wp_admin_icon_colors[$color])) {
+                return $svg;
+            }
+            $icon_colors         = $wp_admin_icon_colors[$color];
+            $use_icon_fill_color = $icon_colors['base']; // Default base.
+
+            $current_pagenow = !empty($GLOBALS['pagenow']) ? $GLOBALS['pagenow'] : '';
+            $current_page    = !empty($_REQUEST['page']) ? $_REQUEST['page'] : '';
+
+            if ($current_page && strpos($_GET['page'], 'pagespeed') === 0) {
+                $use_icon_fill_color = $icon_colors['current'];
+            }
+        }
+        
+        return preg_replace('|(\s)fill="#000000"|Ui', '$1fill="'.esc_attr($use_icon_fill_color).'"', $svg);
     }
 }

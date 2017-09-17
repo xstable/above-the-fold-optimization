@@ -154,6 +154,9 @@ class Abovethefold
         // load Google PWA optimization controller
         $this->pwa = new Abovethefold_PWA($this);
 
+        // load HTTP/2 optimization controller
+        $this->http2 = new Abovethefold_HTTP2($this);
+
         // load webfont optimization controller
         $this->gwfo = new Abovethefold_WebFonts($this);
 
@@ -217,6 +220,13 @@ class Abovethefold
          * Disable for Google AMP pages
          */
         if (function_exists('is_amp_endpoint') && is_amp_endpoint()) {
+            return false;
+        }
+
+        /**
+         * Disable for REST API requests
+         */
+        if (defined('REST_REQUEST') && REST_REQUEST) {
             return false;
         }
 
@@ -308,19 +318,30 @@ class Abovethefold
                 'sha384',
                 'sha512'
             );
-            foreach ($algorithms as $algorithm) {
-                try {
+
+            // verify noonce
+            /*if (!wp_verify_nonce($_GET['abtf-csp-hash'], 'csp_hash_json')) {
+                foreach ($algorithms as $algorithm) {
                     $json[$algorithm] = array(
-                        'public' => $this->optimization->get_client_script_hash(false, $algorithm),
-                        'debug' => $this->optimization->get_client_script_hash(true, $algorithm)
-                    );
-                } catch (Exception $err) {
-                    $json[$algorithm] = array(
-                        'public' => 'FAILED',
-                        'debug' => 'FAILED'
+                        'public' => 'WORDPRESS_NONCE_AUTH_FAILED',
+                        'debug' => 'WORDPRESS_NONCE_AUTH_FAILED'
                     );
                 }
-            }
+            } else {*/
+                foreach ($algorithms as $algorithm) {
+                    try {
+                        $json[$algorithm] = array(
+                            'public' => $this->optimization->get_client_script_hash(false, $algorithm),
+                            'debug' => $this->optimization->get_client_script_hash(true, $algorithm)
+                        );
+                    } catch (Exception $err) {
+                        $json[$algorithm] = array(
+                            'public' => 'FAILED',
+                            'debug' => 'FAILED'
+                        );
+                    }
+                }
+            //}
 
             while (ob_get_level()) {
                 ob_end_clean();
@@ -362,6 +383,11 @@ class Abovethefold
          * The class responsible for defining all actions related to Google PWA optimization
          */
         require_once WPABTF_PATH . 'includes/pwa.class.php';
+
+        /**
+         * The class responsible for defining all actions related to HTTP2 optimization
+         */
+        require_once WPABTF_PATH . 'includes/http2.class.php';
 
         /**
          * The class responsible for defining all actions related to Web Font optimization

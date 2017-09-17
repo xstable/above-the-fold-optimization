@@ -93,7 +93,7 @@ class Abovethefold_Admin_CSS
                 }
             }
             
-            wp_redirect(add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'css' ), admin_url('admin.php')));
+            wp_redirect(add_query_arg(array( 'page' => 'pagespeed-css' ), admin_url('admin.php')));
             exit;
         }
 
@@ -178,7 +178,7 @@ class Abovethefold_Admin_CSS
         // update settings
         $this->CTRL->admin->save_settings($options, 'CSS optimization settings saved.');
 
-        wp_redirect(add_query_arg(array( 'page' => 'abovethefold', 'tab' => 'css' ), admin_url('admin.php')));
+        wp_redirect(add_query_arg(array( 'page' => 'pagespeed-css' ), admin_url('admin.php')));
         exit;
     }
 }

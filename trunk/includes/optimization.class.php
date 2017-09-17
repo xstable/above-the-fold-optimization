@@ -1049,6 +1049,11 @@ class Abovethefold_Optimization
         // print javascript
         print '<script '.((!defined('ABTF_NOREF') || !ABTF_NOREF) ? 'data-ref="https://goo.gl/C1gw96"' : '').' data-abtf=\''.str_replace('\'', '&#39;', json_encode($clientjs['config'])).'\'>'.$clientjs['client'].'</script>';
 
+        // print HTML such as meta
+        if ($clientjs['html_after']) {
+            print $clientjs['html_after'];
+        }
+
         // above the fold CSS
         print '<style type="text/css" id="AbtfCSS" data-abtf>' . $inlineCSS . '</style>';
     }
@@ -1058,7 +1063,7 @@ class Abovethefold_Optimization
      */
     public function get_client_script($debug = false)
     {
-        $html_before = '';
+        $html_before = $html_after = '';
 
         // Inline js
         $script_code = '';
@@ -1093,6 +1098,11 @@ class Abovethefold_Optimization
          * Google PWA Optimization
          */
         $this->CTRL->pwa->client_jssettings($jssettings, $jsfiles, $script_code, $jsdebug, $html_before);
+
+        /**
+         * HTTP/2 optimization
+         */
+        $this->CTRL->http2->client_jssettings($jssettings, $jsfiles, $script_code, $jsdebug, $html_before, $html_after);
 
         // Proxy external files
         if ($this->CTRL->options['js_proxy'] || $this->CTRL->options['css_proxy']) {
@@ -1193,6 +1203,7 @@ class Abovethefold_Optimization
 
         return array(
             'html_before' => $html_before,
+            'html_after' => $html_after,
             'config' => $jssettings,
             'client' => trim($script_code_before . 'window.Abtf={};' . $script_code . 'Abtf['.$this->client_config_ref['header_load'].']();')
         );

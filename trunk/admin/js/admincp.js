@@ -13,6 +13,12 @@ if (!window.requestAnimationFrame) {
     })();
 }
 
+if (!window.requestIdleCallback) {
+    window.requestIdleCallback = function(fn) {
+        setTimeout(fn);
+    };
+}
+
 jQuery(function($) {
 
     /**
@@ -175,34 +181,25 @@ jQuery(function($) {
     });
 
     /**
-     * Real Time Text example
-     * /
-    if (jQuery('#livehtml').length > 0) {
+     * Github star button
+     */
+    if (jQuery('.github-button').length > 0) {
 
-        var scrollHandler = function() {
-            if (jQuery(window).scrollTop() > 100) {
-                jQuery('#livehtml').html('');
-                jQuery('#livehtml').hide();
-                jQuery( window ).off('scroll', scrollHandler)
-            }
-        }
-
-        jQuery('.ws-info').on('mouseover touchstart', function() {
-
-            jQuery( window ).scroll(scrollHandler);
-
-            jQuery('#livehtml').show();
-            jQuery('#livehtml').html('<span class="live wp-exclude-emoji"><span class="tag">&lt;div <span class="ws">⚡</span>&gt</span><span class="text">real-time writing for 10.000 viewers, as simple as a HTML attribute</span><span class="tag">&lt;/div&gt</span></span>');
-            if ( !jQuery('#livehtml').data('realtimetext') ) {
-                jQuery('#livehtml').data('realtimetext',1);
-                var color = jQuery('#livehtml .live span.text').css("color").replace(')', ', 0.7)').replace('rgb', 'rgba');
-                var lcolor = jQuery('.ws-info').css("color");
-                var width = jQuery('#livehtml .live span.text').css("width");
-                jQuery('body').append('<style>.live span.tag .ws {color: '+lcolor+';}.live span.text { border-right-color:'+color+'; } @keyframes typing { from { width: 0px } to { width: '+width+'; } }@keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: '+color+'; } }</style>');
-            }
+        window.requestIdleCallback(function() {
+            var s = document.createElement('script');
+            s.type = 'text/javascript';
+            s.async = true;
+            s.src = 'https://buttons.github.io/buttons.js';
+            document.getElementsByTagName('head')[0].appendChild(s);
         });
 
+    }
 
-
-    }*/
+    // instant app link
+    $('.wp-submenu a[href]').each(function(i, el) {
+        if ($(el).attr('href') === 'admin.php?page=pagespeed-instant') {
+            $(el).attr('href', 'https://test.fastestwebsite.co/');
+            $(el).attr('target', '_blank');
+        }
+    });
 });
