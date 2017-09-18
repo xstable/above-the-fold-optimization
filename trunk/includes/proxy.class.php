@@ -1158,7 +1158,7 @@ class Abovethefold_Proxy
                                     // older than min age, delete cache file
                                     if ($date_created < $prune_time) {
                                         if (!$stats_only) {
-                                            @unlink($cache_path . $file);
+                                            @unlink($C_cache_path . $file);
                                             $deleted_count++;
                                         }
                                     } else {

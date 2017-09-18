@@ -70,6 +70,18 @@ font-weight: bold;
 			It is not possible to push resources that are not used on a page. For more information, see <a href="https://jakearchibald.com/2017/h2-push-tougher-than-i-thought/" target="_blank">this article</a>
 			</p>
 
+<?php
+    if (defined('CLOUDFLARE_PLUGIN_DIR')) {
+        ?>
+			<br />
+			<p class="warning_red">
+				<strong>Warning:</strong> You are using CloudFlare. CloudFlare appears to have disabled support for HTTP/2 Server Push. Please contact your account manager for more information or help make <a href="https://community.cloudflare.com/t/is-http-2-server-push-disabled/5577" target="_blank">our support topic</a> visible.
+			</p>
+<?php
+
+    }
+?>
+
 		</td>
 	</tr>
 	<tr valign="top">

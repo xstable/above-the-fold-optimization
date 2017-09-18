@@ -43,20 +43,23 @@ class Abovethefold_HTTP2
             $this->push = false;
         }
 
+        if (!$this->push && isset($this->CTRL->options['http2_push_criticalcss']) && $this->CTRL->options['http2_push_criticalcss']) {
+            $this->push = array();
+        }
+
         // HTTP/2 Server Push enabled
-        if ($this->push) {
+        if (is_array($this->push)) {
 
             // add headers
             $this->CTRL->loader->add_action('abtf_html_pre', $this, 'push_headers', 10);
-
         }
     }
 
     /**
      * Output HTTP/2 push headers
      */
-    public function push_headers($buffer) {
-
+    public function push_headers($buffer)
+    {
         
         // push HTML images?
         $pushTypes = array();
@@ -70,16 +73,27 @@ class Abovethefold_HTTP2
         // resources to push
         $pushResources = array();
 
+        // first priority: Critical CSS
+        if ($this->CTRL->optimization->http2push_criticalcss) {
+            $local = $this->is_local($this->CTRL->optimization->http2push_criticalcss);
+            $pushResources[] = array(
+                'src' => esc_url((($local) ? $this->url_to_relative_path($this->CTRL->optimization->http2push_criticalcss) : $this->CTRL->optimization->http2push_criticalcss)),
+                'local' => $local,
+                'type' => 'style',
+                'meta' => true
+            );
+        }
+
         // WordPress stylesheets
         if (isset($pushTypes['style'])) {
             global $wp_styles;
 
-            foreach( $wp_styles->queue as $style ) {
+            foreach ($wp_styles->queue as $style) {
                 $src = $wp_styles->registered[$style]->src;
 
                 $match = $meta = false;
                 foreach ($pushTypes['style'] as $rule) {
-                    $this->matchRule($src,$rule,$match,$meta);
+                    $this->matchRule($src, $rule, $match, $meta);
                 }
                 if ($match) {
                     $local = $this->is_local($src); // (strpos($src, home_url()) !== false);
@@ -97,12 +111,12 @@ class Abovethefold_HTTP2
         if (isset($pushTypes['script'])) {
             global $wp_scripts;
 
-            foreach( $wp_scripts->queue as $script ) {
+            foreach ($wp_scripts->queue as $script) {
                 $src = $wp_scripts->registered[$script]->src;
 
                 $match = $meta = false;
                 foreach ($pushTypes['script'] as $rule) {
-                    $this->matchRule($src,$rule,$match,$meta);
+                    $this->matchRule($src, $rule, $match, $meta);
                 }
                 if ($match) {
                     $local = $this->is_local($src);
@@ -123,7 +137,6 @@ class Abovethefold_HTTP2
             $image_regex = '#<img[^>]+src[^>]+>#is';
 
             if (preg_match_all($image_regex, $buffer, $out)) {
-
                 foreach ($out[0] as $n => $image) {
 
                     // extract image
@@ -133,7 +146,7 @@ class Abovethefold_HTTP2
                     }
 
                     // not a valid URL / path
-                    if (strpos($src,'http') === 0 || strpos($src,'/') === 0) {
+                    if (strpos($src, 'http') === 0 || strpos($src, '/') === 0) {
                         $images[] = $src;
                     }
                 }
@@ -143,7 +156,7 @@ class Abovethefold_HTTP2
                 foreach ($images as $src) {
                     $match = $meta = false;
                     foreach ($pushTypes['image'] as $rule) {
-                        $this->matchRule($src,$rule,$match,$meta);
+                        $this->matchRule($src, $rule, $match, $meta);
                     }
                     if ($match) {
                         $local = $this->is_local($src);
@@ -183,20 +196,20 @@ class Abovethefold_HTTP2
             $link = sprintf(
                 '<%s>; rel=preload; as=%s',
                 $resource['src'],
-                sanitize_html_class( $resource['type'] )
+                sanitize_html_class($resource['type'])
             );
             if (!$resource['local']) {
                 $link .= '; crossorigin';
             }
             if (isset($resource['mime']) && $resource['mime']) {
-                $link .= sprintf('; type=\'%s\'',str_replace('\'', '\\\'', $resource['mime']));
+                $link .= sprintf('; type=\'%s\'', str_replace('\'', '\\\'', $resource['mime']));
             }
 
             // CloudFlare support for ServerPush appears to be broken as of Sept. 8, 2017
             // @link https://community.cloudflare.com/t/is-http-2-server-push-disabled/5577
-            // 
-            // awaiting the status of the availability and exact requirement for the Link: header, 
-            // the 1 link per header implementation is used from the official CloudFlare plugin, 
+            //
+            // awaiting the status of the availability and exact requirement for the Link: header,
+            // the 1 link per header implementation is used from the official CloudFlare plugin,
             // instead of a more compact grouped header
             header('Link: ' . $link, false);
             //$links[] = $link;
@@ -206,13 +219,13 @@ class Abovethefold_HTTP2
                 $link = sprintf(
                     '<link rel="preload" href="%s" as="%s"',
                     $resource['src'],
-                    sanitize_html_class( $resource['type'] )
+                    sanitize_html_class($resource['type'])
                 );
                 if (!$resource['local']) {
                     $link .= ' crossorigin';
                 }
                 if (isset($resource['mime']) && $resource['mime']) {
-                    $link .= sprintf(' type="%s"',str_replace('"', '&quot;', $resource['mime']));
+                    $link .= sprintf(' type="%s"', str_replace('"', '&quot;', $resource['mime']));
                 }
                 $meta[] = $link .'>';
             }
@@ -222,7 +235,7 @@ class Abovethefold_HTTP2
         //header('Link: ' . implode(',',$links), false);
 
         // include fallback meta
-        $buffer = str_replace('<link rel=http2push>',implode('',$meta),$buffer);
+        $buffer = str_replace('<link rel=http2push>', implode('', $meta), $buffer);
 
         return $buffer;
     }
@@ -261,21 +274,21 @@ class Abovethefold_HTTP2
     /**
      * Match resource push rule
      */
-    public function matchRule($src,$rule,&$match,&$meta) {
-
+    public function matchRule($src, $rule, &$match, &$meta)
+    {
         if ($rule['match'] === 'all') {
             $match = true;
             if (isset($rule['meta'])) {
                 $meta = $rule['meta'];
             }
-        } else if (isset($rule['match']) && is_array($rule['match']) && isset($rule['match']['pattern'])) {
+        } elseif (isset($rule['match']) && is_array($rule['match']) && isset($rule['match']['pattern'])) {
             $regex = (isset($rule['match']['regex']) && $rule['match']['regex']);
             $exclude = (isset($rule['match']['exclude']) && $rule['match']['exclude']);
             if ($exclude && !$match) {
                 // not included
             } else {
                 if ($regex) {
-                    if (!@preg_match($rule['match']['pattern'],$src)) {
+                    if (!@preg_match($rule['match']['pattern'], $src)) {
                         // no match
                     } else {
                         // exclude resource
@@ -311,7 +324,8 @@ class Abovethefold_HTTP2
     /**
      * Local resource?
      */
-    public function is_local($src) {
+    public function is_local($src)
+    {
 
         // relative path
         if (strpos($src, '://') === false && strpos($src, '//') !== 0) {
@@ -324,7 +338,8 @@ class Abovethefold_HTTP2
     /**
      * URL to relative path
      */
-    public function url_to_relative_path($src) {
+    public function url_to_relative_path($src)
+    {
         return '//' === substr($src, 0, 2) ? preg_replace('/^\/\/([^\/]*)\//', '/', $src) : preg_replace('/^http(s)?:\/\/[^\/]*/', '', $src);
     }
 
@@ -339,7 +354,8 @@ class Abovethefold_HTTP2
     /**
      * Javascript client settings
      */
-    public function client_jssettings(&$jssettings, &$jsfiles, &$inlineJS, $jsdebug, &$html_before, &$html_after) {
+    public function client_jssettings(&$html_after)
+    {
 
         // HTTP/2 optimization enabled
         if (!$this->push) {
@@ -349,6 +365,5 @@ class Abovethefold_HTTP2
         }
 
         $html_after .= '<link rel=http2push>';
-
     }
 }

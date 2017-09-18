@@ -308,7 +308,6 @@ class Abovethefold
      */
     public function template_redirect()
     {
-
         // return content security hashes
         if (isset($_GET['abtf-csp-hash'])) {
             $json = array();
@@ -610,6 +609,9 @@ class Abovethefold
             case "proxy":
                 $path .= 'proxy/';
             break;
+            case "http2_css":
+                $path .= 'http2_css/';
+            break;
         }
         if (!is_dir($path)) {
             if (!$this->mkdir($path, $mask)) {
@@ -629,6 +631,9 @@ class Abovethefold
         switch ($type) {
             case "proxy":
                 $path .= 'proxy/';
+            break;
+            case "http2_css":
+                $path .= 'http2_css/';
             break;
         }
 
@@ -796,6 +801,9 @@ class Abovethefold
 
         // proxy cleanup cron
         $this->proxy->cron_prune();
+
+        // HTTP2 critical css cleanup cron
+        $this->criticalcss->http2_cache_cron_prune();
     }
 
     /**

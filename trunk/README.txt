@@ -132,6 +132,9 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.9.2 =
+* Added: HTTP/2 Server Push for Critical CSS.
+
 = 2.9.1 =
 * Bugfix: Service Worker JSON config from query parameter not persistent after browser restart.
 

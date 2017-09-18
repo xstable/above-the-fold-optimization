@@ -51,6 +51,11 @@ class Abovethefold_Optimization
     public $criticalcss_replacement_string = 'ABTF_CRITICALCSS';
 
     /**
+     * HTTP/2 Server Push Critical CSS
+     */
+    public $http2push_criticalcss = false;
+
+    /**
      * Preserve comments
      */
     public $preserve_comments;
@@ -271,7 +276,13 @@ class Abovethefold_Optimization
                 /**
                  * No href or rel="stylesheet", skip
                  */
-                if (strpos($stylesheet, 'href') === false || strpos($stylesheet, 'stylesheet') === false || !preg_match('#href\s*=\s*["\']([^"\']+)["\']#i', $stylesheet, $hrefOut)) {
+                if (strpos($stylesheet, 'href') === false
+                    || strpos($stylesheet, 'stylesheet') === false
+
+                    // ignore HTTP/2 server push stylesheet
+                    || (strpos($stylesheet, 'AbtfCSS') !== false)
+                    
+                    || !preg_match('#href\s*=\s*["\']([^"\']+)["\']#i', $stylesheet, $hrefOut)) {
                     continue 1;
                 }
 
@@ -1027,6 +1038,11 @@ class Abovethefold_Optimization
          */
         $inlineCSS = $this->CTRL->criticalcss->get();
 
+        // HTTP/2 Push Critical CSS
+        if (isset($this->CTRL->options['http2_push_criticalcss']) && $this->CTRL->options['http2_push_criticalcss']) {
+            $this->http2push_criticalcss = $this->CTRL->criticalcss->http2_push_file($inlineCSS);
+        }
+
         /**
          * Optimize CSS delivery
          */
@@ -1041,6 +1057,7 @@ class Abovethefold_Optimization
         // client script and settings
         $clientjs = $this->get_client_script($debug);
 
+
         // print HTML such as meta
         if ($clientjs['html_before']) {
             print $clientjs['html_before'];
@@ -1049,13 +1066,20 @@ class Abovethefold_Optimization
         // print javascript
         print '<script '.((!defined('ABTF_NOREF') || !ABTF_NOREF) ? 'data-ref="https://goo.gl/C1gw96"' : '').' data-abtf=\''.str_replace('\'', '&#39;', json_encode($clientjs['config'])).'\'>'.$clientjs['client'].'</script>';
 
-        // print HTML such as meta
+        // HTTP/2 Server Push Critical CSS
+        if ($this->http2push_criticalcss) {
+            print '<link href="'.$this->http2push_criticalcss.'" media="all" rel="stylesheet" id="AbtfCSS" data-abtf/>';
+        }
+
+        // print meta
         if ($clientjs['html_after']) {
             print $clientjs['html_after'];
         }
 
-        // above the fold CSS
-        print '<style type="text/css" id="AbtfCSS" data-abtf>' . $inlineCSS . '</style>';
+        // inline Critical CSS
+        if (!$this->http2push_criticalcss) {
+            print '<style type="text/css" id="AbtfCSS" data-abtf>' . $inlineCSS . '</style>';
+        }
     }
 
     /**
@@ -1102,7 +1126,7 @@ class Abovethefold_Optimization
         /**
          * HTTP/2 optimization
          */
-        $this->CTRL->http2->client_jssettings($jssettings, $jsfiles, $script_code, $jsdebug, $html_before, $html_after);
+        $this->CTRL->http2->client_jssettings($html_after);
 
         // Proxy external files
         if ($this->CTRL->options['js_proxy'] || $this->CTRL->options['css_proxy']) {

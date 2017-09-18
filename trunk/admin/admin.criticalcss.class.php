@@ -542,6 +542,11 @@ class Abovethefold_Admin_CriticalCSS
          */
         $options['csseditor'] = (isset($input['csseditor']) && intval($input['csseditor']) === 1) ? true : false;
 
+        /**
+         * HTTP/2 Server Push optimization
+         */
+        $options['http2_push_criticalcss'] = (isset($input['http2_push_criticalcss']) && intval($input['http2_push_criticalcss']) === 1) ? true : false;
+
         $criticalcss_dir = $this->CTRL->theme_path('critical-css');
 
         /**
