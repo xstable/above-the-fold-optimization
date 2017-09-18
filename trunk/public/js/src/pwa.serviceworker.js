@@ -1553,7 +1553,7 @@
                     break;
                 case "cache":
                     // try cache
-                    return CACHE_GET()
+                    return CACHE_GET(event.request)
                         .then(function(cacheResponse) {
 
                             // return cache
