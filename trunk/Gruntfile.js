@@ -154,7 +154,7 @@ module.exports = function(grunt) {
 
                     // Original loadCSS
                     'public/js/min/abovethefold-loadcss.js': [
-                        'bower_components/loadcss/src/loadCSS.js',
+                        'public/js/src/loadcss.js',
                         'public/js/src/abovethefold.loadcss.js'
                     ],
 
@@ -235,7 +235,7 @@ module.exports = function(grunt) {
 
                     // Original loadCSS
                     'public/js/min/abovethefold-loadcss.debug.js': [
-                        'bower_components/loadcss/src/loadCSS.js',
+                        'public/js/src/loadcss.js',
                         'public/js/src/abovethefold.loadcss.js'
                     ]
 
@@ -254,11 +254,11 @@ module.exports = function(grunt) {
                     // Original loadCSS
                     'admin/js/admincp.min.js': [
                         'admin/js/jquery.debounce.js',
-                        'admin/js/admincp.js',
+                        'admin/j s/admincp.js',
                         'admin/js/admincp.build-tool.js',
                         'admin/js/admincp.add-conditional.js',
                         'admin/js/admincp.criticalcss-editor.js',
-                        'bower_components/selectize/dist/js/standalone/selectize.min.js'
+                        'node_modules/selectize/dist/js/standalone/selectize.min.js'
                     ],
 
                     // admincp html
@@ -278,11 +278,11 @@ module.exports = function(grunt) {
 
                     // Codemirror
                     'admin/js/codemirror.min.js': [
-                        'bower_components/codemirror/lib/codemirror.js',
-                        'bower_components/codemirror/mode/css/css.js',
+                        'node_modules/codemirror/lib/codemirror.js',
+                        'node_modules/codemirror/mode/css/css.js',
                         'admin/js/csslint.js',
-                        'bower_components/codemirror/addon/lint/lint.js',
-                        'bower_components/codemirror/addon/lint/css-lint.js'
+                        'node_modules/codemirror/addon/lint/lint.js',
+                        'node_modules/codemirror/addon/lint/css-lint.js'
                     ]
                 }
             },
@@ -355,7 +355,7 @@ module.exports = function(grunt) {
                         'admin/css/admincp.css',
                         'admin/css/admincp-criticalcss.css',
                         'admin/css/admincp-mobile.css',
-                        'bower_components/selectize/dist/css/selectize.default.css'
+                        'node_modules/selectize/dist/css/selectize.default.css'
                     ],
                     'admin/css/admincp-global.min.css': [
                         'admin/css/admincp-global.css'
@@ -364,8 +364,8 @@ module.exports = function(grunt) {
                         'admin/css/admincp-jsoneditor.css'
                     ],
                     'admin/css/codemirror.min.css': [
-                        'bower_components/codemirror/lib/codemirror.css',
-                        'bower_components/codemirror/addon/lint/lint.css'
+                        'node_modules/codemirror/lib/codemirror.css',
+                        'node_modules/codemirror/addon/lint/lint.css'
                     ],
                     'public/css/compare.min.css': [
                         'public/css/src/compare.css'
@@ -389,10 +389,10 @@ module.exports = function(grunt) {
                 src: 'node_modules/lazyloadxt/package.json',
                 dest: 'public/js/src/lazyloadxt_package.json'
             },
-            loadcss_package: {
+            /*loadcss_package: {
                 src: 'bower_components/loadcss/package.json',
                 dest: 'public/js/src/loadcss_package.json'
-            },
+            },*/
             serviceworker: {
                 src: 'public/js/pwa-serviceworker.js',
                 dest: '../test-blog/abtf-pwa.js'

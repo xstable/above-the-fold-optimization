@@ -132,6 +132,9 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.9.4 =
+* Repair of previous incomplete update.
+
 = 2.9.3 =
 * Bugfix: PHP 5.3 compatibility (@thowden)
 * Bugfix: Older webfont.js version `v1.6.26` on Google CDN. (@jimwalczak)
