@@ -70,8 +70,8 @@ class Abovethefold_Admin
      */
     public function __construct(&$CTRL)
     {
-        $this->CTRL =& $CTRL;
-        $this->options =& $CTRL->options;
+        $this->CTRL = & $CTRL;
+        $this->options = & $CTRL->options;
 
         // Upgrade plugin
         $this->CTRL->loader->add_action('plugins_loaded', $this, 'upgrade', 10);
@@ -210,6 +210,7 @@ class Abovethefold_Admin
     {
         $settings_link = '<a href="' . add_query_arg(array( 'page' => 'pagespeed' ), admin_url('admin.php')) . '">'.__('Settings').'</a>';
         array_unshift($links, $settings_link);
+
         return $links;
     }
     
@@ -231,8 +232,8 @@ class Abovethefold_Admin
             }
 
             $row_meta = array(
-                'pagespeed_insights'    => '<a href="' . esc_url('https://developers.google.com/speed/pagespeed/insights/?hl=' . $lgcode) . '" target="_blank" title="' . esc_attr(__('View Google PageSpeed Insights Test', 'pagespeed')) . '">' . __('Google PageSpeed', 'pagespeed') . '</a>',
-                'pagespeed_scores'    => '<a href="' . esc_url('https://testmysite.' . (($intlcode === 'en-us') ? 'think' : '') . 'withgoogle.com/intl/'.$intlcode.'?url='.home_url()) . '" target="_blank" title="' . esc_attr(__('View Google PageSpeed Scores Documentation', 'pagespeed')) . '">' . __('View Scores', 'pagespeed') . '</a>',
+                'pagespeed_insights' => '<a href="' . esc_url('https://developers.google.com/speed/pagespeed/insights/?hl=' . $lgcode) . '" target="_blank" title="' . esc_attr(__('View Google PageSpeed Insights Test', 'pagespeed')) . '">' . __('Google PageSpeed', 'pagespeed') . '</a>',
+                'pagespeed_scores' => '<a href="' . esc_url('https://testmysite.' . (($intlcode === 'en-us') ? 'think' : '') . 'withgoogle.com/intl/'.$intlcode.'?url='.home_url()) . '" target="_blank" title="' . esc_attr(__('View Google PageSpeed Scores Documentation', 'pagespeed')) . '">' . __('View Scores', 'pagespeed') . '</a>',
             );
 
             return array_merge($links, $row_meta);
@@ -249,7 +250,6 @@ class Abovethefold_Admin
         ?><script>
 jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimization/abovethefold.php"] .column-description'); desc.html(desc.html().replace('100 Score','<span class="g100">100</span> Score')); });
 </script><?php
-
     }
 
     /**
@@ -372,11 +372,6 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
             'settings_page'
         ));
 
-        add_submenu_page('pagespeed', __('⚡ Instant App', 'pagespeed'), __('⚡ Instant App', 'pagespeed'), 'manage_options', 'pagespeed-instant', array(
-            &$this,
-            'settings_page'
-        ));
-
         /**
          * Add theme settings link to Appearance tab
          */
@@ -425,8 +420,8 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
 
         $admin_bar->add_group(array(
             'parent' => 'abovethefold',
-            'id'     => 'abovethefold-top',
-            'meta'   => array(
+            'id' => 'abovethefold-top',
+            'meta' => array(
                 'class' => 'ab-sub-secondary', //
             )
         ));
@@ -762,7 +757,7 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
             }
 
             // Get random post
-            $args = array( 'post_type' => $pt, 'posts_per_page' => $limit, 's'=> $query );
+            $args = array( 'post_type' => $pt, 'posts_per_page' => $limit, 's' => $query );
             query_posts($args);
             if (have_posts()) {
                 while (have_posts()) {
@@ -810,10 +805,10 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
                         case "product_cat":
                         case "product_brand":
                             $terms = get_terms($taxonomy, array(
-                                'orderby'    => 'title',
-                                'order'      => 'ASC',
+                                'orderby' => 'title',
+                                'order' => 'ASC',
                                 'hide_empty' => false,
-                            'number'     => $limit,
+                                'number' => $limit,
                                 'name__like' => $query
                             ));
                             if ($terms) {
@@ -1038,7 +1033,7 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
     /**
      * Return newline array from string
      */
-    public function newline_array($string, $data=array())
+    public function newline_array($string, $data = array())
     {
         if (!is_array($data)) {
             $data = array();
@@ -1066,6 +1061,7 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
         if (!is_array($array) || empty($array)) {
             return '';
         }
+
         return htmlentities(implode("\n", $array), ENT_COMPAT, 'utf-8');
     }
 
@@ -1086,6 +1082,7 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
     {
         $size = array('B','kB','MB','GB','TB','PB','EB','ZB','YB');
         $factor = floor((strlen($bytes) - 1) / 3);
+
         return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[$factor];
     }
 
@@ -1097,13 +1094,14 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
     {
         $icon = file_get_contents(WPABTF_PATH.'public/100.svg');
         $icon = 'data:image/svg+xml;base64,'.base64_encode($this->menu_svg_color($icon, $color));
+
         return $icon;
     }
 
     /**
      * Fills menu page inline SVG icon color.
      */
-    final private function menu_svg_color($svg, $color=false)
+    final private function menu_svg_color($svg, $color = false)
     {
         if ($color) {
             $use_icon_fill_color = $color;
@@ -1115,25 +1113,25 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
             /**
              * WordPress admin icon color schemes.
              */
-            $wp_admin_icon_colors = [
-                'fresh'     => ['base' => '#999999', 'focus' => '#2EA2CC', 'current' => '#FFFFFF'],
-                'light'     => ['base' => '#999999', 'focus' => '#CCCCCC', 'current' => '#CCCCCC'],
-                'blue'      => ['base' => '#E5F8FF', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
-                'midnight'  => ['base' => '#F1F2F3', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
-                'sunrise'   => ['base' => '#F3F1F1', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
-                'ectoplasm' => ['base' => '#ECE6F6', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
-                'ocean'     => ['base' => '#F2FCFF', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
-                'coffee'    => ['base' => '#F3F2F1', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'],
-            ];
+            $wp_admin_icon_colors = array(
+                'fresh' => array('base' => '#999999', 'focus' => '#2EA2CC', 'current' => '#FFFFFF'),
+                'light' => array('base' => '#999999', 'focus' => '#CCCCCC', 'current' => '#CCCCCC'),
+                'blue' => array('base' => '#E5F8FF', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'),
+                'midnight' => array('base' => '#F1F2F3', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'),
+                'sunrise' => array('base' => '#F3F1F1', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'),
+                'ectoplasm' => array('base' => '#ECE6F6', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'),
+                'ocean' => array('base' => '#F2FCFF', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'),
+                'coffee' => array('base' => '#F3F2F1', 'focus' => '#FFFFFF', 'current' => '#FFFFFF'),
+            );
 
             if (empty($wp_admin_icon_colors[$color])) {
                 return $svg;
             }
-            $icon_colors         = $wp_admin_icon_colors[$color];
+            $icon_colors = $wp_admin_icon_colors[$color];
             $use_icon_fill_color = $icon_colors['base']; // Default base.
 
             $current_pagenow = !empty($GLOBALS['pagenow']) ? $GLOBALS['pagenow'] : '';
-            $current_page    = !empty($_REQUEST['page']) ? $_REQUEST['page'] : '';
+            $current_page = !empty($_REQUEST['page']) ? $_REQUEST['page'] : '';
 
             if ($current_page && strpos($_GET['page'], 'pagespeed') === 0) {
                 $use_icon_fill_color = $icon_colors['current'];

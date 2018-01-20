@@ -15,6 +15,9 @@
     var PWA_CACHE;
     var PWA_CACHE_MAX_SIZE = 1000; // default
 
+    // preloading fetch requests
+    var PRELOADING = {};
+
     // extract config parameters from query string
     var PARSE_PWA_QUERY_CONFIG = function() {
 
@@ -46,76 +49,15 @@
 
     // Activate
     self.addEventListener('activate', function(event) {
-        event.waitUntil(self.clients.claim());
+
+        // take control of clients under scope
+        self.clients.claim();
+
+        //event.waitUntil();
     });
 
     // Via https://github.com/coonsta/cache-polyfill/blob/master/dist/serviceworker-cache-polyfill.js
     // Adds in some functionality missing in Chrome 40.
-    if (!Cache.prototype.add) {
-        Cache.prototype.add = function add(request) {
-            return this.addAll([request]);
-        };
-    }
-
-    if (!Cache.prototype.addAll) {
-        Cache.prototype.addAll = function addAll(requests) {
-            var cache = this;
-
-            // Since DOMExceptions are not constructable:
-            function NetworkError(message) {
-                this.name = 'NetworkError';
-                this.code = 19;
-                this.message = message;
-            }
-            NetworkError.prototype = Object.create(Error.prototype);
-
-            return Promise.resolve().then(function() {
-                if (arguments.length < 1) throw new TypeError();
-
-                // Simulate sequence<(Request or USVString)> binding:
-                var sequence = [];
-
-                requests = requests.map(function(request) {
-                    if (request instanceof Request) {
-                        return request;
-                    } else {
-                        return String(request); // may throw TypeError
-                    }
-                });
-
-                return Promise.all(
-                    requests.map(function(request) {
-                        if (typeof request === 'string') {
-                            request = new Request(request);
-                        }
-
-                        var scheme = new URL(request.url).protocol;
-
-                        if (scheme !== 'http:' && scheme !== 'https:') {
-                            throw new NetworkError("Invalid scheme");
-                        }
-
-                        return fetch(request.clone()).catch(function(error) {
-                            setTimeout(function() {
-                                throw error;
-                            });
-                        });;
-                    })
-                );
-            }).then(function(responses) {
-                // TODO: check that requests don't overwrite one another
-                // (don't think this is possible to polyfill due to opaque responses)
-                return Promise.all(
-                    responses.map(function(response, i) {
-                        return cache.put(requests[i], response);
-                    })
-                );
-            }).then(function() {
-                return undefined;
-            });
-        };
-    }
-
     if (!CacheStorage.prototype.match) {
         // This is probably vulnerable to race conditions (removing caches etc)
         CacheStorage.prototype.match = function match(request, opts) {
@@ -646,6 +588,14 @@
                             };
                         }
 
+                        // set PWA cache store
+                        PWA_CACHE = 'abtf';
+
+                        // set custom cache version
+                        if (pwaConfig.cache_version) {
+                            PWA_CACHE = PWA_CACHE + ':' + pwaConfig.cache_version;
+                        }
+
                         // setup policy
                         if (pwaConfig.policy) {
                             PWA_POLICY = pwaConfig.policy;
@@ -655,9 +605,13 @@
                         // preload
                         var preload = [];
 
+                        // preloads need to complete before installation due to Google Lighthouse audit bug
+                        // @link https://developers.google.com/web/tools/lighthouse/audits/cache-contains-start_url#more-info
+                        var preload_before_install = [];
+
                         // start url
                         if (pwaConfig.start_url) {
-                            preload.push(pwaConfig.start_url);
+                            preload_before_install.push(CACHE_PRELOAD(pwaConfig.start_url));
                         }
 
                         // precache offline pages
@@ -687,6 +641,7 @@
                             preloadPromises.push(CACHE_PRELOAD(url));
                         });
 
+                        return Promise.all(preload_before_install);
                     });
                 }
 
@@ -868,7 +823,7 @@
     /**
      * Fetch asset
      */
-    var FETCH = function(r, cachePolicy, fallback) {
+    var FETCH = function(r, cachePolicy, fallback, preloadRequest) {
 
         // init work process
         var taskIndex = PRIORITY.start(1000);
@@ -884,8 +839,32 @@
                     request.headers.set('cache-digest', digest);
                 }
 
-                return fetch(request)
+                // use preload fetch promise if available
+                var url = request.url;
+                if (!preloadRequest && PRELOADING && url in PRELOADING && PRELOADING[url] && PRELOADING[url][0] > (TIMESTAMP() - 5)) {
+
+                    if (ABTFDEBUG) {
+                        console.info('Abtf.sw() ➤ hook into preload initiated request', url);
+                    }
+                    return PRELOADING[url][1];
+                }
+
+                // delete preloading reference
+                var clearPreloadReference = function(url) {
+                    if (url in PRELOADING) {
+                        if (PRELOADING[url] && PRELOADING[url][2]) {
+                            clearTimeout(PRELOADING[url][2]);
+                        }
+                        PRELOADING[url] = false;
+                        delete PRELOADING[url];
+                    }
+                }
+
+                var fetchRequest = fetch(request)
                     .then(function(response) {
+
+                        // delete preloading reference
+                        clearPreloadReference(url);
 
                         var shouldCache = false;
 
@@ -1050,6 +1029,8 @@
                                 }
 
                                 if (shouldCache) {
+
+
                                     CACHE_SET(request, response.clone(), cachePolicy).then(function() {
 
                                         // mark task complete
@@ -1069,15 +1050,32 @@
                     })
                     .catch(function(error) {
 
+                        // delete preloading reference
+                        clearPreloadReference(url);
+
                         // mark task complete
                         PRIORITY.complete(taskIndex);
                         return (fallback) ? fallback(request, null, error) : null;
                     });
+
+                // add to preload
+                if (preloadRequest) {
+                    PRELOADING[url] = [TIMESTAMP(), fetchRequest];
+
+                    // expire in 5 seconds
+                    PRELOADING[url][2] = setTimeout(function() {
+                        PRELOADING[url] = false;
+                        delete PRELOADING[url];
+                    }, 5000);
+                }
+
+                return fetchRequest;
+
             });
     }
 
     /**
-     * Fetch asset
+     * HTTP HEAD update to detect content changes efficiently
      */
     var HEAD_UPDATE = function(request, cachePolicy, cacheResponse, afterUpdate) {
 
@@ -1282,13 +1280,17 @@
             .then(function(response) {
                 if (!response) {
 
+                    // URL
+                    var url = request.url;
+
                     if (ABTFDEBUG) {
-                        console.info('Abtf.sw() ➤ preload', request.url);
+                        console.info('Abtf.sw() ➤ preload', url);
                     }
 
+                    // fetch request
                     return FETCH(request, {
                         conditions: null
-                    });
+                    }, false, true);
                 }
                 return response;
             });
@@ -1552,6 +1554,7 @@
                     return false;
                     break;
                 case "cache":
+
                     // try cache
                     return CACHE_GET(event.request)
                         .then(function(cacheResponse) {
@@ -1779,15 +1782,6 @@
                 // max cache size
                 if (event.data[3] && !isNaN(parseInt(event.data[3]))) {
                     PWA_CACHE_MAX_SIZE = parseInt(event.data[3]);
-                }
-
-                // update prefix (using cache version setting)
-                var prefix = 'abtf:' + ((event.data[2]) ? event.data[2] + ':' : '');
-                if (prefix !== PWA_CACHE) {
-                    PWA_CACHE = prefix;
-                    if (ABTFDEBUG) {
-                        console.info('Abtf.sw() ➤ cache prefix changed', PWA_CACHE);
-                    }
                 }
 
                 // cache maintenance

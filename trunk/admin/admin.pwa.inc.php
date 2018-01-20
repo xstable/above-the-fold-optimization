@@ -189,6 +189,15 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 		</td>
 	</tr>
 	<tr valign="top">
+		<th scope="row">Preload on Mouse Down</th>
+		<td>
+			<label><input type="checkbox" name="abovethefold[pwa_preload_mousedown]" value="1"<?php if (isset($options['pwa_preload_mousedown']) && intval($options['pwa_preload_mousedown']) === 1) {
+    print ' checked';
+} ?> /> Enabled</label>
+			<p class="description">Start preloading navigation requests in the Service Worker on mouse down. Older mobile devices including iOS8 have a <a href="https://encrypted.google.com/search?q=300ms+tap+delay+mobile" target="_blank" rel="noopener">300ms click delay</a> which is a lot of time wasted for navigation clicks. An average mouse click also has 200-500ms of delay before navigation starts. This feature enables to start preloading a page in the Service Worker on mouse down/touch to save 200-500ms.</p>
+		</td>
+	</tr>
+	<tr valign="top">
 		<th scope="row"><?php
 submit_button(__('Save'), 'primary large', 'is_submit', false);
 ?></th>
@@ -198,14 +207,14 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 				<?php if (isset($options['pwa_cache_pages_offline']) && trim($options['pwa_cache_pages_offline']) !== '') {
 
                     // WordPress URL?
-                    $postid = url_to_postid($options['pwa_cache_pages_offline']);
+    $postid = url_to_postid($options['pwa_cache_pages_offline']);
     if ($postid) {
         $name = $postid . '. ' . str_replace(home_url(), '', get_permalink($postid)) . ' - ' . get_the_title($postid);
     } else {
         $name = $options['pwa_cache_pages_offline'];
     }
 
-    print '<option data-data="'.esc_attr(json_encode(array('name'=>$name))).'" value="' . esc_attr($options['pwa_cache_pages_offline']) . '" selected>' . esc_attr($options['pwa_cache_pages_offline']) . '</option>';
+    print '<option data-data="'.esc_attr(json_encode(array('name' => $name))).'" value="' . esc_attr($options['pwa_cache_pages_offline']) . '" selected>' . esc_attr($options['pwa_cache_pages_offline']) . '</option>';
 } ?>
 			</select>
 			<p class="description">Enter an URL or absolute path to a HTML page to display when the network is offline and when the requested page is not available in cache.</p>
@@ -297,7 +306,6 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 			<div id="webapp_manifest"><div class="loading-json-editor"><?php print __('Loading JSON editor...', 'pagespeed'); ?></div></div>
 <input type="hidden" name="abovethefold[manifest_json]" id="webapp_manifest_src" value="<?php echo esc_attr(json_encode($manifestjson)); ?>"  />
 <?php
-
     }
 ?>
         	<div style="clear:both;height:10px;"></div>

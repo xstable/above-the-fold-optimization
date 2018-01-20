@@ -45,24 +45,24 @@ Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
             var ajaxurl = false;
         }
 
-        PROXY_URL = cnf[CONFIG.PROXY_URL] || ajaxurl;
+        PROXY_URL = (cnf[CONFIG.PROXY_URL] && cnf[CONFIG.PROXY_URL] !== -1) ? cnf[CONFIG.PROXY_URL] : ajaxurl;
         if (!PROXY_URL) {
             if (ABTFDEBUG) {
                 console.error('Abtf.proxy()', 'no proxy url', cnf);
             }
         }
 
-        PROXY_JS = cnf[CONFIG.PROXY_JS] || false;
-        PROXY_CSS = cnf[CONFIG.PROXY_CSS] || false;
-        PROXY_CDN = cnf[CONFIG.PROXY_CDN] || false;
+        PROXY_JS = (cnf[CONFIG.PROXY_JS] && cnf[CONFIG.PROXY_JS] !== -1) ? cnf[CONFIG.PROXY_JS] : false;
+        PROXY_CSS = (cnf[CONFIG.PROXY_CSS] && cnf[CONFIG.PROXY_CSS] !== -1) ? cnf[CONFIG.PROXY_CSS] : false;
+        PROXY_CDN = (cnf[CONFIG.PROXY_CDN] && cnf[CONFIG.PROXY_CDN] !== -1) ? cnf[CONFIG.PROXY_CDN] : false;
         if (PROXY_CDN) {
             CDN_URLS.push(PROXY_CDN);
         }
 
-        PROXY_JS_INCLUDE = cnf[CONFIG.PROXY_JS_INCLUDE] || false;
-        PROXY_JS_EXCLUDE = cnf[CONFIG.PROXY_JS_EXCLUDE] || false;
-        PROXY_CSS_INCLUDE = cnf[CONFIG.PROXY_CSS_INCLUDE] || false;
-        PROXY_CSS_EXCLUDE = cnf[CONFIG.PROXY_CSS_EXCLUDE] || false;
+        PROXY_JS_INCLUDE = (cnf[CONFIG.PROXY_JS_INCLUDE] && cnf[CONFIG.PROXY_JS_INCLUDE] !== -1) ? cnf[CONFIG.PROXY_JS_INCLUDE] : false;
+        PROXY_JS_EXCLUDE = (cnf[CONFIG.PROXY_JS_EXCLUDE] && cnf[CONFIG.PROXY_JS_EXCLUDE] !== -1) ? cnf[CONFIG.PROXY_JS_EXCLUDE] : false;
+        PROXY_CSS_INCLUDE = (cnf[CONFIG.PROXY_CSS_INCLUDE] && cnf[CONFIG.PROXY_CSS_INCLUDE] !== -1) ? cnf[CONFIG.PROXY_CSS_INCLUDE] : false;
+        PROXY_CSS_EXCLUDE = (cnf[CONFIG.PROXY_CSS_EXCLUDE] && cnf[CONFIG.PROXY_CSS_EXCLUDE] !== -1) ? cnf[CONFIG.PROXY_CSS_EXCLUDE] : false;
 
         if (cnf[CONFIG.PROXY_PRELOAD]) {
             PROXY_PRELOAD = true;
@@ -97,7 +97,7 @@ Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
 
             }
 
-            PROXY_BASE = cnf[CONFIG.PROXY_BASE] || false;
+            PROXY_BASE = (cnf[CONFIG.PROXY_BASE] && cnf[CONFIG.PROXY_BASE] !== -1) ? cnf[CONFIG.PROXY_BASE] : false;
         }
 
         if (CDN_URLS.length === 0) {
@@ -232,11 +232,19 @@ Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
 
             if (cachehash) {
 
+                var path = PROXY_BASE;
+                var cdn;
+
                 // custom resource CDN
                 if (typeof PROXY_PRELOAD_CDN[url] !== 'undefined') {
-                    var path = PROXY_PRELOAD_CDN[url];
-                } else {
-                    var path = PROXY_BASE;
+                    cdn = PROXY_PRELOAD_CDN[url];
+                } else if (PROXY_CDN) {
+                    cdn = PROXY_CDN;
+                }
+
+                // apply CDN
+                if (cdn) {
+                    path = path.replace(/^http(s)?:\/\/[^\/]+\//, cdn);
                 }
 
                 path += cachehash.substr(0, 2) + '/';
@@ -369,6 +377,8 @@ Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
 
         // verify include list
         if (PROXY_JS_INCLUDE) {
+
+            console.log(222, PROXY_JS_INCLUDE);
 
             var match = false;
             var l = PROXY_JS_INCLUDE.length;

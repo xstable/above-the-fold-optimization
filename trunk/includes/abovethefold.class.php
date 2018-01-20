@@ -327,19 +327,19 @@ class Abovethefold
                     );
                 }
             } else {*/
-                foreach ($algorithms as $algorithm) {
-                    try {
-                        $json[$algorithm] = array(
+            foreach ($algorithms as $algorithm) {
+                try {
+                    $json[$algorithm] = array(
                             'public' => $this->optimization->get_client_script_hash(false, $algorithm),
                             'debug' => $this->optimization->get_client_script_hash(true, $algorithm)
                         );
-                    } catch (Exception $err) {
-                        $json[$algorithm] = array(
+                } catch (Exception $err) {
+                    $json[$algorithm] = array(
                             'public' => 'FAILED',
                             'debug' => 'FAILED'
                         );
-                    }
                 }
+            }
             //}
 
             while (ob_get_level()) {
@@ -548,6 +548,7 @@ class Abovethefold
         }
         if (is_dir($path)) {
             chmod($path, $mask);
+
             return true;
         }
 
@@ -572,6 +573,7 @@ class Abovethefold
         foreach ($files as $file) {
             (is_dir("$dir/$file")) ? $this->rmdir("$dir/$file") : @unlink("$dir/$file");
         }
+
         return @rmdir($dir);
     }
 
@@ -587,6 +589,7 @@ class Abovethefold
 
         if (file_exists($file)) {
             chmod($file, $mask);
+
             return true;
         }
 
@@ -699,13 +702,13 @@ class Abovethefold
     public function remote_get($url, $args = array())
     {
         $args = array_merge(array(
-            'timeout'     => 60,
+            'timeout' => 60,
             'redirection' => 5,
-            'sslverify'   => false,
+            'sslverify' => false,
 
             // Chrome Generic Win10
             // @link https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
-            'user-agent'  => 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36',
+            'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36',
         ), $args);
 
         // Request headers

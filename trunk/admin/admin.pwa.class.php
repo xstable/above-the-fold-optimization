@@ -27,8 +27,8 @@ class Abovethefold_Admin_PWA
      */
     public function __construct(&$CTRL)
     {
-        $this->CTRL =& $CTRL;
-        $this->options =& $CTRL->options;
+        $this->CTRL = & $CTRL;
+        $this->options = & $CTRL->options;
 
         /**
          * Admin panel specific
@@ -127,6 +127,9 @@ class Abovethefold_Admin_PWA
 
         // Preload
         $options['pwa_cache_preload'] = $this->CTRL->admin->newline_array((isset($input['pwa_cache_preload'])) ? $input['pwa_cache_preload'] : '');
+
+        // preload on mousedown
+        $options['pwa_preload_mousedown'] = (isset($input['pwa_preload_mousedown']) && intval($input['pwa_preload_mousedown']) === 1) ? true : false;
 
         // Asset cache
         $options['pwa_cache_assets'] = (isset($input['pwa_cache_assets']) && intval($input['pwa_cache_assets']) === 1) ? true : false;

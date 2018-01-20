@@ -6,7 +6,24 @@
 
 ?>
 <div class="wrap abovethefold-wrapper">
-    <div class="ok_green" style="padding:8px;padding-left:8px;border-width:1px;font-size:14px;line-height:18px;margin:0px;">The development of the <strong>Advanced WordPress Optimization</strong> plugin has been delayed due to funding issues. Our engineers are working very hard to complete it a.s.a.p.</div>
+
+    <div class="ok_green" style="padding:8px;padding-left:8px;border-width:1px;font-size:14px;line-height:18px;margin:0px;">
+    <h3 style="margin-top:5px;">News</h3>
+    <p style="font-size:14px;line-height:18px;border-bottom:solid 1px #079c2d;padding-bottom:1em;">We published a new plugin for international SEO: <a href="<?php echo add_query_arg(array( 's' => 'optimalisatie', 'tab' => 'search', 'type' => 'author' ), admin_url('plugin-install.php')); ?>">Amazon CloudFront Page Cache</a></p>
+    
+    Our upcoming <strong>Advanced WordPress Optimization</strong> plugin will contain a ton of unique web performance optimization innovations including timed javascript execution, Service Worker based async HTML fragment streaming, responsive CSS rendering and responsive javascript loading. The plugin will enable even the most complex and javascript heavy websites to score Exceptional (2 seconds) in Google's latest Mobile Performance test, without making compromises! Besides a ton of cutting edge innovations, the plugin will also bring professional optimization software to WordPress to be able to achieve the absolute best and most stable performance result possible, on any device, in any environment and for a million independent pages.
+    <br /><br />
+    The plugin will enable optimization professionals, including SEO and CRO specialists, to increasingly focus on 'optimization intelligence' without the need to know the exact workings of Javascript and for example a Service Worker. The optimization configuration will be based on <a href="http://json-schema.org/" target="_blank" rel="noopener">JSON schemas</a>.
+    <br /><br />
+    The plugin will enable to apply optimization profiles conditional, per page or based on environment conditions (e.g. for a device, browser or the <a href="https://developers.google.com/web/updates/2016/02/save-data" target="_blank">Save-Data</a> header). Optimizations will be able to go beyond the page level and shift focus to individual users. The plugin will make it easy to for example modify a javascript optimization setting specifically for iPhone 5 users. This is a unique innovation that could be a great leap forward for website performance optimization.
+    <br /><br />
+    The project has an experienced U.S. CEO and our engineers are working very hard to complete the plugin a.s.a.p. Stay tuned!
+
+    <p style="font-size:14px;line-height:18px;border-top:solid 1px #079c2d;padding-top:1em;">
+    Our <a href="https://www.fastestwebsite.co/" target="_blank" rel="noopener">Instant App plugin technology</a> for instant navigation speed has a new concept to enable efficient browsing of the existing internet on VR and AR devices: <a href="https://telekinetic.ai/" target="_blank" rel="noopener">Telekinetic Navigation</a>. The technology makes it possible to browse 1000s of pages in a few seconds using gesture control. The technology will enable VR and AR to become a better option for internet browsing.<br /><br />
+    If you are interested to learn more or be involved, please send an email to <a href="mailto:info@pagespeed.pro">info@pagespeed.pro</a>.
+    </p>
+    </div>
 	<div id="poststuff">
 		<div id="post-body" class="metabox-holder">
 			<div id="post-body-content">

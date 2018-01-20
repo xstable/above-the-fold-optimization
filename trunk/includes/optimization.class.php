@@ -69,7 +69,7 @@ class Abovethefold_Optimization
      */
     public function __construct(&$CTRL)
     {
-        $this->CTRL =& $CTRL;
+        $this->CTRL = & $CTRL;
 
         if ($this->CTRL->disabled) {
             return; // above the fold optimization disabled for area / page
@@ -153,8 +153,8 @@ class Abovethefold_Optimization
                 /**
                  * Move output buffer to front of other buffers
                  * /
-                $this->CTRL->loader->add_action('template_redirect', $this, 'move_ob_to_front',99999);
-                */
+                 * $this->CTRL->loader->add_action('template_redirect', $this, 'move_ob_to_front',99999);
+                 */
             }
         }
 
@@ -247,13 +247,6 @@ class Abovethefold_Optimization
     }
 
     /**
-     * Return config index
-     */
-    public function config_index($key, $subkey = false)
-    {
-    }
-
-    /**
      * Extract stylesheets from HTML
      */
     public function extract_stylesheets($HTML)
@@ -316,7 +309,7 @@ class Abovethefold_Optimization
                 /**
                  * No src, skip
                  */
-                if (strpos($script, 'src') === false|| !preg_match('#src\s*=\s*["\']([^"\']+)["\']#i', $script, $srcOut)) {
+                if (strpos($script, 'src') === false || !preg_match('#src\s*=\s*["\']([^"\']+)["\']#i', $script, $srcOut)) {
                     continue 1;
                 }
 
@@ -997,7 +990,10 @@ class Abovethefold_Optimization
 
             try {
                 $replaced = preg_replace_callback(
-                '/<!--([\\s\\S]*?)-->/', array($this, 'remove_comments'), $buffer);
+                '/<!--([\\s\\S]*?)-->/',
+                    array($this, 'remove_comments'),
+                    $buffer
+                );
             } catch (Exception $e) {
                 $replaced = false;
             }
@@ -1239,6 +1235,7 @@ class Abovethefold_Optimization
     public function get_client_script_hash($debug = false, $algorithm = 'sha256')
     {
         $script = $this->get_client_script($debug);
+
         return base64_encode(hash($algorithm, $script['client'], true));
     }
 
@@ -1269,8 +1266,8 @@ class Abovethefold_Optimization
     /**
      * Remove comments from HTML
      *
-     * @param  array     $match        The preg_replace_callback match result.
-     * @return string                  The modified string.
+     * @param  array  $match The preg_replace_callback match result.
+     * @return string The modified string.
      */
     public function remove_comments($match)
     {

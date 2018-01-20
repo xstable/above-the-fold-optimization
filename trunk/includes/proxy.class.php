@@ -18,7 +18,7 @@ class Abovethefold_Proxy
     /**
      * Above the fold controller
      *
-     * @var      object    $CTRL
+     * @var object $CTRL
      */
     public $CTRL;
 
@@ -114,7 +114,7 @@ class Abovethefold_Proxy
      */
     public function __construct(&$CTRL)
     {
-        $this->CTRL =& $CTRL;
+        $this->CTRL = & $CTRL;
 
         if ($this->CTRL->disabled) {
             return; // above the fold optimization disabled for area / page
@@ -150,7 +150,8 @@ class Abovethefold_Proxy
                 array_filter(
                     array_merge($this->$key, ((isset($this->CTRL->options[$params[0] . '_proxy_' . $params[1]]) && is_array($this->CTRL->options[$params[0] . '_proxy_' . $params[1]])) ? $this->CTRL->options[$params[0] . '_proxy_' . $params[1]] : array())),
                     create_function('$value', 'return trim($value) !== "";')
-                ));
+                )
+            );
         }
 
         // preload list
@@ -608,6 +609,11 @@ class Abovethefold_Proxy
             $url .= '.css';
         }
 
+        // apply CDN
+        if ($cdn) {
+            $url = preg_replace('|^http(s)?://[^/]+/|Ui', trailingslashit($cdn), $url);
+        }
+
         return $url;
     }
 
@@ -680,7 +686,7 @@ class Abovethefold_Proxy
          * Set gzip compression
          */
         //if (extension_loaded("zlib") && (ini_get("output_handler") != "ob_gzhandler")) {
-            //ini_set("zlib.output_compression", 1);
+        //ini_set("zlib.output_compression", 1);
         //}
 
         // prevent sniffing of content type
@@ -715,6 +721,7 @@ class Abovethefold_Proxy
             if ($debugExit) {
                 $this->error('Invalid proxy resource type');
             }
+
             return false;
         }
 
@@ -732,6 +739,7 @@ class Abovethefold_Proxy
             if ($debugExit) {
                 $this->forbidden('The resource is not specifically included via the include list.');
             }
+
             return false;
         }
 
@@ -742,6 +750,7 @@ class Abovethefold_Proxy
             if ($debugExit) {
                 $this->forbidden('The resource is excluded via the exclude list.');
             }
+
             return false;
         }
 
@@ -773,6 +782,7 @@ class Abovethefold_Proxy
                 if ($debugExit) {
                     $this->forbidden('The local javascript resource does not have a valid mimetype.<br /><br />File: '.str_replace(ABSPATH, '[HIDDEN]/', $local_file).'<br />Mime Type: <strong>'.$mime.'</strong>');
                 }
+
                 return false;
             }
 
@@ -782,19 +792,21 @@ class Abovethefold_Proxy
             if ($type === 'js') {
 
                 // valid javascript mime type?
-                if (!in_array($mime, $this->js_mimetypes) && !(substr($local_file, -3) === '.js' && substr($mime, 0, 5) ==='text/')) {
+                if (!in_array($mime, $this->js_mimetypes) && !(substr($local_file, -3) === '.js' && substr($mime, 0, 5) === 'text/')) {
                     if ($debugExit) {
                         $this->forbidden('The local javascript resource does not have a valid mimetype.<br /><br />File: '.str_replace(ABSPATH, '[HIDDEN]/', $local_file).'<br />Mime Type: <strong>'.$mime.'</strong>');
                     }
+
                     return false;
                 }
             } elseif ($type === 'css') {
 
                 // valid CSS mime type?
-                if (!in_array($mime, $this->css_mimetypes) && !(substr($local_file, -4) === '.css' && substr($mime, 0, 5) ==='text/')) {
+                if (!in_array($mime, $this->css_mimetypes) && !(substr($local_file, -4) === '.css' && substr($mime, 0, 5) === 'text/')) {
                     if ($debugExit) {
                         $this->forbidden('The local CSS resource does not have a valid mimetype.<br /><br />File: '.str_replace(ABSPATH, '[HIDDEN]/', $local_file) . '<br />Mime Type: <strong>'.$mime.'</strong>');
                     }
+
                     return false;
                 }
             }
@@ -807,6 +819,7 @@ class Abovethefold_Proxy
             if ($debugExit) {
                 $this->forbidden('The proxy is not enabled for file type '.$type);
             }
+
             return false;
         }
 
@@ -851,7 +864,7 @@ class Abovethefold_Proxy
     /**
      * Parse url
      */
-    public function parse_url($url, $x=false)
+    public function parse_url($url, $x = false)
     {
         $url = trim($url);
 
@@ -956,6 +969,7 @@ class Abovethefold_Proxy
                 return $matchurl;
             }
         }
+
         return $url;
     }
 
@@ -1072,7 +1086,7 @@ class Abovethefold_Proxy
         );
 
         if ($this->cdn) {
-            $jssettings[$proxyindex][$proxyindexsub['cdn']] = $this->cdn;
+            $jssettings[$proxyindex][$proxyindexsub['cdn']] = trailingslashit($this->cdn);
         }
 
         /**
@@ -1092,13 +1106,15 @@ class Abovethefold_Proxy
 
         if (!empty($preload)) {
             $jssettings[$proxyindex][$proxyindexsub['preload']] = $preload;
-            $jssettings[$proxyindex][$proxyindexsub['base']] = $this->CTRL->cache_dir('proxy');
         }
+        
+        // base path
+        $jssettings[$proxyindex][$proxyindexsub['base']] = $this->CTRL->cache_dir('proxy');
 
         $keys = array('js_include','css_include','js_exclude','css_exclude');
         foreach ($keys as $key) {
             $params = explode('_', $key);
-            if ($this->CTRL->options[$params[0] . '_proxy'] && !empty($this->CTRL->proxy->$key)) {
+            if ($this->CTRL->options[$params[0] . '_proxy'] && is_array($this->CTRL->proxy->$key) && !empty($this->CTRL->proxy->$key)) {
                 $jssettings[$proxyindex][$proxyindexsub[$key]] = $this->CTRL->proxy->$key;
             }
         }
