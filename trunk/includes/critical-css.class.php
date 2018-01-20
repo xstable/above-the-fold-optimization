@@ -24,7 +24,7 @@ class Abovethefold_Critical_CSS
      */
     public function __construct(&$CTRL)
     {
-        $this->CTRL =& $CTRL;
+        $this->CTRL = & $CTRL;
     }
 
     /**
@@ -35,7 +35,10 @@ class Abovethefold_Critical_CSS
         $errors = array();
 
         // get config cache
-        $fileconfig = get_option('abovethefold-criticalcss');
+        $fileconfig = get_option('abovethefold-criticalcss', array());
+        if (!is_array($fileconfig)) {
+            $fileconfig = array();
+        }
 
         // read critical CSS files from theme directory (/abovethefold/critical-css/)
         $criticalcss_dir = $this->CTRL->theme_path('critical-css');
@@ -232,10 +235,12 @@ class Abovethefold_Critical_CSS
                 if ($a['weight'] == $b['weight']) {
                     return 0;
                 }
+
                 return ($a['weight'] < $b['weight']) ? +1 : -1;
             });
 
             update_option('abovethefold-criticalcss', $newfileconfig, true);
+
             return $newfileconfig;
         } else {
             return $fileconfig;
@@ -253,6 +258,7 @@ class Abovethefold_Critical_CSS
 
         // strip config header
         $cssdata = trim(preg_replace('|^\s*/\*(.*?)\*/|is', '', trim(file_get_contents($file))));
+
         return $cssdata;
     }
 
@@ -288,6 +294,7 @@ class Abovethefold_Critical_CSS
             $errors[] = array(
                 'message' => 'Invalid Critical CSS file: ' . htmlentities($file, ENT_COMPAT, 'utf-8')
             );
+
             return $errors;
         }
 
@@ -644,7 +651,7 @@ class Abovethefold_Critical_CSS
         /**
          * Include inline CSS
          */
-         elseif ($primary_criticalcss['css'] !== '') {
+        elseif ($primary_criticalcss['css'] !== '') {
 
             /**
              * Debug header
@@ -661,7 +668,7 @@ class Abovethefold_Critical_CSS
             } else {
                 $criticalCSS = $primary_criticalcss['css'];
             }
-         } else {
+        } else {
 
             /**
              * Print warning for admin users that critical CSS is empty
@@ -685,7 +692,7 @@ class Abovethefold_Critical_CSS
  */
 ';
             }
-         }
+        }
 
         return $criticalCSS;
     }

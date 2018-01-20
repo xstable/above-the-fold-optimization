@@ -3,7 +3,7 @@ Contributors: optimalisatie
 Donate link: https://pagespeed.pro/
 Tags: optimization, above the fold, pagespeed, css, performance, critical css, pwa, web app, javascript, minification, minify, minify css, minify stylesheet, progressive, progressive web app, optimize, speed, stylesheet, google, web font, webfont, seo
 Requires at least: 3.0.1
-Tested up to: 4.8.1
+Tested up to: 4.9.2
 Stable tag: 4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
