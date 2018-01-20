@@ -132,6 +132,14 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.9.3 =
+* Bugfix: PHP 5.3 compatibility (@thowden)
+* Bugfix: Older webfont.js version `v1.6.26` on Google CDN. (@jimwalczak)
+* Bugfix: Global CDN URL not applied. (@supernovae)
+* Bugfix: Service Worker file not removed upon uninstallation.
+* Bugfix: Google Lighthouse fails `start_url` audit. (@sirtaptap)
+* Added: option to preload navigation requests in Service Worker on mousdown event to prevent 300ms tap delay.
+
 = 2.9.2 =
 * Added: HTTP/2 Server Push for Critical CSS.
 
