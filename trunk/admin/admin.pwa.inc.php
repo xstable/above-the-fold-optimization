@@ -194,7 +194,7 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
 			<label><input type="checkbox" name="abovethefold[pwa_preload_mousedown]" value="1"<?php if (isset($options['pwa_preload_mousedown']) && intval($options['pwa_preload_mousedown']) === 1) {
     print ' checked';
 } ?> /> Enabled</label>
-			<p class="description">Start preloading navigation requests in the Service Worker on mouse down. Older mobile devices including iOS8 have a <a href="https://encrypted.google.com/search?q=300ms+tap+delay+mobile" target="_blank" rel="noopener">300ms click delay</a> which is a lot of time wasted for navigation clicks. An average mouse click also has 200-500ms of delay before navigation starts. This feature enables to start preloading a page in the Service Worker on mouse down/touch to save 200-500ms.</p>
+			<p class="description">Start preloading navigation requests in the Service Worker on mouse down. Older mobile devices including iOS8 have a <a href="https://encrypted.google.com/search?q=300ms+tap+delay+mobile" target="_blank" rel="noopener">300ms click delay</a> which is a lot of time wasted for navigation clicks. An average mouse click also has a 200-500ms delay before navigation starts. This feature enables to start preloading a page in the Service Worker on mouse down/touch start to make use of the otherwise wasted delay.</p>
 		</td>
 	</tr>
 	<tr valign="top">
