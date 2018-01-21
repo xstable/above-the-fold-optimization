@@ -2,6 +2,7 @@
 window.Abtf;
 window.Abtf.offline;
 window.Abtf.push;
+window.Abtf.mousedown;
 CustomEvent;
 window.document;
 

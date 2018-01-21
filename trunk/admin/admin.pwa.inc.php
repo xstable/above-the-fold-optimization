@@ -277,6 +277,10 @@ submit_button(__('Save'), 'primary large', 'is_submit', false);
     echo $this->CTRL->admin->newline_array_string($options['pwa_cache_preload']);
 } ?></textarea>
 			<p class="description">Enter URLs or absolute path's to preload for offline availability, e.g. <code>/path/to/page.html</code> or <code>/path/to/image.jpg</code>.</p>
+
+			<p style="margin-top:1em;"><label><input type="checkbox" name="abovethefold[pwa_cache_preload_require]" value="1"<?php if (isset($options['pwa_cache_preload_require']) && intval($options['pwa_cache_preload_require']) === 1) {
+    print ' checked';
+} ?> /> Require preloading to complete in Service Worker installation. This option will activate the service worker after all assets have been preloaded.</label></p>
 		</td>
 	</tr>
 	<tr valign="top">

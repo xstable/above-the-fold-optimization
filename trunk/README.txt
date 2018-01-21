@@ -1,18 +1,18 @@
-=== Above The Fold Optimization ===
+=== Page Speed Optimization for SEO ===
 Contributors: optimalisatie
 Donate link: https://pagespeed.pro/
-Tags: optimization, above the fold, pagespeed, css, performance, critical css, pwa, web app, javascript, minification, minify, minify css, minify stylesheet, progressive, progressive web app, optimize, speed, stylesheet, google, web font, webfont, seo
+Tags: optimization, page speed, pagespeed, pwa, seo, performance, css, critical css, web app, javascript, minification, minify, minify css, minify stylesheet, progressive, progressive web app, optimize, speed, stylesheet, google, web font, webfont
 Requires at least: 3.0.1
 Tested up to: 4.9.2
 Stable tag: 4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Above the fold optimization toolkit that enables to achieve a Google PageSpeed 100 Score. Supports most optimization, minification and full page cache plugins.
+WordPress optimization toolkit with a focus on SEO. This plugin enables to achieve a Google PageSpeed 100 Score. Supports most optimization, minification and full page cache plugins.
 
 == Description ==
 
-This plugin is a toolkit for Above The Fold Optimization that enables to achieve a Google PageSpeed 100 Score.
+This plugin is a toolkit for WordPress Optimization with a focus on SEO. The plugin enables to achieve a Google PageSpeed 100 Score.
 
 This plugin is compatible with most optimization, minification and full page cache plugins and can be made compatible with other plugins by creating a module extension.
 
@@ -131,6 +131,11 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 9. Google Progressive Web App settings
 
 == Changelog ==
+
+= 2.9.5 =
+* Added: option to require preloading of assets to complete in Service Worker installation (before activation).
+* Added: Progressive Web App preload filter `abtf_pwa_preload`.
+* Added: Service Worker sends identifying HTTP header `X-PAGESPEED-SW` in requests to allow server side modification for SW.
 
 = 2.9.4 =
 * Repair of previous incomplete update.

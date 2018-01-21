@@ -247,11 +247,15 @@ Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
      */
     if (PWA_CONFIG[CONFIG.PWA_PRELOAD_MOUSEDOWN]) {
 
+        var MOUSEDOWN_PRELOAD_ENABLED = true;
+
         // initiate preload
         var INIT_PRELOAD = function() {
-            var href = this.getAttribute('href');
-            if (href) {
-                OFFLINE(href, function() {});
+            if (MOUSEDOWN_PRELOAD_ENABLED) {
+                var href = this.getAttribute('href');
+                if (href) {
+                    OFFLINE(href, function() {});
+                }
             }
         }
 
@@ -272,6 +276,11 @@ Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
                 }
             }
         });
+
+        // public method to enable/disable functionality
+        Abtf.mousedown = function(state) {
+            MOUSEDOWN_PRELOAD_ENABLED = (state) ? true : false;
+        }
     }
 
 });

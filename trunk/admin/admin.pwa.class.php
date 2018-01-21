@@ -127,6 +127,7 @@ class Abovethefold_Admin_PWA
 
         // Preload
         $options['pwa_cache_preload'] = $this->CTRL->admin->newline_array((isset($input['pwa_cache_preload'])) ? $input['pwa_cache_preload'] : '');
+        $options['pwa_cache_preload_require'] = (isset($input['pwa_cache_preload_require']) && intval($input['pwa_cache_preload_require']) === 1) ? true : false;
 
         // preload on mousedown
         $options['pwa_preload_mousedown'] = (isset($input['pwa_preload_mousedown']) && intval($input['pwa_preload_mousedown']) === 1) ? true : false;

@@ -426,7 +426,7 @@ module.exports = function(grunt) {
     grunt.registerTask('build', ['uglify', 'closure-compiler', 'cssmin',
         'copy:webfont_package',
         'copy:jquery_lazyxt_package',
-        'copy:loadcss_package',
+        //'copy:loadcss_package',
         'copy:serviceworker',
         'copy:serviceworker_debug'
     ]);

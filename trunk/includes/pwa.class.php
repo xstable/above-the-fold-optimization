@@ -20,12 +20,19 @@ class Abovethefold_PWA
      */
     public $CTRL;
 
+    // preload list
+    private $preload = array();
+
     /**
      * Initialize the class and set its properties
      */
     public function __construct(&$CTRL)
     {
         $this->CTRL = & $CTRL;
+
+        if (isset($this->CTRL->options['pwa_cache_preload']) && $this->CTRL->options['pwa_cache_preload']) {
+            $this->preload = $this->CTRL->options['pwa_cache_preload'];
+        }
 
         if ($this->CTRL->disabled) {
             return; // above the fold optimization disabled for area / page
@@ -162,8 +169,14 @@ class Abovethefold_PWA
         );
 
         // preload assets
-        if (isset($this->CTRL->options['pwa_cache_preload']) && $this->CTRL->options['pwa_cache_preload']) {
-            $config['preload'] = $this->CTRL->options['pwa_cache_preload'];
+        
+        // apply filters
+        $this->preload = apply_filters('abtf_pwa_preload', $this->preload);
+
+        if (!empty($this->preload)) {
+            $config['preload'] = $this->preload;
+
+            $config['preload_install'] = (isset($this->CTRL->options['pwa_cache_preload_require']) && $this->CTRL->options['pwa_cache_preload_require']) ? true : false;
         }
 
         if (isset($this->CTRL->options['pwa_manifest_start_url']) && $this->CTRL->options['pwa_manifest_start_url']) {
@@ -428,7 +441,6 @@ class Abovethefold_PWA
             }
             ksort($jssettings[$pwaindex]);
         }
-
         $jsfiles[] = WPABTF_PATH . 'public/js/abovethefold-pwa'.$jsdebug.'.min.js';
     }
 }

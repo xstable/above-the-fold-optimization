@@ -641,6 +641,11 @@
                             preloadPromises.push(CACHE_PRELOAD(url));
                         });
 
+                        // require preload to complete before install
+                        if (pwaConfig.preload_install) {
+                            preload_before_install = preload_before_install.concat(preloadPromises);
+                        }
+
                         return Promise.all(preload_before_install);
                     });
                 }
@@ -831,11 +836,13 @@
         return HTTP2_CACHE_DIGEST(r.headers.get('accept'))
             .then(function(digest) {
 
-                var request = r;
+                var request = new Request(r);
+
+                // add identifying header to allow server side modification for Service Worker
+                request.headers.set('x-pagespeed-sw', 1);
 
                 // add HTTP/2 Cache Digest to request
                 if (digest) {
-                    request = new Request(request);
                     request.headers.set('cache-digest', digest);
                 }
 

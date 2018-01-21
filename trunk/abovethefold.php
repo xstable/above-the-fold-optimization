@@ -1,25 +1,25 @@
 <?php
 /**
- * Above the fold optimization for WordPress
+ * Page Speed Optimization for SEO
  *
- * Above the fold optimization toolkit that enables to achieve a Google PageSpeed 100 Score. Supports most optimization, minification and full page cache plugins.
+ * WordPress optimization toolkit with a focus on SEO. This plugin enables to achieve a Google PageSpeed 100 Score. Supports most optimization, minification and full page cache plugins.
  *
  * @link              https://pagespeed.pro/
  * @since             1.0
  * @package           abovethefold
  *
  * @wordpress-plugin
- * Plugin Name:       Above The Fold Optimization
+ * Plugin Name:       Page Speed Optimization for SEO
  * Plugin URI:        https://pagespeed.pro/
- * Description:       Above the fold optimization toolkit that enables to achieve a Google PageSpeed 100 Score. Supports most optimization, minification and full page cache plugins.
- * Version:           2.9.4
+ * Description:       WordPress optimization toolkit with a focus on SEO. This plugin enables to achieve a Google PageSpeed 100 Score. Supports most optimization, minification and full page cache plugins.
+ * Version:           2.9.5
  * Author:            PageSpeed.pro
  * Author URI:        https://pagespeed.pro/
  * Text Domain:       abovethefold
  * Domain Path:       /languages
  */
 
-define('WPABTF_VERSION', '2.9.4');
+define('WPABTF_VERSION', '2.9.5');
 define('WPABTF_URI', plugin_dir_url(__FILE__));
 define('WPABTF_PATH', plugin_dir_path(__FILE__));
 define('WPABTF_SELF', __FILE__);
