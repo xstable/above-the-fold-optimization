@@ -25,12 +25,18 @@ jQuery(function($) {
      * Page selection menu
      */
     if (jQuery('select.wp-pageselect').length > 0 && typeof jQuery('select.wp-pageselect').selectize !== 'undefined') {
-        jQuery('select.wp-pageselect').selectize({
+        var page_select_menu = jQuery('select.wp-pageselect').selectize({
             placeholder: "Search a post/page/category ID or name...",
             optgroupField: 'class',
             labelField: 'name',
             searchField: ['name'],
             optgroups: window.abtf_pagesearch_optgroups,
+            onType: function(str) {
+                if (/^http(s)?:\/\/[^\/]+\//.test(str)) {
+                    var selectize = page_select_menu[0].selectize;
+                    selectize.setTextboxValue(str.replace(/^http(s)?:\/\/[^\/]+\//, '/'));
+                }
+            },
             load: function(query, callback) {
                 if (!query.length) return callback();
                 jQuery.ajax({

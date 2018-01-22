@@ -17,7 +17,7 @@
     <br /><br />
     The plugin will enable to apply optimization profiles conditional, per page or based on environment conditions (e.g. for a device, browser or the <a href="https://developers.google.com/web/updates/2016/02/save-data" target="_blank">Save-Data</a> header). Optimizations will be able to go beyond the page level and shift focus to individual users. The plugin will make it easy to for example modify a javascript optimization setting specifically for iPhone 5 users. This is a unique innovation that could be a great leap forward for website performance optimization.
     <br /><br />
-    The project has an experienced U.S. CEO and our engineers are working very hard to complete the plugin a.s.a.p.
+    The project has recently taken on a professional management team with diverse international experience and our engineers are working very hard to complete the plugin a.s.a.p.
 
     <p style="font-size:14px;line-height:18px;border-top:solid 1px #079c2d;padding-top:1em;">
     Our <a href="https://www.fastestwebsite.co/" target="_blank" rel="noopener">Instant App plugin technology</a> for instant navigation speed has a new concept to enable efficient browsing of the existing internet on VR and AR devices: <a href="https://telekinetic.ai/" target="_blank" rel="noopener">Telekinetic Navigation</a>. The technology makes it possible to browse 1000s of pages in a few seconds using gesture control. The technology will enable VR and AR to become a better option for internet browsing.<br /><br />

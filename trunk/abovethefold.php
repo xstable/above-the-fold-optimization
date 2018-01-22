@@ -12,14 +12,14 @@
  * Plugin Name:       Page Speed Optimization for SEO
  * Plugin URI:        https://pagespeed.pro/
  * Description:       WordPress optimization toolkit with a focus on SEO. This plugin enables to achieve a Google PageSpeed 100 Score. Supports most optimization, minification and full page cache plugins.
- * Version:           2.9.5
+ * Version:           2.9.6
  * Author:            PageSpeed.pro
  * Author URI:        https://pagespeed.pro/
  * Text Domain:       abovethefold
  * Domain Path:       /languages
  */
 
-define('WPABTF_VERSION', '2.9.5');
+define('WPABTF_VERSION', '2.9.6');
 define('WPABTF_URI', plugin_dir_url(__FILE__));
 define('WPABTF_PATH', plugin_dir_path(__FILE__));
 define('WPABTF_SELF', __FILE__);

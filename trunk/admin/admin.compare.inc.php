@@ -1,7 +1,7 @@
 
 <nav class="subnav">
 	<span class="t">Submenu:</span>
-	<a href="<?php echo add_query_arg(array('page'=>'pagespeed-compare'), admin_url('admin.php')); ?>" class="f s">Quality Test (mirror)</a><a href="<?php echo add_query_arg(array('page'=>'pagespeed-build-tool'), admin_url('admin.php')); ?>">Gulp.js Creator</a>
+	<a href="<?php echo add_query_arg(array('page' => 'pagespeed-compare'), admin_url('admin.php')); ?>" class="f s">Quality Test (mirror)</a><a href="<?php echo add_query_arg(array('page' => 'pagespeed-build-tool'), admin_url('admin.php')); ?>">Gulp.js Critical CSS Generator</a>
 </nav>
 
 <form method="post" action="<?php echo admin_url('admin-post.php?action=abovethefold_compare'); ?>" class="clearfix">

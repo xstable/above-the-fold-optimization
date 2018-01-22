@@ -132,6 +132,11 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
+= 2.9.6 =
+* Added: Simple Critical CSS extraction javascript widget from admin menu bar. (@alexlii)
+* Added: Full CSS extraction javascript widget from admin menu bar. (@bhagawadkrishna)
+* Added: Search a page by URL (@Emilybkk)
+
 = 2.9.5 =
 * Added: option to require preloading of assets to complete in Service Worker installation (before activation).
 * Added: Progressive Web App preload filter `abtf_pwa_preload`.

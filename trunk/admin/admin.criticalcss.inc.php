@@ -1,7 +1,7 @@
 
 <nav class="subnav">
 	<span class="t">Submenu:</span>
-	<a href="<?php echo add_query_arg(array('page'=>'pagespeed-compare'), admin_url('admin.php')); ?>" class="f">Quality Test (mirror)</a><a href="<?php echo add_query_arg(array('page'=>'pagespeed-build-tool'), admin_url('admin.php')); ?>">Gulp.js Creator</a>
+	<a href="<?php echo add_query_arg(array('page' => 'pagespeed-compare'), admin_url('admin.php')); ?>" class="f">Quality Test (mirror)</a><a href="<?php echo add_query_arg(array('page' => 'pagespeed-build-tool'), admin_url('admin.php')); ?>">Gulp.js Critical CSS Generator</a>
 </nav>
 
 <form method="post" action="<?php echo admin_url('admin-post.php?action=abtf_criticalcss_update'); ?>" data-addccss="<?php echo admin_url('admin-post.php?action=abtf_add_ccss'); ?>" data-delccss="<?php echo admin_url('admin-post.php?action=abtf_delete_ccss'); ?>" id="abtf_settings_form" class="clearfix" style="margin-top:0px;">
@@ -18,8 +18,7 @@
 						<div class="inside testcontent">
 							<p>Critical Path CSS is the minimum CSS required to render above the fold content. Please read the <a href="https://developers.google.com/speed/docs/insights/PrioritizeVisibleContent?hl=<?php print $lgcode;?>" target="_blank">documentation by Google</a> before you continue.</p>
 							<p><a href="https://github.com/addyosmani/critical-path-css-tools" target="_blank">This article</a> by a Google engineer provides information about the available methods for creating critical path CSS. <a href="https://addyosmani.com/blog/detecting-critical-above-the-fold-css-with-paul-kinlan-video/?<?php print $utmstring; ?>" target="_blank">This blog</a> (with video) by two Google engineers provides information about the essence of Critical Path CSS creation.</p>
-							<p>This plugin offers a tool for professional Critical Path CSS creation (see <a href="<?php echo add_query_arg(array( 'page' => 'pagespeed-build-tool' ), admin_url('admin.php')); ?>">Creator-tab</a>). The tool is based on <a href="https://github.com/addyosmani/critical" target="_blank">critical</a> by a Google engineer.</p>
-							<p>Check out <a href="https://criticalcss.com/#utm_source=wordpress&amp;utm_medium=plugin&amp;utm_term=optimization&amp;utm_campaign=PageSpeed.pro%3A%20Above%20The%20Fold%20Optimization" target="_blank">CriticalCSS.com</a> for an automated critical path CSS generator. A free version is available <a href="https://jonassebastianohlsson.com/criticalpathcssgenerator/" target="_blank">here</a>.</p>
+							
 							<div class="info_yellow">
 								<p style="margin:0px;"><strong>Tip:</strong> If you notice a <a href="https://en.wikipedia.org/wiki/Flash_of_unstyled_content" target="_blank">Flash of Unstyled Content</a> (FOUC), use the <a href="<?php print add_query_arg(array( 'page' => 'pagespeed-compare' ), admin_url('admin.php')); ?>">Quality Test-tab</a> to fine tune the critical path CSS for a perfect above the fold display.</p>
 							</div>

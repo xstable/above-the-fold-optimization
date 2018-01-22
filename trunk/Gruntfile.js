@@ -254,7 +254,7 @@ module.exports = function(grunt) {
                     // Original loadCSS
                     'admin/js/admincp.min.js': [
                         'admin/js/jquery.debounce.js',
-                        'admin/j s/admincp.js',
+                        'admin/js/admincp.js',
                         'admin/js/admincp.build-tool.js',
                         'admin/js/admincp.add-conditional.js',
                         'admin/js/admincp.criticalcss-editor.js',
@@ -283,7 +283,14 @@ module.exports = function(grunt) {
                         'admin/js/csslint.js',
                         'node_modules/codemirror/addon/lint/lint.js',
                         'node_modules/codemirror/addon/lint/css-lint.js'
-                    ]
+                    ],
+
+                    // Critical CSS Extract widget
+                    'admin/js/css-extract-widget.min.js': [
+                        'admin/js/getMatchedCSSRules.js',
+                        'admin/js/html5-file-save.js',
+                        'admin/js/css-extract-widget.js'
+                    ],
                 }
             },
 

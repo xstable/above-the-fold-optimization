@@ -46,10 +46,10 @@ class Abovethefold_Admin
      */
     public $tabs = array(
         'intro' => 'Intro',
-        'criticalcss' => 'Critical CSS',
         'html' => 'HTML',
         'css' => 'CSS',
         'javascript' => 'Javascript',
+        'criticalcss' => 'Critical CSS',
         'pwa' => 'PWA', // Google PWA Validation
         'http2' => 'HTTP/2',
         'proxy' => 'Proxy',
@@ -79,6 +79,9 @@ class Abovethefold_Admin
         // Configure admin bar menu
         if (!isset($this->CTRL->options['adminbar']) || intval($this->CTRL->options['adminbar']) === 1) {
             $this->CTRL->loader->add_action('admin_bar_menu', $this, 'admin_bar', 100);
+
+            // Hook in the frontend admin related styles and scripts
+            $this->CTRL->loader->add_action('wp_enqueue_scripts', $this, 'enqueue_frontend_scripts', 30);
         }
 
         /**
@@ -313,6 +316,19 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
     }
 
     /**
+     * Enqueue admin bar widget scripts
+     */
+    public function enqueue_frontend_scripts($hook)
+    {
+        if (!is_admin_bar_showing()) {
+            return;
+        }
+
+        // add general admin javascript
+        wp_enqueue_script('abtf_css_extract_widget', plugin_dir_url(__FILE__) . 'js/css-extract-widget.min.js', array( 'jquery' ), WPABTF_VERSION);
+    }
+
+    /**
      * Admin menu option
      */
     public function admin_menu()
@@ -410,6 +426,16 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
 
         $settings_url = add_query_arg(array( 'page' => 'pagespeed' ), admin_url('admin.php'));
         $nonced_url = wp_nonce_url($settings_url, 'abovethefold');
+
+        if (is_admin()
+            || (defined('DOING_AJAX') && DOING_AJAX)
+            || in_array($GLOBALS['pagenow'], array('wp-login.php', 'wp-register.php'))
+        ) {
+            $currenturl = home_url();
+        } else {
+            $currenturl = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        }
+
         $admin_bar->add_menu(array(
             'id' => 'abovethefold',
             'title' => '<div class="ab-icon wp-menu-image svg" style="background-image: url(\''.$this->admin_icon().'\') !important;"></div><span class="ab-label">' . __('PageSpeed', 'pagespeed') . '</span>',
@@ -427,47 +453,81 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
         ));
 
         /**
-         * Compare Critical CSS vs Full CSS
+         * Optimization menu
          */
-        $admin_bar->add_node(array(
-            'parent' => 'abovethefold-top',
-            'id' => 'abovethefold-tools-compare',
-            'title' => __('Critical CSS Quality Test', 'abovethefold'),
-            'href' => $this->CTRL->view_url('compare-abtf'),
-            'meta' => array( 'title' => __('Critical CSS Quality Test', 'abovethefold'), 'target' => '_blank' )
-        ));
-
         $admin_bar->add_node(array(
             'parent' => 'abovethefold-top',
             'id' => 'abovethefold-optimization',
             'title' => __('Optimization', 'abovethefold')
         ));
 
+        /**
+         * Critical CSS menu
+         */
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-top',
+            'id' => 'abovethefold-critical-css',
+            'title' => __('Critical CSS', 'abovethefold'),
+            'href' => $this->CTRL->view_url('compare-abtf'),
+            'meta' => array( 'title' => __('Critical CSS', 'abovethefold'), 'target' => '_blank' )
+        ));
+
+        /**
+         * Other tools menu
+         */
         $admin_bar->add_node(array(
             'parent' => 'abovethefold-top',
             'id' => 'abovethefold-tools',
             'title' => __('Other Tools', 'abovethefold')
         ));
 
-        if (is_admin()
-            || (defined('DOING_AJAX') && DOING_AJAX)
-            || in_array($GLOBALS['pagenow'], array('wp-login.php', 'wp-register.php'))
-        ) {
-            $currenturl = home_url();
-        } else {
-            $currenturl = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        // critical CSS quality test
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-critical-css',
+            'id' => 'abovethefold-critical-css-quality',
+            'title' => __('Quality Test (split view)', 'abovethefold'),
+            'href' => $this->CTRL->view_url('compare-abtf'),
+            'meta' => array( 'title' => __('Critical CSS Quality Test (split view)', 'abovethefold'), 'target' => '_blank' )
+        ));
+
+        if (!is_admin()) {
+            // extract Critical CSS
+            $admin_bar->add_node(array(
+                'parent' => 'abovethefold-critical-css',
+                'id' => 'abovethefold-extract-critical-css-widget',
+                'title' => __('Extract Critical CSS (JS widget)', 'abovethefold'),
+                'href' => '#',
+                'meta' => array( 'title' => __('Extract Critical CSS (javascript widget)', 'abovethefold'), 'onclick' => 'window.extractCriticalCSS();return false;' )
+            ));
         }
 
-        /**
-         * Optimize Critical CSS
-         */
+        // extract full CSS
         $admin_bar->add_node(array(
-            'parent' => 'abovethefold-optimization',
-            'id' => 'abovethefold-optimization-criticalcss',
-            'title' => __('Critical CSS', 'abovethefold'),
-            'href' => add_query_arg(array( 'page' => 'pagespeed-criticalcss' ), admin_url('admin.php')),
-            'meta' => array( 'title' => __('Critical CSS', 'abovethefold') )
+            'parent' => 'abovethefold-critical-css',
+            'id' => 'abovethefold-extract-full-css',
+            'title' => __('Extract Full CSS (plugin)', 'abovethefold'),
+            'href' => $this->CTRL->view_url('extract-css', array('output' => 'print')),
+            'meta' => array( 'title' => __('Extract Full CSS (plugin)', 'abovethefold'), 'target' => '_blank' )
         ));
+
+
+        if (!is_admin()) {
+            $admin_bar->add_node(array(
+                'parent' => 'abovethefold-critical-css',
+                'id' => 'abovethefold-extract-full-css-widget',
+                'title' => __('Extract Full CSS (JS widget)', 'abovethefold'),
+                'href' => '#',
+                'meta' => array( 'title' => __('Extract Full CSS (javascript widget)', 'abovethefold'), 'onclick' => 'window.extractFullCSS();return false;' )
+            ));
+        } else {
+            $admin_bar->add_node(array(
+                'parent' => 'abovethefold-critical-css',
+                'id' => 'abovethefold-extract-critical-css-widget-link',
+                'title' => __('See frontend for more options...', 'abovethefold'),
+                'href' => home_url(),
+                'meta' => array( 'title' => __('Extract Full CSS (javascript widget)', 'abovethefold'))
+            ));
+        }
 
         /**
          * Optimize HTML
@@ -503,6 +563,17 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
         ));
 
         /**
+         * Optimize Critical CSS
+         */
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-optimization',
+            'id' => 'abovethefold-optimization-criticalcss',
+            'title' => __('Critical CSS', 'abovethefold'),
+            'href' => add_query_arg(array( 'page' => 'pagespeed-criticalcss' ), admin_url('admin.php')),
+            'meta' => array( 'title' => __('Critical CSS', 'abovethefold') )
+        ));
+
+        /**
          * Optimize PWA
          */
         $admin_bar->add_node(array(
@@ -535,18 +606,6 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
             'meta' => array( 'title' => __('Proxy', 'abovethefold') )
         ));
 
-
-
-        /**
-         * Extract Full CSS
-         */
-        $admin_bar->add_node(array(
-            'parent' => 'abovethefold-tools',
-            'id' => 'abovethefold-tools-extract',
-            'title' => __('Extract Full CSS', 'abovethefold'),
-            'href' => $this->CTRL->view_url('extract-css', array('output' => 'print')),
-            'meta' => array( 'title' => __('Extract Full CSS', 'abovethefold'), 'target' => '_blank' )
-        ));
         /**
          * Page cache clear
          */
@@ -741,6 +800,14 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
         $query = (isset($_POST['query'])) ? trim($_POST['query']) : '';
         $limit = (isset($_POST['maxresults']) && intval($_POST['maxresults']) > 10 && intval($_POST['maxresults']) < 30) ? intval($_POST['maxresults']) : 10;
 
+        // enable URL (slug) search
+        // @Emilybkk
+        if (preg_match('|^http(s)?://|Ui', $query) || substr($query, 0, 1) === '/') {
+            $slugquery = array_pop(explode('/', trim(preg_replace('|^http(s)://[^/]+/|Ui', '', $query), '/')));
+        } else {
+            $slugquery = false;
+        }
+
         /**
          * Results
          */
@@ -757,7 +824,12 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
             }
 
             // Get random post
-            $args = array( 'post_type' => $pt, 'posts_per_page' => $limit, 's' => $query );
+            if ($slugquery) {
+                $args = array( 'post_type' => $pt, 'posts_per_page' => $limit, 'name' => $slugquery );
+            } else {
+                $args = array( 'post_type' => $pt, 'posts_per_page' => $limit, 's' => $query );
+            }
+            
             query_posts($args);
             if (have_posts()) {
                 while (have_posts()) {
@@ -804,13 +876,26 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
                         case "post_tag":
                         case "product_cat":
                         case "product_brand":
-                            $terms = get_terms($taxonomy, array(
-                                'orderby' => 'title',
-                                'order' => 'ASC',
-                                'hide_empty' => false,
-                                'number' => $limit,
-                                'name__like' => $query
-                            ));
+
+                            if ($slugquery) {
+                                $term_query = array(
+                                    'orderby' => 'title',
+                                    'order' => 'ASC',
+                                    'hide_empty' => false,
+                                    'number' => $limit,
+                                    'name' => $slugquery
+                                );
+                            } else {
+                                $term_query = array(
+                                    'orderby' => 'title',
+                                    'order' => 'ASC',
+                                    'hide_empty' => false,
+                                    'number' => $limit,
+                                    'name__like' => $query
+                                );
+                            }
+
+                            $terms = get_terms($taxonomy, $term_query);
                             if ($terms) {
                                 foreach ($terms as $term) {
                                     switch ($taxonomy) {
@@ -862,7 +947,7 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
         $this->CTRL->plugins->clear_pagecache();
 
         if ($notice) {
-            $this->set_notice('Page related caches from <a href="https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/" target="_blank">supported plugins</a> cleared.<p><strong>Note:</strong> This plugin does not contain a page cache. The page cache clear function for multiple other plugins is a tool.', 'NOTICE');
+            $this->set_notice('Page related caches from <a href="https://github.com/optimalisatie/above-the-fold-optimization/tree/master/trunk/modules/plugins/" target="_blank">supported plugins</a> cleared.<p><strong>Note:</strong> This plugin does not contain a page cache. The page cache clear function for other plugins is a tool.', 'NOTICE');
         }
     }
 
