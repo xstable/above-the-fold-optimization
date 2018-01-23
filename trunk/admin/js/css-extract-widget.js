@@ -87,7 +87,7 @@
 
                 if (printConsole) {
                     title = (file === 'inline') ? 'Inline' : 'File: ' + file;
-                    console.groupCollapsed(file);
+                    console.groupCollapsed(title);
                     consoleCSS = '';
                 }
 
@@ -95,10 +95,15 @@
                 if (css[file].media && (css[file].media.length > 1 || css[file].media[0] !== 'all')) {
                     var media = [];
                     for (var i = 0; i < css[file].media.length; i++) {
+                        if (!css[file].media[i]) {
+                            continue;
+                        }
                         media.push(css[file].media[i]);
                     }
-                    media = media.join(' ');
-                    finalCSS += "\n * @media " + media;
+                    if (media.length > 0) {
+                        media = media.join(' ');
+                        finalCSS += "\n * @media " + media;
+                    }
                 }
                 finalCSS += "\n */\n";
                 for (k in css[file].css) {
