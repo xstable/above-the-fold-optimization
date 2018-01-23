@@ -324,6 +324,9 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
             return;
         }
 
+        // add global admin CSS
+        wp_enqueue_style('abtf_admincp_global', plugin_dir_url(__FILE__) . 'css/admincp-global.min.css', false, WPABTF_VERSION);
+
         // add general admin javascript
         wp_enqueue_script('abtf_css_extract_widget', plugin_dir_url(__FILE__) . 'js/css-extract-widget.min.js', array( 'jquery' ), WPABTF_VERSION);
     }
