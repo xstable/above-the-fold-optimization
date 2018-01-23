@@ -378,8 +378,6 @@ Abtf[CONFIG.LOAD_MODULE](function(window, Abtf) {
         // verify include list
         if (PROXY_JS_INCLUDE) {
 
-            console.log(222, PROXY_JS_INCLUDE);
-
             var match = false;
             var l = PROXY_JS_INCLUDE.length;
             for (var i = 0; i < l; i++) {
