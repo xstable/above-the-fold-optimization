@@ -13,6 +13,9 @@ window.WebFontConfig;
 window.WebFontConfig.google;
 window.WebFontConfig.google.families;
 
+window.extractCriticalCSS;
+window.extractFullCSS;
+
 window.watch;
 window.unwatch;
 window.$;
@@ -34,6 +37,10 @@ jQuery.each;
 jQuery.trigger;
 jQuery.addClass;
 jQuery.removeClass;
+
+console.groupCollapsed;
+console.groupEnd;
+console.log;
 
 // debug related
 window.Abtf.localUrl;

@@ -44,7 +44,8 @@ module.exports = function(grunt) {
         'public/js/abovethefold-loadcss-enhanced.min.js': 'public/js/min/abovethefold-loadcss-enhanced.js',
         'public/js/abovethefold-loadcss.min.js': 'public/js/min/abovethefold-loadcss.js',
         'public/js/abovethefold-pwa.min.js': 'public/js/min/abovethefold-pwa.js',
-        'public/js/pwa-serviceworker.js': 'public/js/min/pwa.serviceworker.js'
+        'public/js/pwa-serviceworker.js': 'public/js/min/pwa.serviceworker.js',
+        'admin/js/css-extract-widget.min.js': 'public/js/min/css-extract-widget.js'
     };
 
     var srcfile;
@@ -70,12 +71,15 @@ module.exports = function(grunt) {
         // debug
         srcfile = CCfiles[file].replace('.js', '.debug.js');
 
+        if (file.indexOf('admin/js/') !== -1) {
+            continue;
+        }
+
         if (file.indexOf('pwa-serviceworker') !== -1) {
             file = file.replace('.js', '.debug.js');
         } else {
             file = file.replace('.min.js', '.debug.min.js');
         }
-
 
         CC[file] = {
             closurePath: '../closure-compiler',
@@ -286,9 +290,7 @@ module.exports = function(grunt) {
                     ],
 
                     // Critical CSS Extract widget
-                    'admin/js/css-extract-widget.min.js': [
-                        'admin/js/getMatchedCSSRules.js',
-                        'admin/js/html5-file-save.js',
+                    'public/js/min/css-extract-widget.js': [
                         'admin/js/css-extract-widget.js'
                     ],
                 }
