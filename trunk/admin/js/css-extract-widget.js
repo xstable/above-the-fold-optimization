@@ -4,7 +4,7 @@
  * @usage
  * Copy & paste in the browser console and use the methods window.extractCriticalCSS(); and window.extractFullCSS();
  */
-(function() {
+(function(win) {
 
     /**
      * Critical CSS extraction
@@ -78,6 +78,8 @@
             var cssRule;
             var title;
 
+            var fileReferences = [];
+
             if (console.clear) {
                 console.clear();
             }
@@ -94,6 +96,10 @@
                     console.groupCollapsed(title);
                     consoleCSS = '';
                 }
+
+                // line number
+                var lineNo = finalCSS.split(/\r\n|\r|\n/).length;
+                fileReferences.push([file, lineNo]);
 
                 finalCSS += "/**\n * @file " + file;
                 if (css[file].media && (css[file].media.length > 1 || css[file].media[0] !== 'all')) {
@@ -143,7 +149,7 @@
                 console.groupEnd();
             }
 
-            return finalCSS;
+            return [finalCSS, fileReferences];
         };
 
         parseTree();
@@ -509,7 +515,9 @@
     window.extractCriticalCSS = function() {
 
         var cp = new CSSCriticalPath(window, document);
-        var css = cp.generateCSS();
+        var result = cp.generateCSS();
+        var css = result[0];
+        var files = result[1];
 
         try {
             var isFileSaverSupported = !!new Blob;
@@ -518,9 +526,18 @@
         if (!isFileSaverSupported) {
             alert('Your browser does not support javascript based file download. The critical CSS is printed in the console.')
         } else {
-            var blob = new Blob(["/**\n * Simple Critical CSS extracted using the Page Speed Optimization widget\n *\n * @link https://wordpress.org/plugins/above-the-fold-optimization/\n * @source https://github.com/optimalisatie/above-the-fold-optimization/blob/master/trunk/admin/js/css-extract-widget.js\n * @minified https://github.com/optimalisatie/above-the-fold-optimization/blob/master/trunk/admin/js/css-extract-widget.min.js\n *\n * Note: this critical CSS is extracted using the browser viewport. For professional Critical CSS generators @see https://github.com/addyosmani/critical-path-css-tools\n */\n\n" +
-                css
-            ], {
+
+            var criticalCSS = "/**\n * Simple Critical CSS\n *\n * @url " + document.location.href + "\n * @title " + document.title + "\n * @viewport " + win.innerWidth + "x" + win.innerHeight + "\n * @size " + humanFileSize(css.length) + "\n *\n * Extracted using the Page Speed Optimization CSS extract widget.\n * @link https://wordpress.org/plugins/above-the-fold-optimization/\n * @source https://github.com/optimalisatie/above-the-fold-optimization/blob/master/trunk/admin/js/css-extract-widget.js (.min.js)\n *\n * For professional Critical CSS generators see https://github.com/addyosmani/critical-path-css-tools\n *\n * @sources";
+
+            var hlines = criticalCSS.split(/\r\n|\r|\n/).length;
+            hlines += files.length + 3;
+            for (var i = 0; i < files.length; i++) {
+                criticalCSS += "\n * @line " + (files[i][1] + hlines) + "\t @file " + files[i][0];
+            }
+            criticalCSS += "\n */\n\n";
+            criticalCSS += css;
+
+            var blob = new Blob([criticalCSS], {
                 type: "text/css;charset=utf-8"
             });
             var path = window.location.pathname;
@@ -559,7 +576,7 @@
         if (!isFileSaverSupported) {
             alert('Your browser does not support javascript based file download. The full CSS is printed in the console.')
         } else {
-            var blob = new Blob(["/**\n * Full CSS extracted using the Page Speed Optimization widget\n *\n * @link https://wordpress.org/plugins/above-the-fold-optimization/\n * @source https://github.com/optimalisatie/above-the-fold-optimization/blob/master/trunk/admin/js/css-extract-widget.js\n * @minified https://github.com/optimalisatie/above-the-fold-optimization/blob/master/trunk/admin/js/css-extract-widget.min.js\n */\n\n" +
+            var blob = new Blob(["/**\n * Full CSS\n *\n * @url " + document.location.href + "\n * @title " + document.title + "\n * @size " + humanFileSize(css.length) + "\n *\n * Extracted using the Page Speed Optimization CSS extract widget.\n * @link https://wordpress.org/plugins/above-the-fold-optimization/\n * @source https://github.com/optimalisatie/above-the-fold-optimization/blob/master/trunk/admin/js/css-extract-widget.js (.min.js)\n */\n\n" +
                 css
             ], {
                 type: "text/css;charset=utf-8"
@@ -579,4 +596,4 @@
         var i = Math.floor(Math.log(size) / Math.log(1024));
         return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB'][i];
     };
-})();
+})(window);
