@@ -20,9 +20,9 @@
             var stylesheetFile = r.parentStyleSheet.href;
             if (!stylesheetFile) {
                 inlineCount++;
-                stylesheetFile = 'Inline';
+                stylesheetFile = 'inline';
             } else {
-                stylesheetFile = 'File: ' + stylesheetFile;
+                stylesheetFile = stylesheetFile;
             }
             if (!!css[stylesheetFile] === false) {
                 css[stylesheetFile] = {
@@ -72,6 +72,7 @@
             var printConsole = (console && console.groupCollapsed);
             var consoleCSS;
             var cssRule;
+            var title;
 
             if (console.clear) {
                 console.clear();
@@ -85,6 +86,7 @@
             for (var file in css) {
 
                 if (printConsole) {
+                    title = (file === 'inline') ? 'Inline' : 'File: ' + file;
                     console.groupCollapsed(file);
                     consoleCSS = '';
                 }
