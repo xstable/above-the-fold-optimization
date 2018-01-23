@@ -129,7 +129,7 @@
             }
 
             if (printConsole) {
-                console.groupCollapsed('All Extracted Critical CSS');
+                console.groupCollapsed('All Extracted Critical CSS (' + humanFileSize(finalCSS.length) + ')');
             } else {
                 console.log('%cAll:', "font-weight:bold");
             }
@@ -290,7 +290,7 @@
         console.log("%cFull CSS Extraction", "font-size:24px;font-weight:bold");
 
         if (console.groupCollapsed) {
-            console.groupCollapsed('Extracted Full CSS');
+            console.groupCollapsed('Extracted Full CSS (' + humanFileSize(css.length) + ')');
         }
         console.log(css);
         if (console.groupCollapsed) {
@@ -318,5 +318,10 @@
                 alert('Full Critical CSS Extraction\n\nA download should have been started. If not, please check your browser permissions.\n\nThe Full CSS have also been printed to the browser console.');
             }, 100);
         }
+    };
+
+    function humanFileSize(size) {
+        var i = Math.floor(Math.log(size) / Math.log(1024));
+        return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB'][i];
     };
 })();
