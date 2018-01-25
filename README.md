@@ -19,6 +19,7 @@ Some of the features:
 * Full CSS Extraction: selectively export CSS files of a page as a single file or as raw text for use in critical CSS generators.
 * Quality Test: test the quality of Critical CSS by comparing it side-by-side with the full CSS display of a page. This tool can be used to detect a flash of unstyled content ([FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content)).
 * A [javascript widget](https://github.com/optimalisatie/above-the-fold-optimization/blob/master/admin/js/css-extract-widget.js) to extract simple critical CSS with a click from the WordPress admin bar.
+* A live critical CSS editor.
 
 Read more about Critical CSS in the [documentation by Google](https://developers.google.com/speed/docs/insights/PrioritizeVisibleContent). 
 [This article](https://github.com/addyosmani/critical-path-css-tools) by a Google engineer provides information about the available methods for creating critical CSS. 

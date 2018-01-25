@@ -12,22 +12,22 @@
 $qs_start = (strpos($url, '?') !== false) ? '&' : '?';
 
 $critical_url = $url . $qs_start . 'critical-css-view=1&t=' . time();
-$full_url = $url . $qs_start . 'abtft=' . time() . '&abtf-critical-verify='.md5(SECURE_AUTH_KEY . AUTH_KEY);
+$full_url = $url . $qs_start . 'full-css-view=1&t=' . time();
 
 $output = '<!DOCTYPE html>
 <html>
 <head>
-<title>Critical CSS Test - Split View - Above The Fold</title>
+<title>Critical CSS Editor - Split View Quality Test - Above The Fold</title>
 <meta name="robots" content="noindex, nofollow" />
-<link rel="stylesheet" href="'.WPABTF_URI.'public/css/compare.min.css" />
+<link rel="stylesheet" href="'.WPABTF_URI.'public/css/critical-css-editor.min.css" />
 <link rel="stylesheet" href="'.includes_url('/css/dashicons.min.css?ver=4.9.2').'" />
 <style>.gutter.gutter-horizontal {background-image: url(\''.WPABTF_URI.'public/vertical-grip.png\');} .gutter.gutter-vertical {background-image: url(\''.WPABTF_URI.'public/horizontal-grip.png\');}</style>
-<script src="'.WPABTF_URI.'public/js/compare.min.js?t='.time().'"></script>
+<script src="'.WPABTF_URI.'public/js/critical-css-editor.min.js?t='.time().'"></script>
 </head>
 <body scroll="nxo" cellspacing="1" cellpadding="1">
 <header>
 	<div class="h">
-		<h1>Critical CSS Test</h1>
+		<h1>Critical CSS Editor</h1>
 		<h2>Above The Fold Optimization</h2>
 	</div>
 	<button type="button" title="Split View (horizontal)" id="btn_split_h"><span class="dashicons dashicons-image-flip-horizontal"></span></button>
@@ -39,14 +39,14 @@ $output = '<!DOCTYPE html>
 	<button type="button" title="Open Critical CSS View in new window (useful for responsive testing)" id="btn_open"><span class="dashicons dashicons-external"></span></button>
 	&nbsp;&nbsp;
 	&nbsp;&nbsp;
-	<button type="button" title="Extract (download) Critical CSS (javascript widget based on viewport)"><span class="dashicons dashicons-media-code"></span></button>
-	<button type="button" title="Extract (download) Full CSS (javascript widget)"><span class="dashicons dashicons-share-alt2"></span></button>
+	<button type="button" title="Extract Critical CSS (javascript widget based on viewport)" id="btn_extract_critical_css"><span class="dashicons dashicons-media-code"></span></button>
+	<button type="button" title="Download Full CSS (javascript widget)" id="btn_extract_full_css"><span class="dashicons dashicons-download"></span></button>
 	<div class="clear"></div>
 </header>
 <!--Critical CSS [ <a href="' . $critical_url . '" id="reloadcritical" target="criticalcss">reload</a> | <a href="' . $critical_url . '" target="_top">full view</a> ]</td><td>Full CSS</td></tr-->
 
-<div class="split split-horizontal" style="width: calc(50% - 5px);" id="critical-css-view"><iframe src="' . $critical_url . '" name="criticalcss" frameborder="0" width="100%" height="100%" scrolling="no"></iframe></div>
-<div class="split split-horizontal" style="width: calc(50% - 5px);" id="full-css-view"><iframe src="' . $full_url . '" frameborder="0" width="100%" height="100%" scrolling="no"></iframe></div>
+<div class="split split-horizontal" style="width: calc(50% - 5px);" id="critical-css-view"><iframe src="' . $critical_url . '" name="criticalcss" frameborder="0" width="100%" height="100%"></iframe></div>
+<div class="split split-horizontal" style="width: calc(50% - 5px);" id="full-css-view"><iframe src="' . $full_url . '" frameborder="0" width="100%" height="100%"></iframe></div>
 <div class="split split-horizontal" style="display:none;" id="css-editor-view"><textarea id="abtfcss" placeholder="Loading Critical CSS..." disabled></textarea></div>
 
 </body>

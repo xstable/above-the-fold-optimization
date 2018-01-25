@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Critical CSS / Above The Fold quality test
+ * Critical CSS / Above The Fold Quality Test and Editor
  *
  * @since      2.9.7
  * @package    abovethefold
@@ -9,7 +9,7 @@
  * @author     PageSpeed.pro <info@pagespeed.pro>
  */
 
-class Abovethefold_CompareABTF
+class Abovethefold_CriticalCSSEditor
 {
 
     /**
@@ -67,7 +67,7 @@ class Abovethefold_CompareABTF
         $parsed = array();
         parse_str(substr($url, strpos($url, '?') + 1), $parsed);
         $extractkey = $parsed['extract-css'];
-        unset($parsed['critical-css-test']);
+        unset($parsed['critical-css-editor']);
         unset($parsed['output']);
         $url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . preg_replace('|\?.*$|Ui', '', $_SERVER['REQUEST_URI']);
         if (!empty($parsed)) {
@@ -77,7 +77,7 @@ class Abovethefold_CompareABTF
         /**
          * Print compare critical CSS page
          */
-        require_once(plugin_dir_path(realpath(dirname(__FILE__) . '/')) . 'includes/critical-css-test.inc.php');
+        require_once(plugin_dir_path(realpath(dirname(__FILE__) . '/')) . 'includes/critical-css-editor.inc.php');
 
         return $output;
     }

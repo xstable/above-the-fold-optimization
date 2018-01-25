@@ -11,11 +11,11 @@
     </div>
 <?php
         foreach ($this->tabs as $tabkey => $name) {
-            if (in_array($tabkey, array('compare','build-tool'))) {
+            if (in_array($tabkey, array('criticalcss-test','build-tool'))) {
                 continue;
             }
 
-            $class = ($tabkey == $tab) ? ' nav-tab-active' : '';
+            $class = ($tabkey == $tab || ($tabkey === 'criticalcss' && $tab == 'criticalcss-test')) ? ' nav-tab-active' : '';
             if ($tabkey === 'offer') {
                 $class .= ($tabkey == 'offer') ? ' nav-tab-offer' : '';
                 echo "<a class='nav-tab$class' href='https://pagespeed.pro/innovation/advanced-wordpress-optimization/' target='_blank'>$name</a>";

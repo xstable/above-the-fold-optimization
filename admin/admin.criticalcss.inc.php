@@ -1,7 +1,9 @@
 
 <nav class="subnav">
 	<span class="t">Submenu:</span>
-	<a href="<?php echo add_query_arg(array('page' => 'pagespeed-compare'), admin_url('admin.php')); ?>" class="f">Quality Test (mirror)</a><a href="<?php echo add_query_arg(array('page' => 'pagespeed-build-tool'), admin_url('admin.php')); ?>">Gulp.js Critical CSS Generator</a>
+	<a href="<?php echo add_query_arg(array('page' => 'pagespeed-criticalcss-test'), admin_url('admin.php')); ?>" class="f">Quality Test (Split View)</a>
+	<a href="<?php echo $this->CTRL->view_url('critical-css-editor'); ?>#editor"  target="_blank" rel="noopener">Live Editor</a>
+	<a href="<?php echo add_query_arg(array('page' => 'pagespeed-build-tool'), admin_url('admin.php')); ?>">Gulp.js Critical CSS Generator</a>
 </nav>
 
 <form method="post" action="<?php echo admin_url('admin-post.php?action=abtf_criticalcss_update'); ?>" data-addccss="<?php echo admin_url('admin-post.php?action=abtf_add_ccss'); ?>" data-delccss="<?php echo admin_url('admin-post.php?action=abtf_delete_ccss'); ?>" id="abtf_settings_form" class="clearfix" style="margin-top:0px;">
@@ -20,7 +22,7 @@
 							<p><a href="https://github.com/addyosmani/critical-path-css-tools" target="_blank">This article</a> by a Google engineer provides information about the available methods for creating critical path CSS. <a href="https://addyosmani.com/blog/detecting-critical-above-the-fold-css-with-paul-kinlan-video/?<?php print $utmstring; ?>" target="_blank">This blog</a> (with video) by two Google engineers provides information about the essence of Critical Path CSS creation.</p>
 							
 							<div class="info_yellow">
-								<p style="margin:0px;"><strong>Tip:</strong> If you notice a <a href="https://en.wikipedia.org/wiki/Flash_of_unstyled_content" target="_blank">Flash of Unstyled Content</a> (FOUC), use the <a href="<?php print add_query_arg(array( 'page' => 'pagespeed-compare' ), admin_url('admin.php')); ?>">Quality Test-tab</a> to fine tune the critical path CSS for a perfect above the fold display.</p>
+								<p style="margin:0px;"><strong>Tip:</strong> If you notice a <a href="https://en.wikipedia.org/wiki/Flash_of_unstyled_content" target="_blank">Flash of Unstyled Content</a> (FOUC), use the <a href="<?php print add_query_arg(array( 'page' => 'pagespeed-criticalcss-test' ), admin_url('admin.php')); ?>">Quality Test-tab</a> to fine tune the critical path CSS for a perfect above the fold display.</p>
 							</div>
 
 							<table class="form-table">

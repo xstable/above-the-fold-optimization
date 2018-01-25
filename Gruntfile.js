@@ -162,9 +162,18 @@ module.exports = function(grunt) {
                         'public/js/src/abovethefold.loadcss.js'
                     ],
 
-                    // Compare Critical CSS view
-                    'public/js/compare.min.js': [
-                        'public/js/src/compare.js'
+                    // Critical CSS Editor
+                    'public/js/critical-css-editor.min.js': [
+                        'node_modules/jquery/dist/jquery.min.js',
+                        'node_modules/split.js/split.min.js',
+                        'admin/js/codemirror.min.js',
+                        'public/js/src/critical-css-editor.js'
+                    ],
+
+                    // Critical CSS view
+                    'public/js/critical-css-view.min.js': [
+                        'admin/js/css-extract-widget.min.js',
+                        'public/js/src/critical-css-view.js'
                     ],
 
                     // Extract full CSS view
@@ -376,8 +385,9 @@ module.exports = function(grunt) {
                         'node_modules/codemirror/lib/codemirror.css',
                         'node_modules/codemirror/addon/lint/lint.css'
                     ],
-                    'public/css/compare.min.css': [
-                        'public/css/src/compare.css'
+                    'public/css/critical-css-editor.min.css': [
+                        'admin/css/codemirror.min.css',
+                        'public/css/src/critical-css-editor.css'
                     ],
                     'public/css/extractfull.min.css': [
                         'public/css/src/extractfull.css'

@@ -103,14 +103,14 @@ class Abovethefold
             // extract full CSS view
             'extract-css' => array( 'admin_bar' => false ),
 
-            // compare critical CSS with full CSS
-            'compare-abtf' => array( 'admin_bar' => false ),
+            // critical CSS quality test and editor
+            'critical-css-editor' => array( 'admin_bar' => false, 'nohash' => true ),
 
             // view website with just the critical CSS
-            'abtf-critical-only' => array( 'admin_bar' => false ),
+            'critical-css-view' => array( 'admin_bar' => false, 'nohash' => true ),
 
             // view website regularly, but without the admin toolbar for comparison view
-            'abtf-critical-verify' => array( 'admin_bar' => false ),
+            'full-css-view' => array( 'admin_bar' => false , 'nohash' => true ),
 
             // build tool HTML export for Gulp.js critical task
             'abtf-buildtool-html' => array( 'admin_bar' => false ),
@@ -124,7 +124,10 @@ class Abovethefold
         foreach ($views as $viewKey => $viewSettings) {
 
             // check if view is active
-            if (isset($_REQUEST[$viewKey]) && $_REQUEST[$viewKey] === $view_hash) {
+            if (isset($_REQUEST[$viewKey])) {
+                if ((!isset($viewSettings['nohash']) || !$viewSettings['nohash']) && $_REQUEST[$viewKey] !== $view_hash) {
+                    continue;
+                }
 
                 // set view
                 $this->view = $viewKey;
@@ -435,14 +438,14 @@ class Abovethefold
         }
 
         /**
-         * Compare Critical CSS view
+         * Critical CSS Quality Test view
          */
-        if ($this->view === 'compare-abtf') {
+        if ($this->view === 'critical-css-editor') {
 
             /**
              * The class responsible for defining all actions related to compare critical CSS
              */
-            require_once WPABTF_PATH . 'includes/compare-abtf.class.php';
+            require_once WPABTF_PATH . 'includes/critical-css-editor.class.php';
         }
 
         /**

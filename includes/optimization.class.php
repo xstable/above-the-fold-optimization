@@ -121,6 +121,18 @@ class Abovethefold_Optimization
          */
         $this->html_replace = (isset($this->CTRL->options['html_search_replace']) && is_array($this->CTRL->options['html_search_replace']) && !empty($this->CTRL->options['html_search_replace'])) ? $this->CTRL->options['html_search_replace'] : false;
 
+
+        // ignore critical css view controller in javascript optimization
+        if ($this->CTRL->view === 'critical-css-view') {
+            add_filter('abtf_jsfile_pre', function ($file) {
+                if (strpos($file, 'critical-css-view.min.js') !== false) {
+                    return 'ignore';
+                }
+
+                return $file;
+            });
+        }
+
         /**
          * Extract Full CSS view
          */
@@ -128,12 +140,12 @@ class Abovethefold_Optimization
 
             // load optimization controller
             $this->CTRL->extractcss = new Abovethefold_ExtractFullCss($this->CTRL);
-        } elseif ($this->CTRL->view === 'compare-abtf') {
+        } elseif ($this->CTRL->view === 'critical-css-editor') {
 
             /**
              * Compare Critical CSS view
              */
-            $this->CTRL->compare = new Abovethefold_CompareABTF($this->CTRL);
+            $this->CTRL->critical_css_test = new Abovethefold_CriticalCSSEditor($this->CTRL);
         } else {
 
             /**
@@ -568,7 +580,7 @@ class Abovethefold_Optimization
             /**
              * Filter CSS files
              */
-            if ($this->CTRL->options['gwfo'] || $this->CTRL->options['css_proxy'] || $this->CTRL->view === 'abtf-critical-only') {
+            if ($this->CTRL->options['gwfo'] || $this->CTRL->options['css_proxy'] || $this->CTRL->view === 'critical-css-view') {
                 $stylesheets = $this->extract_stylesheets($buffer);
                 if (!empty($stylesheets)) {
                     foreach ($stylesheets as $stylesheet) {
@@ -586,7 +598,7 @@ class Abovethefold_Optimization
                         }
 
                         // delete file
-                        if ($filterResult === 'delete' || $this->CTRL->view === 'abtf-critical-only') {
+                        if ($filterResult === 'delete' || $this->CTRL->view === 'critical-css-view') {
 
                             // delete from HTML
                             $search[] = $matchedTag;
@@ -852,7 +864,7 @@ class Abovethefold_Optimization
             /**
              * Remove full CSS and show critical CSS only
              */
-            if ($this->CTRL->view === 'abtf-critical-only') { // , 'abtf-buildtool-html'
+            if ($this->CTRL->view === 'critical-css-view') { // , 'abtf-buildtool-html'
 
                 // do not render the stylesheet files
                 $styles_json = 'false';
@@ -1024,6 +1036,10 @@ class Abovethefold_Optimization
          */
         if ($this->CTRL->view) {
             print '<meta name="robots" content="noindex, nofollow" />';
+        }
+
+        if (in_array($this->CTRL->view, array('critical-css-view', 'full-css-view'))) {
+            require_once WPABTF_PATH . 'includes/critical-css-view-header.inc.php';
         }
 
         // debug enabled?

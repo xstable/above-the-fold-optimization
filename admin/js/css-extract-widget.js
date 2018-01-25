@@ -2,11 +2,15 @@
  * Simple Critical CSS and Full CSS extraction widget
  * 
  * @usage
- * Copy & paste this widget in the browser console and use the following methods:
- * window.extractCriticalCSS();
- * window.extractFullCSS();
+ * Copy & paste this widget in the browser console and use the following methods with an optional callback.
+ *
+ * window.extractCriticalCSS( callback );
+ * window.extractFullCSS( callback );
+ *
+ * When no callback is provided, the extracted CSS is offered as a file download + printed to the browser console.
+ * 
  */
-(function(win) {
+(function(window) {
 
     /**
      * Critical CSS extraction
@@ -268,7 +272,7 @@
     })((function(win) {
 
         function matchMedia(mediaRule) {
-            return win.matchMedia(mediaRule.media.mediaText).matches;
+            return window.matchMedia(mediaRule.media.mediaText).matches;
         }
 
         function matchesSelector(el, selector) {
@@ -328,7 +332,7 @@
         }
 
         return function() {
-            return win.getMatchedCSSRules ? win.getMatchedCSSRules : getMatchedCSSRules;
+            return window.getMatchedCSSRules ? window.getMatchedCSSRules : getMatchedCSSRules;
         };
     })(window), this);
 
@@ -508,13 +512,11 @@
 
         return saveAs;
     }(
-        typeof self !== "undefined" && self ||
-        typeof window !== "undefined" && window ||
-        this
+        window
     ));
 
     // public extract Critical CSS method
-    win.extractCriticalCSS = function() {
+    window.extractCriticalCSS = function(callback) {
 
         var cp = new CSSCriticalPath(window, document);
         var result = cp.generateCSS();
@@ -522,14 +524,14 @@
         var files = result[1];
 
         try {
-            var isFileSaverSupported = !!new Blob;
+            var isFileSaverSupported = (callback) ? true : !!new Blob;
         } catch (e) {}
 
         if (!isFileSaverSupported) {
             alert('Your browser does not support javascript based file download. The critical CSS is printed in the console.')
         } else {
 
-            var criticalCSS = "/**\n * Simple Critical CSS\n *\n * @url " + document.location.href + "\n * @title " + document.title + "\n * @viewport " + win.innerWidth + "x" + win.innerHeight + "\n * @size " + humanFileSize(css.length) + "\n *\n * Extracted using the Page Speed Optimization CSS extract widget.\n * @link https://wordpress.org/plugins/above-the-fold-optimization/\n * @source https://github.com/optimalisatie/above-the-fold-optimization/blob/master/trunk/admin/js/css-extract-widget.js (.min.js)\n *\n * For professional Critical CSS generators see https://github.com/addyosmani/critical-path-css-tools\n *\n * @sources";
+            var criticalCSS = "/**\n * Simple Critical CSS\n *\n * @url " + document.location.href + "\n * @title " + document.title + "\n * @viewport " + window.innerWidth + "x" + window.innerHeight + "\n * @size " + humanFileSize(css.length) + "\n *\n * Extracted using the Page Speed Optimization CSS extract widget.\n * @link https://wordpress.org/plugins/above-the-fold-optimization/\n * @source https://github.com/optimalisatie/above-the-fold-optimization/blob/master/trunk/admin/js/css-extract-widget.js (.min.js)\n *\n * For professional Critical CSS generators see https://github.com/addyosmani/critical-path-css-tools\n *\n * @sources";
 
             var hlines = criticalCSS.split(/\r\n|\r|\n/).length;
             hlines += files.length + 3;
@@ -538,6 +540,10 @@
             }
             criticalCSS += "\n */\n\n";
             criticalCSS += css;
+
+            if (callback) {
+                return callback(criticalCSS);
+            }
 
             var blob = new Blob([criticalCSS], {
                 type: "text/css;charset=utf-8"
@@ -554,11 +560,11 @@
     };
 
     // public extract Full CSS method
-    win.extractFullCSS = function() {
+    window.extractFullCSS = function(callback) {
         var css = CSSSteal();
 
         try {
-            var isFileSaverSupported = !!new Blob;
+            var isFileSaverSupported = (callback) ? true : !!new Blob;
         } catch (e) {}
 
         if (console.clear) {
@@ -578,9 +584,15 @@
         if (!isFileSaverSupported) {
             alert('Your browser does not support javascript based file download. The full CSS is printed in the console.')
         } else {
-            var blob = new Blob(["/**\n * Full CSS\n *\n * @url " + document.location.href + "\n * @title " + document.title + "\n * @size " + humanFileSize(css.length) + "\n *\n * Extracted using the Page Speed Optimization CSS extract widget.\n * @link https://wordpress.org/plugins/above-the-fold-optimization/\n * @source https://github.com/optimalisatie/above-the-fold-optimization/blob/master/trunk/admin/js/css-extract-widget.js (.min.js)\n */\n\n" +
-                css
-            ], {
+
+            var fullcss = "/**\n * Full CSS\n *\n * @url " + document.location.href + "\n * @title " + document.title + "\n * @size " + humanFileSize(css.length) + "\n *\n * Extracted using the Page Speed Optimization CSS extract widget.\n * @link https://wordpress.org/plugins/above-the-fold-optimization/\n * @source https://github.com/optimalisatie/above-the-fold-optimization/blob/master/trunk/admin/js/css-extract-widget.js (.min.js)\n */\n\n" +
+                css;
+
+            if (callback) {
+                return callback(fullcss);
+            }
+
+            var blob = new Blob([fullcss], {
                 type: "text/css;charset=utf-8"
             });
             var path = window.location.pathname;

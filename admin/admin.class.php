@@ -55,7 +55,7 @@ class Abovethefold_Admin
         'proxy' => 'Proxy',
         'settings' => 'Settings',
         'build-tool' => 'Critical CSS Creator',
-        'compare' => 'Quality Test',
+        'criticalcss-test' => 'Quality Test',
         'monitor' => 'Monitor'/*,
         'offer' => 'New Plugin'*/
     );
@@ -402,7 +402,7 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
         /**
          * Hidden pages
          */
-        add_submenu_page(null, __('Critical CSS Quality Test', 'pagespeed'), __('Quality Test', 'pagespeed'), 'manage_options', 'pagespeed-compare', array(
+        add_submenu_page(null, __('Critical CSS Quality Test', 'pagespeed'), __('Critical CSS Quality Test', 'pagespeed'), 'manage_options', 'pagespeed-criticalcss-test', array(
             &$this,
             'settings_page'
         ));
@@ -471,7 +471,7 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
             'parent' => 'abovethefold-top',
             'id' => 'abovethefold-critical-css',
             'title' => __('Critical CSS', 'abovethefold'),
-            'href' => $this->CTRL->view_url('compare-abtf'),
+            'href' => $this->CTRL->view_url('critical-css-test'),
             'meta' => array( 'title' => __('Critical CSS', 'abovethefold'), 'target' => '_blank' )
         ));
 
@@ -489,8 +489,17 @@ jQuery(function() { var desc = jQuery('*[data-plugin="above-the-fold-optimizatio
             'parent' => 'abovethefold-critical-css',
             'id' => 'abovethefold-critical-css-quality',
             'title' => __('Quality Test (split view)', 'abovethefold'),
-            'href' => $this->CTRL->view_url('compare-abtf'),
+            'href' => $this->CTRL->view_url('critical-css-editor'),
             'meta' => array( 'title' => __('Critical CSS Quality Test (split view)', 'abovethefold'), 'target' => '_blank' )
+        ));
+
+        // critical CSS quality test
+        $admin_bar->add_node(array(
+            'parent' => 'abovethefold-critical-css',
+            'id' => 'abovethefold-critical-css-editor',
+            'title' => __('Critical CSS Editor', 'abovethefold'),
+            'href' => $this->CTRL->view_url('critical-css-editor') . '#editor',
+            'meta' => array( 'title' => __('Critical CSS Editor', 'abovethefold'), 'target' => '_blank' )
         ));
 
         if (!is_admin()) {
@@ -1041,7 +1050,7 @@ window.abtf_pagesearch_optgroups = <?php print json_encode($this->page_search_op
             case "proxy":
             case "settings":
             case "extract":
-            case "compare":
+            case "criticalcss-test":
             case "build-tool":
             case "monitor":
             case "intro":
