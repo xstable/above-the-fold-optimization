@@ -2,7 +2,7 @@
 
 # WordPress Page Speed Optimization for SEO
 
-The [Page Speed Optimization](https://wordpress.org/plugins/above-the-fold-optimization/) plugin is a toolkit for WordPress Optimization with a focus on SEO. The plugin enables to achieve a 100 score in the [Google PageSpeed Insights](https://developers.google.com/speed/pagespeed/insights/) and an Excellent score in Google's latest AI based [Mobile Performance Benchmark test](https://testmysite.thinkwithgoogle.com/). 
+The [Page Speed Optimization](https://wordpress.org/plugins/above-the-fold-optimization/) plugin is a toolkit for WordPress Optimization with a focus on SEO. The plugin enables to achieve a 100 score in the [Google PageSpeed Insights](https://developers.google.com/speed/pagespeed/insights/) test and an Excellent score in Google's latest AI based [Mobile Performance Benchmark test](https://testmysite.thinkwithgoogle.com/). 
 
 https://wordpress.org/plugins/above-the-fold-optimization/
 

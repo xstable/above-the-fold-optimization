@@ -12,7 +12,7 @@ WordPress optimization toolkit with a focus on SEO. This plugin enables to achie
 
 == Description ==
 
-This plugin is a toolkit for WordPress Optimization with a focus on SEO. The plugin enables to achieve a Google PageSpeed 100 Score.
+This plugin is a toolkit for WordPress Optimization with a focus on SEO. The plugin enables to achieve a 100 score in the [Google PageSpeed Insights](https://developers.google.com/speed/pagespeed/insights/) test and an Excellent score in Google's latest AI based [Mobile Performance Benchmark test](https://testmysite.thinkwithgoogle.com/). 
 
 This plugin is compatible with most optimization, minification and full page cache plugins and can be made compatible with other plugins by creating a module extension.
 
