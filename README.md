@@ -1,6 +1,6 @@
-# WordPress Above The Fold Optimization
+# WordPress Page Speed Optimization for SEO
 
-The [Above The Fold Optimization](https://wordpress.org/plugins/above-the-fold-optimization/) plugin is a toolkit that enables to achieve a **`100`** score in the [Google PageSpeed Insights](https://developers.google.com/speed/pagespeed/insights/) test. It is a plugin intended for optimization professionals and advanced WordPress users.
+The [Page Speed Optimization](https://wordpress.org/plugins/above-the-fold-optimization/) is a toolkit for WordPress Optimization with a focus on SEO. The plugin enables to achieve a **`100`** score in the [Google PageSpeed Insights](https://developers.google.com/speed/pagespeed/insights/) test. 
 
 https://wordpress.org/plugins/above-the-fold-optimization/
 
