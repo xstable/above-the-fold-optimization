@@ -1,4 +1,4 @@
-![Excellent Score in Google AI Mobile Performance Test](https://github.com/optimalisatie/above-the-fold-optimization/blob/master/banner-772x250.jpg)
+<p align="center">![Excellent Score in Google AI Mobile Performance Test](https://github.com/optimalisatie/above-the-fold-optimization/blob/master/banner-772x250.jpg)</p>
 
 # WordPress Page Speed Optimization for SEO
 
