@@ -474,7 +474,18 @@ class Abovethefold
         /**
          * Return url with view query string
          */
-        return preg_replace('|\#.*$|Ui', '', $currenturl) . ((strpos($currenturl, '?') !== false) ? '&' : '?') . $view . '=' . md5(SECURE_AUTH_KEY . AUTH_KEY) . (!empty($query) ? '&' . http_build_query($query) : '');
+
+        switch ($view) {
+            case "critical-css-editor":
+            case "critical-css-view":
+                $value = 1;
+            break;
+            default:
+                $value = md5(SECURE_AUTH_KEY . AUTH_KEY);
+            break;
+        }
+
+        return preg_replace('|\#.*$|Ui', '', $currenturl) . ((strpos($currenturl, '?') !== false) ? '&' : '?') . $view . '=' . $value . (!empty($query) ? '&' . http_build_query($query) : '');
     }
 
     /**

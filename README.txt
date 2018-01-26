@@ -122,17 +122,22 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Screenshots ==
 
-1. Critical CSS management
-2. CSS delivery optimization
-3. Google Web Font optimization
+1. HTML Optimization
+2. CSS Optimization
+3. Google Web Font Optimization
 4. Javascript Optimization
-5. Google PWA validation
+5. Critical CSS Optimization
 6. Critical CSS Quality Test
-7. Full CSS Extraction
-8. Gulp.js Critical CSS Generator Task Manager
-9. Google Progressive Web App settings
+7. Critical CSS Editor
+8. Google PWA Optimization
+9. HTTP/2 Optimization
+10. Gulp.js Critical CSS Generator
 
 == Changelog ==
+
+= 2.9.7 =
+* Improved: Critical CSS Quality Test (Split View)
+* Added: Critical CSS Live Editor
 
 = 2.9.6 =
 * Added: Simple Critical CSS extraction javascript widget from admin menu bar. (@alexlii)
