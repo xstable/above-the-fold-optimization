@@ -135,7 +135,10 @@ The plugin contains a tool to create Critical CSS based on [Gulp.js](https://gul
 
 == Changelog ==
 
-= 2.9.7 =
+= 2.9.8 = 
+* Improved: Synchronized scroll option in Critical CSS Quality Test (Split View)
+
+= 2.9.7 = 
 * Improved: Critical CSS Quality Test (Split View)
 * Added: Critical CSS Live Editor
 

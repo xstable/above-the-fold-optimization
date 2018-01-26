@@ -77,6 +77,17 @@ jQuery(function($) {
     var setCurrentView = function(view) {
         currentView = view;
         document.location.hash = '#' + view;
+
+        switch (view) {
+            case "editor":
+                $('.syncscroll').hide();
+                syncScroll(false);
+                break;
+            default:
+                $('.syncscroll').show();
+                syncScroll($('.syncscroll input[type="checkbox"]').is(':checked'));
+                break;
+        }
     }
 
     var viewSplitHorizontal = function() {
@@ -261,6 +272,29 @@ jQuery(function($) {
             "action": "extract",
             "type": "full-css"
         }, '#full-css-view iframe');
+    });
+
+    var syncScroll = function(enable) {
+        var frm1 = $('#critical-css-view iframe');
+        var frm2 = $('#full-css-view iframe');
+        if (enable) {
+            frm1.contents().scroll(function() {
+                frm2.contents().scrollTop(frm1.contents().scrollTop());
+            });
+
+            frm2.contents().scroll(function() {
+                frm1.contents().scrollTop(frm2.contents().scrollTop());
+            });
+
+            frm2.contents().scrollTop(frm1.contents().scrollTop());
+        } else {
+            frm1.contents().off('scroll');
+            frm2.contents().off('scroll');
+        }
+    }
+
+    $('.syncscroll input[type="checkbox"]').on('change', function() {
+        syncScroll($(this).is(':checked'));
     });
 
     if (document.location.hash) {
