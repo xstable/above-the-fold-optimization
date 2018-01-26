@@ -1035,6 +1035,12 @@ class Abovethefold_Optimization
          * Add noindex meta to prevent indexing in Google
          */
         if ($this->CTRL->view) {
+
+            // send noindex HTTP header
+            if (!headers_sent()) {
+                header("X-Robots-Tag: noindex, nofollow", true);
+            }
+            
             print '<meta name="robots" content="noindex, nofollow" />';
         }
 

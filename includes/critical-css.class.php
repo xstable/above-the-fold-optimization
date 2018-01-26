@@ -645,7 +645,7 @@ class Abovethefold_Critical_CSS
         $criticalCSS = '';
 
         if ($debug_criticalcss) {
-            $criticalCSS .= "/**\n * Critical CSS Editor\n *\n * The extracted Critical CSS has been annotated with file references for easy editing. \n * The Critical CSS source files are located in your theme directory .../".basename(get_stylesheet_directory())."/abovethefold/critical-css/\n */\n\n";
+            $criticalCSS .= "/**\n * Critical CSS Editor\n *\n * The extracted Critical CSS has been annotated with file references for easy editing. \n * The Critical CSS source files are located in the theme directory .../".basename(get_stylesheet_directory())."/abovethefold/critical-css/\n */\n\n";
         }
 
         /**
