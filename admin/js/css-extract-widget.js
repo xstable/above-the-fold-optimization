@@ -305,7 +305,7 @@
 
             if (el.nodeType === 1) {
                 while (slen && slen--) {
-                    rules = sheets[slen].cssRules || sheets[slen].rules;
+                    rules = sheets[slen].hasOwnProperty('cssRules') || sheets[slen].hasOwnProperty('rules');
                     rlen = rules.length;
 
                     while (rlen && rlen--) {
